@@ -13,7 +13,7 @@
 
 <title>Презентации и данные</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -48,6 +48,7 @@
 
 
 
+
 <link rel="stylesheet" href="my_styles.css" type="text/css" />
 
 
@@ -72,6 +73,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -129,11 +133,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -162,8 +170,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -171,16 +179,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -342,9 +343,21 @@ div.tocify {
 <div id="знакомство-с-r" class="section level3">
 <h3>01 Знакомство с R</h3>
 <ul>
-<li><p>Презентация: <a href="01_intro_to_r.html">Знакомство с R</a></p></li>
-<li><p>Презентация pdf: <a href="01_intro_to_r.pdf">Знакомство с R</a></p></li>
-<li><p>Код: <a href="01_intro_to_r_code.R">01_intro_to_r_code.R</a></p></li>
+<li><p>Презентация: <a href="01_intro_to_r.html">Знакомство с
+R</a></p></li>
+<li><p>Презентация pdf: <a href="01_intro_to_r.pdf">Знакомство с
+R</a></p></li>
+<li><p>Код: <a
+href="01_intro_to_r_code.R">01_intro_to_r_code.R</a></p></li>
+</ul>
+</div>
+<div id="знакомство-с-r-практикум-по-основам-языка"
+class="section level3">
+<h3>01 Знакомство с R (Практикум по основам языка)</h3>
+<ul>
+<li>Задание для практикума: <a href="01_intro_to_r.html">Знакомство с
+R</a></li>
+<li>Данные: <a href="data/catsM.xlsx">catsM.xlsx</a></li>
 </ul>
 <!-- ### 02 Основы ggplot2 -->
 <!-- ```{r eval=FALSE} -->

@@ -1,42 +1,103 @@
 ---
 title: "Описательная статистика"
-author: "Марина Варфоломеева, Вадим Хайтов, Юта Тамберг"
-subtitle: "Линейные модели"
+subtitle: "Линейные модели в R"
+author: 
+  - Марина Варфоломеева
+  - Вадим Хайтов
+  - Юта Тамберг
+  - Анастасия Лянгузова
+company: 'Каф. Зоологии беспозвоночных, СПбГУ'
 output:
-  ioslides_presentation:
-    css: assets/my_styles.css
-    widescreen: yes
-editor_options: 
-  chunk_output_type: console
+  xaringan::moon_reader:
+    self-contained: true
+    lib_dir: libs
+    css: [default, tamu-fonts, ninjutsu, "assets/xaringan-themer.css", "assets/xaringan.css"]
+    df_print: default
+    nature:
+      highlightStyle: vs
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: [middle, left, inverse]
+      beforeInit: "assets/cols_macro.js"
+    includes:
+      in_header: "assets/xaringan_in_header.html"
+      after_body: "assets/xaringan_after_body.html"
 ---
 
 ```{r setup, include = FALSE, cache = FALSE, purl = FALSE}
-# output options
-options(width = 70, scipen = 6, digits = 3)
 library(knitr)
 library(ggplot2)
 library(gridExtra)
-# chunk default options
-opts_chunk$set(fig.align='center', tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE)
+source("assets/xaringan_setup.R")
+library(xaringanExtra)
+use_tile_view()
+use_scribble()
+use_search(show_icon = FALSE)
+use_progress_bar(color = "#6d2b5e", location = "bottom", height = "10px")
+use_freezeframe()
+# use_webcam()
+# use_panelset()
+# use_extra_styles(hover_code_line = TRUE)
+
+# http://tachyons.io/docs/
+# https://roperzh.github.io/tachyons-cheatsheet/
+use_tachyons()
 ```
+
+class: middle, center, inverse
 
 # Характеризуем данные
 
-## Характеризуем данные через связки описательных статистик {.columns-2}
+---
 
+## С какими данными мы работаем
 
+.pull-left[
+.Large[Генеральная совокупность]
+]
 
+.pull-right-33[
+.Large[Выборка]
+]
+
+![](images/population_sample.png)
+
+--
+
+.pull-left[
+.Large[Параметры]
+]
+
+.pull-right-33[
+.Large[Описательная статистика]
+]
+---
+
+## Какие бывают данные 
+
+![:col_header Категориальные данные, Числовые дискретые (счётные), Числовые непрерывные (мерные)]
+![:col_list орёл или решка, оценка за экзамен, температура воздуха]
+![:col_list цвет радуги, количество пластиковых пипеток в упаковке, рост]
+
+---
+
+## Характеризуем данные через связки описательных статистик 
+
+.pull-left[
 ### Центральные тенденции <br/>(Statistics of location)
 
 - Медиана (Median)
 
-- Среднее значение (Mean)
+- Среднее значение (Mean)]
 
+.pull-right[
 ### Меры разброса <br/>(Statistics of dispersion)
 
 - Квантили (Quantiles)
 
-- Дисперсия (Variance), <br/>cтандартное отклонение (Standard Deviation)
+- Дисперсия (Variance), <br/>cтандартное отклонение (Standard Deviation)]
+
+---
 
 # ЧАСТЬ 1. Медиана и квантили
 
@@ -48,6 +109,8 @@ opts_chunk$set(fig.align='center', tidy = FALSE, fig.width = 7, fig.height = 3, 
 apples <- c(7.3, 9.7, 10.1,  9.5,  8.0,  9.2,  7.9,  9.1)
 ```
 
+---
+
 ## Медиана
 
 Наши данные в исходном виде выглядят примерно так:
@@ -56,9 +119,9 @@ apples <- c(7.3, 9.7, 10.1,  9.5,  8.0,  9.2,  7.9,  9.1)
 apples
 ```
 
-<center>
+.center[
 ![](images/2.1_apples_mixed.png)
-</center>
+]
 
 Чтобы увидеть медиану, мы должны ранжировать, или отсортировать, наш вектор по возрастанию:
 
@@ -67,10 +130,10 @@ sort(apples)
 ```
 
 
-<center>
+.center[
 ![](images/2.1_apples_sorted.png)
-</center>
-
+]
+---
 
 ## Медиана
 
@@ -85,13 +148,15 @@ sort(apples)
 
 Медиана находится в промежутке между значениями 9.1 и 9.2, т.е. 9.15
 
-<center>
+.center[
 ![](images/2.1_apples_sorted_2.png)
-</center>
+]
 
 ```{r}
 median(apples) # Проверим себя
 ```
+
+---
 
 ## Медиана устойчива к выбросам
 
@@ -108,6 +173,7 @@ sort(apples2)
 median(apples2)
 ```
 
+---
 
 ## Медиана устойчива к выбросам, а среднее - нет
 
@@ -120,6 +186,8 @@ mean(apples2)
 
 Единственное наблюдение-выброс сильно повлияет на величину среднего значения.
 
+---
+
 ## Квантили
 
 Квантили --- это значения, которые делят ряд наблюдений на равные части.
@@ -128,10 +196,11 @@ mean(apples2)
 
 Примеры квантилей:
 
-- 2-квантиль ("два-квантиль") --- медиана  
-- 4-квантиль ("четыре-квантиль")--- квартиль  
-- 100-квантиль ("сто-квантиль")--- перцентиль
+- 2-квантиль ("два-квантиль") --- медиана; 
+- 4-квантиль ("четыре-квантиль")--- квартиль;  
+- 100-квантиль ("сто-квантиль")--- перцентиль;
 
+---
 
 ## Квартили
 
@@ -149,15 +218,19 @@ mean(apples2)
 quantile(x = apples, probs = c(0.25, 0.5, 0.75))
 ```
 
+---
+
 ## 5-number summary
 
-Функция `quatile(x)` без указания значений вероятностей (`probs`) покажет нам квартили, минимум и максимум.
+Функция `quantile(x)` без указания значений вероятностей (`probs`) покажет нам квартили, минимум и максимум.
 
 ```{r}
 quantile(apples)
 ```
 
 5-number summary --- удобное краткое описание данных.
+
+---
 
 ## Персентили
 
@@ -169,16 +242,19 @@ quantile(apples)
 quantile(apples, probs = c(0.1, 0.99))
 ```
 
+---
+
 ## Боксплот: 5-number summary на графике
 
-<div class="columns-2">
-
+.pull-left[
 ```{r boxplot.plain.1, fig.height = 5, fig.width = 4, purl=FALSE, echo=2}
 op <- par(mar = c(0, 2, 0, 0))
 boxplot(apples)
 par(op)
 ```
+]
 
+.pull-right[
 Отложим числа, характеризующие выборку, по оси Y:
 
 - жирная линия --- медиана,
@@ -190,8 +266,9 @@ par(op)
 Расстояние между I и III квартилями (высота "коробки") называется _интерквартильное расстояние_
 
 Если в выборке есть выбросы (значения, отстоящие от границ "коробки" больше чем на 1.5 интерквартильных расстояния), то они будут изображены отдельными точками. 
+]
 
-</div>
+---
 
 ## Подготовим все, чтобы построить график в ggplot2
 
@@ -203,6 +280,8 @@ apple_data <- data.frame(diameter = apples)
 head(apple_data)
 ```
 
+---
+
 ## Боксплот можно построить при помощи `geom_boxplot()`
 
 ```{r fig.width=4}
@@ -213,11 +292,17 @@ ggplot(data = apple_data) +
 - `x` --- категория (переменная или текстовое обозначение)  
 - `y` --- зависимая переменная
 
-# Case study: диатомовые водоросли в желудках фильтраторов.
+---
 
-## Case study: диатомовые водоросли в желудках фильтраторов. Самостоятельная работа.
+class: middle, center, inverse
 
-<div class="columns-2">
+# Case study: диатомовые водоросли в желудках фильтраторов
+
+---
+
+## Case study: диатомовые водоросли в желудках фильтраторов. Самостоятельная работа
+
+.pull-left[
 
 В морских сообществах встречаются два вида фильтраторов, один из которых любит селиться прямо на поверхности тела другого.
 
@@ -228,11 +313,14 @@ ggplot(data = apple_data) +
 <br />
 
 Данные: Юта Тамберг
-
+]
+.pull-right[
 ![](images/2.1_bryozoa.png)
-</div>
+]
 
-## Case study: диатомовые водоросли в желудках фильтраторов.
+---
+
+## Case study: диатомовые водоросли в желудках фильтраторов
 
 В файле `diatome_count.csv` дано количество диатомовых водорослей в желудках этих животных. Прочитаем эти данные и посмотрим на них:
 
@@ -252,6 +340,8 @@ diatoms <- read.table("data/diatome_count.csv",
 - "host_symbiont" --- хозяин с симбионтом,
 - "symbiont" --- симбионт.
 
+---
+
 ## Все ли правильно открылось? 
 
 Смотрим первые несколько строк:
@@ -266,6 +356,8 @@ head(diatoms)
 str(diatoms)
 ```
 
+---
+
 ## Есть ли пропущенные значения?
 
 ```{r}
@@ -275,9 +367,10 @@ sum(! complete.cases(diatoms))
 Что это за случаи?
 
 ```{r}
-diatoms[! complete.cases(diatoms), ]
+diatoms[!complete.cases(diatoms), ]
 ```
 
+---
 
 ## Задание 1
 
@@ -286,6 +379,8 @@ head(diatoms)
 ```
 
 Ваша задача рассчитать 5-number summary для количества диатомовых в желудках хозяев и симбионтов (всех трех категорий).
+
+---
 
 ## Решение
 
@@ -303,6 +398,8 @@ symbiont <- diatoms$count [diatoms$sp == "symbiont"]
 quantile(symbiont, na.rm = TRUE)
 ```
 
+---
+
 ## Решение (более сложный, но краткий способ)
 
 `tapply()` --- одна из функций семейства `*pply()`.
@@ -319,6 +416,7 @@ quantile(symbiont, na.rm = TRUE)
 tapply(X = diatoms$count, INDEX = diatoms$sp, FUN = quantile, na.rm = TRUE)
 ```
 
+---
 
 ## Боксплоты в ggplot2
 
@@ -328,6 +426,8 @@ tapply(X = diatoms$count, INDEX = diatoms$sp, FUN = quantile, na.rm = TRUE)
 ggplot(data = diatoms, aes(y = count, x = sp)) + geom_boxplot()
 ```
 
+---
+
 ## Медиана и квартили: непараметрические характеристики выборки
 
 Главный плюс (но так же и минус) связки медиана + квартили это ее независимость от формы распределения.
@@ -336,7 +436,13 @@ ggplot(data = diatoms, aes(y = count, x = sp)) + geom_boxplot()
 
 Но бывают случаи, когда приходится применять более специальные, но и более информативные характеристики.
 
+---
+
+class: middle, center, inverse
+
 # ЧАСТЬ 2. Нормальное распределение - первое знакомство
+
+---
 
 ## Все распределения равны, но некоторые равнее
 
@@ -361,16 +467,20 @@ ND_hist <- ggplot(data = Norm, aes(x=x, y=y)) +
 ND_curve
 ```
 
+---
+
 ## Относительная частота и плотность вероятности
 
-<div class=columns-2>
+.pull-left[
 
 ```{r ND.2, echo=FALSE, purl=FALSE, fig.width=4, fig.height = 6, warning=FALSE}
 ND_curve2 <- ND_curve + geom_vline(xintercept = 12, linetype="dotted", color = "red") + geom_vline(xintercept = 14, linetype="dotted", color = "red")
 ND_hist2 <- ND_hist + geom_vline(xintercept = 12, linetype="dotted", color = "red") + geom_vline(xintercept = 14, linetype="dotted", color = "red")
 grid.arrange(ND_hist2, ND_curve2, ncol = 1)
 ```
+]
 
+.pull-right[
 На оси Y может быть отложена относительная частота значений Х в эмпирическом распределении, или вероятность из теоретического распределения.
 
 На оси Х отложены значения Х в интервале от 0 до 20, в действительности же кривая простирается от $-\infty$ до $+\infty$
@@ -378,9 +488,9 @@ grid.arrange(ND_hist2, ND_curve2, ncol = 1)
 Площадь под кривой = 1.  Интегрируя кривую на промежутке $(k,..,l)$, можно узнать вероятность встречи значений в этом промежутке $(x_k,...x_l)$.
 
 Но нельзя рассчитать вероятность одного значения $X = x_k$, так как это точка, и под ней нет площади.
+]
 
-<div/>
-
+---
 
 ## Приятные особенности нормального распределения
 
@@ -393,7 +503,13 @@ $$f(x) = \frac {1}{\sigma \sqrt{2 \pi}}\, e^{-\cfrac{(x-\mu)^2}{2\sigma^2}}$$
 
 Достаточно знать значения этих двух параметов, чтобы восстановить или смоделировать любое нормальное распределение. И наоборот, если данные в выборке распределены нормально, то мы можем оценить параметры этого распределения.
 
+---
+
+class: middle, center, inverse
+
 # ЧАСТЬ 3. Среднее и стандартное отклонение
+
+---
 
 ## Центральная тенденция
 
@@ -408,6 +524,8 @@ sum(apples) / length(apples)
 
 mean(apples)
 ```
+
+---
 
 ## Как оценить разброс значений?
 
@@ -435,7 +553,9 @@ pl_app1 <- ggplot(app, aes(x = ind, y = apples)) +
   scale_x_continuous(breaks = 1:10)
 pl_app1 + coord_flip()
 ```
- 
+
+---
+
 ## Меры разброса
 
 ### Девиаты не годятся как мера разброса
@@ -452,6 +572,8 @@ $$\begin{aligned}
 &= \sum x_i - n \cfrac{\sum x_i}{n} = 0
 \end{aligned}$$
 
+---
+
 ## Меры разброса
 
 ### Сумма квадратов = SS, Sum of Squares
@@ -466,6 +588,8 @@ sum(raw_deviates^2)
 
 Но на что разделить $SS$, чтобы получить меру __усредненного__ отклонения значений от среднего?
 
+---
+
 ## Меры разброса
 
 ### Как усреднить отклонения от среднего значения?
@@ -478,6 +602,8 @@ sum(raw_deviates^2)
 <br />
 
 $n - 1$ --- это число независимых значений (число степеней свободы --- __degrees of freedom__).
+
+---
 
 ## Меры разброса
 
@@ -494,6 +620,7 @@ var(apples)
 
 Дисперсию не получится нарисовать на графике, т.к. там используются не отклонения, а их квадраты
 
+---
 
 ## Меры разброса
 
@@ -510,19 +637,29 @@ sqrt(sum(raw_deviates^2) / (length(apples) - 1))
 sd(apples)
 ```
 
-## Среднее и стандартное отклонение при помощи `stat_summary()` {.smaller}
+---
 
-```{r}
-ggplot(data = apple_data) + 
-  stat_summary(geom = 'pointrange', fun.data = mean_sdl, 
-               fun.args = list(mult = 1),
-               aes(x = 'Среднее \nи стандартное отклонение', y = diameter))
-```
+## Среднее и стандартное отклонение при помощи `stat_summary()` 
 
+.pull-left-33[
 `stat_summary()` использует `geom_pointrange()`  
 точка --- среднее, усы изображают $\pm$ стандартное отклонение
 
 `mean_sdl()` рассчитывает координаты точки и усов,  ее аргумент `mult = 1` показывает, сколько стандартных отклонений отложить
+]
+
+.pull-right-66[
+```{r}
+ggplot(data = apple_data) + 
+  stat_summary(geom = 'pointrange', fun.data = mean_sdl, 
+               fun.args = list(mult = 1),
+               aes(x = 'Среднее \nи стандартное отклонение', 
+                   y = diameter))
+```
+]
+
+
+---
 
 ## Особенности применения связки
 
@@ -532,6 +669,7 @@ ggplot(data = apple_data) +
 
 - плохо работают с несимметричными распределениями.
 
+---
 
 ## Сравните разброс (стандартное отклонение) в выборках
 
@@ -561,6 +699,8 @@ gy6 <- ggplot(sd_compare, aes(x = y6)) + geom_histogram(fill = "steelblue", colo
 grid.arrange(arrangeGrob(gy1, gy2, gy3, ncol = 1), arrangeGrob(gy4, gy5, gy6, ncol = 1), ncol = 2)
 ```
 
+---
+
 ## Проверим себя
 
 ```{r sd_compare2, echo=FALSE, purl=FALSE, fig.width=9, fig.height = 6, warning=FALSE, message=FALSE}
@@ -580,9 +720,13 @@ gy6a <- gy6  + labs(x = round(sd(y6), 1))
 grid.arrange(arrangeGrob(gy1a, gy2a, gy3a, ncol = 1), arrangeGrob(gy4a, gy5a, gy6a, ncol = 1), ncol = 2)
 ```
 
+---
+
 ## Задание 2
 
 Из 5 положительных чисел создайте выборку со средним = 10 и медианой = 7
+
+---
 
 ## Решение
 
@@ -604,7 +748,9 @@ example <- c(2, 5, 7, 10, 26) #перезапишем вектор
 mean(example)
 ```
 
-## Как соотносятся способы оценки центра и размаха в выборке? {.smaller}
+---
+
+## Как соотносятся способы оценки центра и размаха в выборке? 
 
 ```{r}
 ggplot(data = apple_data) + 
@@ -616,6 +762,7 @@ ggplot(data = apple_data) +
 
 Медиана и среднее дают сходные результаты, если выборка не содержит выбросов (сильно отличающихся от других наблюдений).
 
+---
 
 ## Take-home messages
 

@@ -1,792 +1,1056 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Описательная статистика</title>
-
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="chrome=1">
-  <meta name="generator" content="pandoc" />
-
-
-
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-
-  <base target="_blank">
-
-  <script type="text/javascript">
-    var SLIDE_CONFIG = {
-      // Slide settings
-      settings: {
-                title: 'Описательная статистика',
-                        subtitle: 'Линейные модели',
-                useBuilds: true,
-        usePrettify: true,
-        enableSlideAreas: true,
-        enableTouch: true,
-                      },
-
-      // Author information
-      presenters: [
-            {
-        name:  'Марина Варфоломеева, Вадим Хайтов, Юта Тамберг' ,
-        company: '',
-        gplus: '',
-        twitter: '',
-        www: '',
-        github: ''
-      },
-            ]
-    };
-  </script>
-
-  <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
-  <link href="site_libs/ioslides-13.5.1/fonts/fonts.css" rel="stylesheet" />
-  <link href="site_libs/ioslides-13.5.1/theme/css/default.css" rel="stylesheet" />
-  <link href="site_libs/ioslides-13.5.1/theme/css/phone.css" rel="stylesheet" />
-  <script src="site_libs/ioslides-13.5.1/js/modernizr.custom.45394.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/prettify/prettify.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/prettify/lang-r.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/prettify/lang-yaml.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/hammer.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/slide-controller.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/slide-deck.js"></script>
-
-  <style type="text/css">
-
-    b, strong {
-      font-weight: bold;
-    }
-
-    em {
-      font-style: italic;
-    }
-
-    summary {
-      display: list-item;
-    }
-
-    details > summary > p:only-child {
-      display: inline;
-    }
-
-    slides > slide {
-      -webkit-transition: all 0.4s ease-in-out;
-      -moz-transition: all 0.4s ease-in-out;
-      -o-transition: all 0.4s ease-in-out;
-      transition: all 0.4s ease-in-out;
-    }
-
-    .auto-fadein {
-      -webkit-transition: opacity 0.6s ease-in;
-      -webkit-transition-delay: 0.4s;
-      -moz-transition: opacity 0.6s ease-in 0.4s;
-      -o-transition: opacity 0.6s ease-in 0.4s;
-      transition: opacity 0.6s ease-in 0.4s;
-      opacity: 0;
-    }
-/* https://github.com/ropensci/plotly/pull/524#issuecomment-468142578 */
-slide:not(.current) .plotly.html-widget{
-  display: block;
-}
-
-    code{white-space: pre-wrap;}
-    span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
-    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
-            pre > code.sourceCode { white-space: pre; position: relative; }
-            pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-            pre > code.sourceCode > span:empty { height: 1.2em; }
-            .sourceCode { overflow: visible; }
-            code.sourceCode > span { color: inherit; text-decoration: inherit; }
-            div.sourceCode { margin: 1em 0; }
-            pre.sourceCode { margin: 0; }
-            @media screen {
-            div.sourceCode { overflow: auto; }
-            }
-            @media print {
-            pre > code.sourceCode { white-space: pre-wrap; }
-            pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-            }
-            pre.numberSource code
-              { counter-reset: source-line 0; }
-            pre.numberSource code > span
-              { position: relative; left: -4em; counter-increment: source-line; }
-            pre.numberSource code > span > a:first-child::before
-              { content: counter(source-line);
-                position: relative; left: -1em; text-align: right; vertical-align: baseline;
-                border: none; display: inline-block;
-                -webkit-touch-callout: none; -webkit-user-select: none;
-                -khtml-user-select: none; -moz-user-select: none;
-                -ms-user-select: none; user-select: none;
-                padding: 0 4px; width: 4em;
-                color: #aaaaaa;
-              }
-            pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-            div.sourceCode
-              {   }
-            @media screen {
-            pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-            }
-            code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-            code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-            code span.at { color: #7d9029; } /* Attribute */
-            code span.bn { color: #40a070; } /* BaseN */
-            code span.bu { } /* BuiltIn */
-            code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-            code span.ch { color: #4070a0; } /* Char */
-            code span.cn { color: #880000; } /* Constant */
-            code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-            code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-            code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-            code span.dt { color: #902000; } /* DataType */
-            code span.dv { color: #40a070; } /* DecVal */
-            code span.er { color: #ff0000; font-weight: bold; } /* Error */
-            code span.ex { } /* Extension */
-            code span.fl { color: #40a070; } /* Float */
-            code span.fu { color: #06287e; } /* Function */
-            code span.im { } /* Import */
-            code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-            code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-            code span.op { color: #666666; } /* Operator */
-            code span.ot { color: #007020; } /* Other */
-            code span.pp { color: #bc7a00; } /* Preprocessor */
-            code span.sc { color: #4070a0; } /* SpecialChar */
-            code span.ss { color: #bb6688; } /* SpecialString */
-            code span.st { color: #4070a0; } /* String */
-            code span.va { color: #19177c; } /* Variable */
-            code span.vs { color: #4070a0; } /* VerbatimString */
-            code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-        
-  </style>
+<html lang="" xml:lang="">
+  <head>
+    <title>Описательная статистика</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Марина Варфоломеева" />
+    <meta name="author" content="Вадим Хайтов" />
+    <meta name="author" content="Юта Тамберг" />
+    <meta name="author" content="Анастасия Лянгузова" />
+    <script src="libs/header-attrs-2.23/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
+    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
+    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <!-- https://github.com/fnaufel/xaringan-smartify-->
+    <script
+    			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    			  integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+    			  crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/fnaufel/xaringan-smartify/smartify.min.js"></script>
+    <link rel="stylesheet" href="assets/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="assets/xaringan.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: middle, left, inverse, title-slide
 
-  <link rel="stylesheet" href="assets/my_styles.css" type="text/css" />
+.title[
+# Описательная статистика
+]
+.subtitle[
+## Линейные модели в R
+]
+.author[
+### Марина Варфоломеева
+]
+.author[
+### Вадим Хайтов
+]
+.author[
+### Юта Тамберг
+]
+.author[
+### Анастасия Лянгузова
+]
 
-</head>
+---
 
-<body style="opacity: 0">
 
-<slides class="layout-widescreen">
 
-  <slide class="title-slide segue nobackground">
-        <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
-    <hgroup class="auto-fadein">
-      <h1 data-config-title><!-- populated from slide_config.json --></h1>
-      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
-      <p data-config-presenter><!-- populated from slide_config.json --></p>
-          </hgroup>
-  </slide>
 
-<slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Характеризуем данные</h2></hgroup><article  id="характеризуем-данные">
+class: middle, center, inverse
 
-</article></slide><slide class=""><hgroup><h2>Характеризуем данные через связки описательных статистик</h2></hgroup><article  id="характеризуем-данные-через-связки-описательных-статистик" class="columns-2">
+# Характеризуем данные
 
-<h3>Центральные тенденции <br/>(Statistics of location)</h3>
+---
 
-<ul>
-<li><p>Медиана (Median)</p></li>
-<li><p>Среднее значение (Mean)</p></li>
-</ul>
+## С какими данными мы работаем
 
-<h3>Меры разброса <br/>(Statistics of dispersion)</h3>
+.pull-left[
+.Large[Генеральная совокупность]
+]
 
-<ul>
-<li><p>Квантили (Quantiles)</p></li>
-<li><p>Дисперсия (Variance), <br/>cтандартное отклонение (Standard Deviation)</p></li>
-</ul>
+.pull-right-33[
+.Large[Выборка]
+]
 
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>ЧАСТЬ 1. Медиана и квантили</h2></hgroup><article  id="часть-1.-медиана-и-квантили">
+![](images/population_sample.png)
 
-</article></slide><slide class=""><hgroup><h2>Медиана</h2></hgroup><article  id="медиана">
+--
 
-<p>Предположим, мы занимаемся селекцией яблонь и хотим охарактеризовать урожай любимой яблони, на которую возлагаем большие надежды.</p>
+.pull-left[
+.Large[Параметры]
+]
 
-<pre class = 'prettyprint lang-r'>apples &lt;- c(7.3, 9.7, 10.1,  9.5,  8.0,  9.2,  7.9,  9.1)</pre>
+.pull-right-33[
+.Large[Описательная статистика]
+]
+---
 
-</article></slide><slide class=""><hgroup><h2>Медиана</h2></hgroup><article  id="медиана-1">
+## Какие бывают данные 
 
-<p>Наши данные в исходном виде выглядят примерно так:</p>
+![:col_header Категориальные данные, Числовые дискретые (счётные), Числовые непрерывные (мерные)]
+![:col_list орёл или решка, оценка за экзамен, температура воздуха]
+![:col_list цвет радуги, количество пластиковых пипеток в упаковке, рост]
 
-<pre class = 'prettyprint lang-r'>apples</pre>
+---
 
-<pre >## [1]  7.3  9.7 10.1  9.5  8.0  9.2  7.9  9.1</pre>
+## Характеризуем данные через связки описательных статистик 
 
-<center>
+.pull-left[
+### Центральные тенденции &lt;br/&gt;(Statistics of location)
 
-<img src='images/2.1_apples_mixed.png' title=''/>
+- Медиана (Median)
 
-</center>
+- Среднее значение (Mean)]
 
-<p>Чтобы увидеть медиану, мы должны ранжировать, или отсортировать, наш вектор по возрастанию:</p>
+.pull-right[
+### Меры разброса &lt;br/&gt;(Statistics of dispersion)
 
-<pre class = 'prettyprint lang-r'>sort(apples)</pre>
+- Квантили (Quantiles)
 
-<pre >## [1]  7.3  7.9  8.0  9.1  9.2  9.5  9.7 10.1</pre>
+- Дисперсия (Variance), &lt;br/&gt;cтандартное отклонение (Standard Deviation)]
 
-<center>
+---
 
-<img src='images/2.1_apples_sorted.png' title=''/>
+# ЧАСТЬ 1. Медиана и квантили
 
-</center>
+## Медиана
 
-</article></slide><slide class=""><hgroup><h2>Медиана</h2></hgroup><article  id="медиана-2">
+Предположим, мы занимаемся селекцией яблонь и хотим охарактеризовать урожай любимой яблони, на которую возлагаем большие надежды.
 
-<p>В ранжированном ряду медиана расположена так, что слева и справа от нее находится равное число измерений.</p>
 
-<ul>
-<li>Если n нечетное, то медиана = значение с индексом \(\frac{n+1}{2}\).</li>
-<li>Если n четное, то медиана посередине между \(\frac{n}{2}\) и \(\frac{n+1}{2}\) значениями.</li>
-</ul>
+```r
+apples &lt;- c(7.3, 9.7, 10.1,  9.5,  8.0,  9.2,  7.9,  9.1)
+```
 
-<pre class = 'prettyprint lang-r'>sort(apples)</pre>
+---
 
-<pre >## [1]  7.3  7.9  8.0  9.1  9.2  9.5  9.7 10.1</pre>
+## Медиана
 
-<p>Медиана находится в промежутке между значениями 9.1 и 9.2, т.е. 9.15</p>
+Наши данные в исходном виде выглядят примерно так:
 
-<center>
 
-<img src='images/2.1_apples_sorted_2.png' title=''/>
+```r
+apples
+```
 
-</center>
+```
+[1]  7.3  9.7 10.1  9.5  8.0  9.2  7.9  9.1
+```
 
-<pre class = 'prettyprint lang-r'>median(apples) # Проверим себя</pre>
+.center[
+![](images/2.1_apples_mixed.png)
+]
 
-<pre >## [1] 9.15</pre>
+Чтобы увидеть медиану, мы должны ранжировать, или отсортировать, наш вектор по возрастанию:
 
-</article></slide><slide class=""><hgroup><h2>Медиана устойчива к выбросам</h2></hgroup><article  id="медиана-устойчива-к-выбросам">
 
-<p>Представим, что наши измерения пострадали от неаккуратности. Допустим сотрудник, которому мы поручили измерять яблоки, измерил также арбуз и записал этот результат вместе со всеми остальными.</p>
+```r
+sort(apples)
+```
 
-<pre class = 'prettyprint lang-r'>apples2 &lt;- c(apples, 68) # Создадим вектор с новым значением
-sort(apples2)</pre>
+```
+[1]  7.3  7.9  8.0  9.1  9.2  9.5  9.7 10.1
+```
 
-<pre >## [1]  7.3  7.9  8.0  9.1  9.2  9.5  9.7 10.1 68.0</pre>
 
-<p>Что станет с медианой? Сильно ли она изменится?</p>
+.center[
+![](images/2.1_apples_sorted.png)
+]
+---
 
-<pre class = 'prettyprint lang-r'>median(apples2)</pre>
+## Медиана
 
-<pre >## [1] 9.2</pre>
+В ранжированном ряду медиана расположена так, что слева и справа от нее находится равное число измерений.
 
-</article></slide><slide class=""><hgroup><h2>Медиана устойчива к выбросам, а среднее - нет</h2></hgroup><article  id="медиана-устойчива-к-выбросам-а-среднее---нет">
+- Если n нечетное, то медиана = значение с индексом `\(\frac{n+1}{2}\)`. 
+- Если n четное, то медиана посередине между `\(\frac{n}{2}\)` и `\(\frac{n+1}{2}\)` значениями.
 
-<p>Давайте для сравнения посмотрим на среднее.</p>
 
-<pre class = 'prettyprint lang-r'>mean(apples)</pre>
+```r
+sort(apples)
+```
 
-<pre >## [1] 8.85</pre>
+```
+[1]  7.3  7.9  8.0  9.1  9.2  9.5  9.7 10.1
+```
 
-<pre class = 'prettyprint lang-r'>mean(apples2)</pre>
+Медиана находится в промежутке между значениями 9.1 и 9.2, т.е. 9.15
 
-<pre >## [1] 15.4</pre>
+.center[
+![](images/2.1_apples_sorted_2.png)
+]
 
-<p>Единственное наблюдение-выброс сильно повлияет на величину среднего значения.</p>
 
-</article></slide><slide class=""><hgroup><h2>Квантили</h2></hgroup><article  id="квантили">
+```r
+median(apples) # Проверим себя
+```
 
-<p>Квантили — это значения, которые делят ряд наблюдений на равные части.</p>
+```
+[1] 9.15
+```
 
-<p>Они называются по-разному в зависимости от числа частей.</p>
+---
 
-<p>Примеры квантилей:</p>
+## Медиана устойчива к выбросам
 
-<ul>
-<li>2-квантиль (&ldquo;два-квантиль&rdquo;) — медиана<br/></li>
-<li>4-квантиль (&ldquo;четыре-квантиль&rdquo;)— квартиль<br/></li>
-<li>100-квантиль (&ldquo;сто-квантиль&rdquo;)— перцентиль</li>
-</ul>
+Представим, что наши измерения пострадали от неаккуратности. Допустим сотрудник, которому мы поручили измерять яблоки, измерил также арбуз и записал этот результат вместе со всеми остальными.
 
-</article></slide><slide class=""><hgroup><h2>Квартили</h2></hgroup><article  id="квартили">
 
-<p>Квартиль — частный случай квантиля.</p>
+```r
+apples2 &lt;- c(apples, 68) # Создадим вектор с новым значением
+sort(apples2)
+```
 
-<p>Квартили делят распределение на <strong>четыре</strong> равные части, каждая из которых включает по 25% значений.</p>
+```
+[1]  7.3  7.9  8.0  9.1  9.2  9.5  9.7 10.1 68.0
+```
 
-<ul>
-<li>I квартиль отсекает как раз 25%.<br/></li>
-<li>II квартиль — 50%. Это медиана.<br/></li>
-<li>III квартиль отсекает 75% значений.</li>
-</ul>
+Что станет с медианой? Сильно ли она изменится?
 
-<p>Квартили можно найти при помощи функции <code>quantile()</code></p>
 
-<pre class = 'prettyprint lang-r'>quantile(x = apples, probs = c(0.25, 0.5, 0.75))</pre>
+```r
+median(apples2)
+```
 
-<pre >##  25%  50%  75% 
-## 7.97 9.15 9.55</pre>
+```
+[1] 9.2
+```
 
-</article></slide><slide class=""><hgroup><h2>5-number summary</h2></hgroup><article  id="number-summary">
+---
 
-<p>Функция <code>quatile(x)</code> без указания значений вероятностей (<code>probs</code>) покажет нам квартили, минимум и максимум.</p>
+## Медиана устойчива к выбросам, а среднее - нет
 
-<pre class = 'prettyprint lang-r'>quantile(apples)</pre>
+Давайте для сравнения посмотрим на среднее.
 
-<pre >##    0%   25%   50%   75%  100% 
-##  7.30  7.97  9.15  9.55 10.10</pre>
 
-<p>5-number summary — удобное краткое описание данных.</p>
+```r
+mean(apples)
+```
 
-</article></slide><slide class=""><hgroup><h2>Персентили</h2></hgroup><article  id="персентили">
+```
+[1] 8.85
+```
 
-<p>Персентиль — это частный случай квантиля. Всего 99 персентилей, они делят ряд наблюдений на 100 частей.</p>
+```r
+mean(apples2)
+```
 
-<p>Ничто не помешает нам узнать, например, какие значения отсекают 10% или 99% значений выборки. Подставим соответствующие аргументы:</p>
+```
+[1] 15.42
+```
 
-<pre class = 'prettyprint lang-r'>quantile(apples, probs = c(0.1, 0.99))</pre>
+Единственное наблюдение-выброс сильно повлияет на величину среднего значения.
 
-<pre >##   10%   99% 
-##  7.72 10.07</pre>
+---
 
-</article></slide><slide class=""><hgroup><h2>Боксплот: 5-number summary на графике</h2></hgroup><article  id="боксплот-5-number-summary-на-графике">
+## Квантили
 
-<div class="columns-2">
-<pre class = 'prettyprint lang-r'>boxplot(apples)</pre>
+Квантили --- это значения, которые делят ряд наблюдений на равные части.
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/boxplot.plain.1-1.png" width="384" style="display: block; margin: auto;" /></p>
+Они называются по-разному в зависимости от числа частей.
 
-<p>Отложим числа, характеризующие выборку, по оси Y:</p>
+Примеры квантилей:
 
-<ul>
-<li>жирная линия — медиана,</li>
-<li>нижняя и верхняя границы &ldquo;коробки&rdquo; — это I и III квантили,</li>
-<li>усы — минимум и максимум.</li>
-</ul>
+- 2-квантиль ("два-квантиль") --- медиана; 
+- 4-квантиль ("четыре-квантиль")--- квартиль;  
+- 100-квантиль ("сто-квантиль")--- перцентиль;
 
-<p><br /><br /></p>
+---
 
-<p>Расстояние между I и III квартилями (высота &ldquo;коробки&rdquo;) называется <em>интерквартильное расстояние</em></p>
+## Квартили
 
-<p>Если в выборке есть выбросы (значения, отстоящие от границ &ldquo;коробки&rdquo; больше чем на 1.5 интерквартильных расстояния), то они будут изображены отдельными точками.</p></div>
+Квартиль --- частный случай квантиля.
 
-</article></slide><slide class=""><hgroup><h2>Подготовим все, чтобы построить график в ggplot2</h2></hgroup><article  id="подготовим-все-чтобы-построить-график-в-ggplot2">
+Квартили делят распределение на __четыре__ равные части, каждая из которых включает по 25% значений.
 
-<pre class = 'prettyprint lang-r'>library(ggplot2)
+- I квартиль отсекает как раз 25%.  
+- II квартиль --- 50%. Это медиана.  
+- III квартиль отсекает 75% значений.  
+
+Квартили можно найти при помощи функции `quantile()`
+
+
+```r
+quantile(x = apples, probs = c(0.25, 0.5, 0.75))
+```
+
+```
+  25%   50%   75% 
+7.975 9.150 9.550 
+```
+
+---
+
+## 5-number summary
+
+Функция `quantile(x)` без указания значений вероятностей (`probs`) покажет нам квартили, минимум и максимум.
+
+
+```r
+quantile(apples)
+```
+
+```
+    0%    25%    50%    75%   100% 
+ 7.300  7.975  9.150  9.550 10.100 
+```
+
+5-number summary --- удобное краткое описание данных.
+
+---
+
+## Персентили
+
+Персентиль --- это частный случай квантиля. Всего 99 персентилей, они делят ряд наблюдений на 100 частей.
+
+Ничто не помешает нам узнать, например, какие значения отсекают 10% или 99% значений выборки. Подставим соответствующие аргументы:
+
+
+```r
+quantile(apples, probs = c(0.1, 0.99))
+```
+
+```
+  10%   99% 
+ 7.72 10.07 
+```
+
+---
+
+## Боксплот: 5-number summary на графике
+
+.pull-left[
+
+```r
+boxplot(apples)
+```
+
+![](03.1_descriptive_statistics_files/figure-html/boxplot.plain.1-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+Отложим числа, характеризующие выборку, по оси Y:
+
+- жирная линия --- медиана,
+- нижняя и верхняя границы "коробки" --- это I и III квантили,
+- усы --- минимум и максимум.
+
+&lt;br /&gt;&lt;br /&gt;
+
+Расстояние между I и III квартилями (высота "коробки") называется _интерквартильное расстояние_
+
+Если в выборке есть выбросы (значения, отстоящие от границ "коробки" больше чем на 1.5 интерквартильных расстояния), то они будут изображены отдельными точками. 
+]
+
+---
+
+## Подготовим все, чтобы построить график в ggplot2
+
+
+```r
+library(ggplot2)
 theme_set(theme_bw())
 
 apple_data &lt;- data.frame(diameter = apples)
-head(apple_data)</pre>
+head(apple_data)
+```
 
-<pre >##   diameter
-## 1      7.3
-## 2      9.7
-## 3     10.1
-## 4      9.5
-## 5      8.0
-## 6      9.2</pre>
+```
+  diameter
+1      7.3
+2      9.7
+3     10.1
+4      9.5
+5      8.0
+6      9.2
+```
 
-</article></slide><slide class=""><hgroup><h2>Боксплот можно построить при помощи <code>geom_boxplot()</code></h2></hgroup><article  id="боксплот-можно-построить-при-помощи-geom_boxplot">
+---
 
-<pre class = 'prettyprint lang-r'>ggplot(data = apple_data) + 
-  geom_boxplot(aes(x = &#39;Медиана \nи квантили&#39;, y = diameter))</pre>
+## Боксплот можно построить при помощи `geom_boxplot()`
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/unnamed-chunk-13-1.png" width="384" style="display: block; margin: auto;" /></p>
 
-<ul>
-<li><code>x</code> — категория (переменная или текстовое обозначение)<br/></li>
-<li><code>y</code> — зависимая переменная</li>
-</ul>
+```r
+ggplot(data = apple_data) + 
+  geom_boxplot(aes(x = 'Медиана \nи квантили', y = diameter))
+```
 
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Case study: диатомовые водоросли в желудках фильтраторов.</h2></hgroup><article  id="case-study-диатомовые-водоросли-в-желудках-фильтраторов.">
+![](03.1_descriptive_statistics_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Case study: диатомовые водоросли в желудках фильтраторов. Самостоятельная работа.</h2></hgroup><article  id="case-study-диатомовые-водоросли-в-желудках-фильтраторов.-самостоятельная-работа.">
+- `x` --- категория (переменная или текстовое обозначение)  
+- `y` --- зависимая переменная
 
-<div class="columns-2">
-<p>В морских сообществах встречаются два вида фильтраторов, один из которых любит селиться прямо на поверхности тела другого.</p>
+---
 
-<p><em>Tegella armifera</em> — это вид-хозяин. Он может жить как сам по себе, так и вместе с симбионтом.</p>
+class: middle, center, inverse
 
-<p><em>Loxosomella nordgardi</em> — вид-симбионт. Он практически никогда не встречается в одиночестве.</p>
+# Case study: диатомовые водоросли в желудках фильтраторов
 
-<p><br /></p>
+---
 
-<p>Данные: Юта Тамберг</p>
+## Case study: диатомовые водоросли в желудках фильтраторов. Самостоятельная работа
 
-<img src='images/2.1_bryozoa.png' title=''/></div>
+.pull-left[
 
-</article></slide><slide class=""><hgroup><h2>Case study: диатомовые водоросли в желудках фильтраторов.</h2></hgroup><article  id="case-study-диатомовые-водоросли-в-желудках-фильтраторов.-1">
+В морских сообществах встречаются два вида фильтраторов, один из которых любит селиться прямо на поверхности тела другого.
 
-<p>В файле <code>diatome_count.csv</code> дано количество диатомовых водорослей в желудках этих животных. Прочитаем эти данные и посмотрим на них:</p>
+*Tegella armifera* --- это вид-хозяин. Он может жить как сам по себе, так и вместе с симбионтом.
 
-<pre class = 'prettyprint lang-r'>diatoms &lt;- read.table(&quot;data/diatome_count.csv&quot;, 
-                      header = TRUE, sep = &quot;\t&quot;)</pre>
+*Loxosomella nordgardi* --- вид-симбионт. Он практически никогда не встречается в одиночестве. 
 
-<p>В таблице 2 переменные:</p>
+&lt;br /&gt;
 
-<ul>
-<li><code>sp</code> — вид,</li>
-<li><code>count</code> — число водорослей в желудке.</li>
-</ul>
+Данные: Юта Тамберг
+]
+.pull-right[
+![](images/2.1_bryozoa.png)
+]
 
-<p>В переменной <code>sp</code> есть три варианта значений:</p>
+---
 
-<ul>
-<li>&ldquo;host_free&rdquo; — хозяин без симбионта,</li>
-<li>&ldquo;host_symbiont&rdquo; — хозяин с симбионтом,</li>
-<li>&ldquo;symbiont&rdquo; — симбионт.</li>
-</ul>
+## Case study: диатомовые водоросли в желудках фильтраторов
 
-</article></slide><slide class=""><hgroup><h2>Все ли правильно открылось?</h2></hgroup><article  id="все-ли-правильно-открылось">
+В файле `diatome_count.csv` дано количество диатомовых водорослей в желудках этих животных. Прочитаем эти данные и посмотрим на них:
 
-<p>Смотрим первые несколько строк:</p>
 
-<pre class = 'prettyprint lang-r'>head(diatoms)</pre>
+```r
+diatoms &lt;- read.table("data/diatome_count.csv", 
+                      header = TRUE, sep = "\t")
+```
 
-<pre >##          sp count
-## 1 host_free    10
-## 2 host_free     0
-## 3 host_free     1
-## 4 host_free     0
-## 5 host_free     2
-## 6 host_free     0</pre>
+В таблице 2 переменные: 
 
-<p>Смотрим структуру:</p>
+- `sp` --- вид,
+- `count` --- число водорослей в желудке.
 
-<pre class = 'prettyprint lang-r'>str(diatoms)</pre>
+В переменной `sp` есть три варианта значений:
 
-<pre >## &#39;data.frame&#39;:    162 obs. of  2 variables:
-##  $ sp   : chr  &quot;host_free&quot; &quot;host_free&quot; &quot;host_free&quot; &quot;host_free&quot; ...
-##  $ count: int  10 0 1 0 2 0 1 0 8 0 ...</pre>
+- "host_free" --- хозяин без симбионта,
+- "host_symbiont" --- хозяин с симбионтом,
+- "symbiont" --- симбионт.
 
-</article></slide><slide class=""><hgroup><h2>Есть ли пропущенные значения?</h2></hgroup><article  id="есть-ли-пропущенные-значения">
+---
 
-<pre class = 'prettyprint lang-r'>sum(! complete.cases(diatoms))</pre>
+## Все ли правильно открылось? 
 
-<pre >## [1] 5</pre>
+Смотрим первые несколько строк:
 
-<p>Что это за случаи?</p>
 
-<pre class = 'prettyprint lang-r'>diatoms[! complete.cases(diatoms), ]</pre>
+```r
+head(diatoms)
+```
 
-<pre >##            sp count
-## 54  host_free    NA
-## 159  symbiont    NA
-## 160  symbiont    NA
-## 161  symbiont    NA
-## 162  symbiont    NA</pre>
+```
+         sp count
+1 host_free    10
+2 host_free     0
+3 host_free     1
+4 host_free     0
+5 host_free     2
+6 host_free     0
+```
 
-</article></slide><slide class=""><hgroup><h2>Задание 1</h2></hgroup><article  id="задание-1">
+Смотрим структуру:
 
-<pre >##          sp count
-## 1 host_free    10
-## 2 host_free     0
-## 3 host_free     1
-## 4 host_free     0
-## 5 host_free     2
-## 6 host_free     0</pre>
 
-<p>Ваша задача рассчитать 5-number summary для количества диатомовых в желудках хозяев и симбионтов (всех трех категорий).</p>
+```r
+str(diatoms)
+```
 
-</article></slide><slide class=""><hgroup><h2>Решение</h2></hgroup><article  id="решение">
+```
+'data.frame':	162 obs. of  2 variables:
+ $ sp   : chr  "host_free" "host_free" "host_free" "host_free" ...
+ $ count: int  10 0 1 0 2 0 1 0 8 0 ...
+```
 
-<pre class = 'prettyprint lang-r'># 5-number summary для хозяев без симбионтов
-host_f &lt;- diatoms$count[diatoms$sp == &quot;host_free&quot;]
-quantile(host_f, na.rm = TRUE)</pre>
+---
 
-<pre >##   0%  25%  50%  75% 100% 
-##    0    1    4    8   12</pre>
+## Есть ли пропущенные значения?
 
-<pre class = 'prettyprint lang-r'># Для хозяев с симбионтами
-host_s &lt;- diatoms$count [diatoms$sp == &quot;host_symbiont&quot;]
-quantile(host_s, na.rm = TRUE)</pre>
 
-<pre >##    0%   25%   50%   75%  100% 
-##  0.00  0.25  4.50  8.00 20.00</pre>
+```r
+sum(! complete.cases(diatoms))
+```
 
-<pre class = 'prettyprint lang-r'># Для одиноких симбионтов
-symbiont &lt;- diatoms$count [diatoms$sp == &quot;symbiont&quot;]
-quantile(symbiont, na.rm = TRUE)</pre>
+```
+[1] 5
+```
 
-<pre >##   0%  25%  50%  75% 100% 
-##    0    0    1    2    7</pre>
+Что это за случаи?
 
-</article></slide><slide class=""><hgroup><h2>Решение (более сложный, но краткий способ)</h2></hgroup><article  id="решение-более-сложный-но-краткий-способ">
 
-<p><code>tapply()</code> — одна из функций семейства <code>*pply()</code>.</p>
+```r
+diatoms[!complete.cases(diatoms), ]
+```
 
-<h3>split — apply — combine</h3>
+```
+           sp count
+54  host_free    NA
+159  symbiont    NA
+160  symbiont    NA
+161  symbiont    NA
+162  symbiont    NA
+```
 
-<p>Функция <code>tapply()</code> берет вектор <code>X</code> и…</p>
+---
 
-<ul>
-<li>делит (split) его на части по значениям в векторе <code>INDEX</code></li>
-<li>применяет (apply) к каждой части функцию <code>FUN</code></li>
-<li>соединяет (combine) результаты в одно целое в зависимости от их свойств</li>
-</ul>
+## Задание 1
 
-<pre class = 'prettyprint lang-r'>tapply(X = diatoms$count, INDEX = diatoms$sp, FUN = quantile, na.rm = TRUE)</pre>
 
-<pre >## $host_free
-##   0%  25%  50%  75% 100% 
-##    0    1    4    8   12 
-## 
-## $host_symbiont
-##    0%   25%   50%   75%  100% 
-##  0.00  0.25  4.50  8.00 20.00 
-## 
-## $symbiont
-##   0%  25%  50%  75% 100% 
-##    0    0    1    2    7</pre>
+```
+         sp count
+1 host_free    10
+2 host_free     0
+3 host_free     1
+4 host_free     0
+5 host_free     2
+6 host_free     0
+```
 
-</article></slide><slide class=""><hgroup><h2>Боксплоты в ggplot2</h2></hgroup><article  id="боксплоты-в-ggplot2">
+Ваша задача рассчитать 5-number summary для количества диатомовых в желудках хозяев и симбионтов (всех трех категорий).
 
-<p>Формат данных несколько сложен для человеческого глаза, зато очень подходит для ggplot.</p>
+---
 
-<pre class = 'prettyprint lang-r'>ggplot(data = diatoms, aes(y = count, x = sp)) + geom_boxplot()</pre>
+## Решение
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/boxplot.ggplot.diatoms-1.png" width="672" style="display: block; margin: auto;" /></p>
 
-</article></slide><slide class=""><hgroup><h2>Медиана и квартили: непараметрические характеристики выборки</h2></hgroup><article  id="медиана-и-квартили-непараметрические-характеристики-выборки">
+```r
+# 5-number summary для хозяев без симбионтов
+host_f &lt;- diatoms$count[diatoms$sp == "host_free"]
+quantile(host_f, na.rm = TRUE)
+```
 
-<p>Главный плюс (но так же и минус) связки медиана + квартили это ее независимость от формы распределения.</p>
+```
+  0%  25%  50%  75% 100% 
+   0    1    4    8   12 
+```
 
-<p>Будь оно симметричным или с хвостом, 5-number summary опишет, а боксплот нарисует его с минимумом искажений.</p>
+```r
+# Для хозяев с симбионтами
+host_s &lt;- diatoms$count [diatoms$sp == "host_symbiont"]
+quantile(host_s, na.rm = TRUE)
+```
 
-<p>Но бывают случаи, когда приходится применять более специальные, но и более информативные характеристики.</p>
+```
+   0%   25%   50%   75%  100% 
+ 0.00  0.25  4.50  8.00 20.00 
+```
 
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>ЧАСТЬ 2. Нормальное распределение - первое знакомство</h2></hgroup><article  id="часть-2.-нормальное-распределение---первое-знакомство">
+```r
+# Для одиноких симбионтов
+symbiont &lt;- diatoms$count [diatoms$sp == "symbiont"]
+quantile(symbiont, na.rm = TRUE)
+```
 
-</article></slide><slide class=""><hgroup><h2>Все распределения равны, но некоторые равнее</h2></hgroup><article  id="все-распределения-равны-но-некоторые-равнее">
+```
+  0%  25%  50%  75% 100% 
+   0    0    1    2    7 
+```
 
-<p>Это непрерывное распределение, получаемое из мерных данных. Однако, многие распределения других типов тоже могут приближаться к нормальному.</p>
+---
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/ND.1-1.png" width="528" style="display: block; margin: auto;" /></p>
+## Решение (более сложный, но краткий способ)
 
-</article></slide><slide class=""><hgroup><h2>Относительная частота и плотность вероятности</h2></hgroup><article  id="относительная-частота-и-плотность-вероятности">
+`tapply()` --- одна из функций семейства `*pply()`.
 
-<div class=columns-2>
+### split --- apply --- combine
 
+Функция `tapply()` берет вектор `X` и... 
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/ND.2-1.png" width="384" style="display: block; margin: auto;" /></p>
+- делит (split) его на части по значениям в векторе `INDEX`
+- применяет (apply) к каждой части функцию `FUN`
+- соединяет (combine) результаты в одно целое в зависимости от их свойств
 
-<p>На оси Y может быть отложена относительная частота значений Х в эмпирическом распределении, или вероятность из теоретического распределения.</p>
 
-<p>На оси Х отложены значения Х в интервале от 0 до 20, в действительности же кривая простирается от \(-\infty\) до \(+\infty\)</p>
+```r
+tapply(X = diatoms$count, INDEX = diatoms$sp, FUN = quantile, na.rm = TRUE)
+```
 
-<p>Площадь под кривой = 1. Интегрируя кривую на промежутке \((k,..,l)\), можно узнать вероятность встречи значений в этом промежутке \((x_k,...x_l)\).</p>
+```
+$host_free
+  0%  25%  50%  75% 100% 
+   0    1    4    8   12 
 
-<p>Но нельзя рассчитать вероятность одного значения \(X = x_k\), так как это точка, и под ней нет площади.</p>
+$host_symbiont
+   0%   25%   50%   75%  100% 
+ 0.00  0.25  4.50  8.00 20.00 
 
-<div/>
+$symbiont
+  0%  25%  50%  75% 100% 
+   0    0    1    2    7 
+```
 
+---
 
+## Боксплоты в ggplot2
 
-</article></slide><slide class=""><hgroup><h2>Приятные особенности нормального распределения</h2></hgroup><article  id="приятные-особенности-нормального-распределения">
+Формат данных несколько сложен для человеческого глаза, зато очень подходит для ggplot.
 
-<p>Нормальных кривых бесконечно много, и их описывает формула с параметрами \(\mu\) и \(\sigma\).</p>
 
-<p>\[f(x) = \frac {1}{\sigma \sqrt{2 \pi}}\, e^{-\cfrac{(x-\mu)^2}{2\sigma^2}}\]</p>
+```r
+ggplot(data = diatoms, aes(y = count, x = sp)) + geom_boxplot()
+```
 
-<ul>
-<li>\(\mu\) — среднее,</li>
-<li>\(\sigma\) — стандартное отклонение.</li>
-</ul>
+![](03.1_descriptive_statistics_files/figure-html/boxplot.ggplot.diatoms-1.png)&lt;!-- --&gt;
 
-<p>Достаточно знать значения этих двух параметов, чтобы восстановить или смоделировать любое нормальное распределение. И наоборот, если данные в выборке распределены нормально, то мы можем оценить параметры этого распределения.</p>
+---
 
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>ЧАСТЬ 3. Среднее и стандартное отклонение</h2></hgroup><article  id="часть-3.-среднее-и-стандартное-отклонение">
+## Медиана и квартили: непараметрические характеристики выборки
 
-</article></slide><slide class=""><hgroup><h2>Центральная тенденция</h2></hgroup><article  id="центральная-тенденция">
+Главный плюс (но так же и минус) связки медиана + квартили это ее независимость от формы распределения.
 
-<h3>Среднее арифметическое</h3>
+Будь оно симметричным или с хвостом, 5-number summary опишет, а боксплот нарисует его с минимумом искажений. 
 
-<p>\[\bar{x}=\frac{\sum{x_i}}{n}\]</p>
+Но бывают случаи, когда приходится применять более специальные, но и более информативные характеристики.
 
-<p>Рассчитаем вручную и проверим:</p>
+---
 
-<pre class = 'prettyprint lang-r'>sum(apples) / length(apples)</pre>
+class: middle, center, inverse
 
-<pre >## [1] 8.85</pre>
+# ЧАСТЬ 2. Нормальное распределение - первое знакомство
 
-<pre class = 'prettyprint lang-r'>mean(apples)</pre>
+---
 
-<pre >## [1] 8.85</pre>
+## Все распределения равны, но некоторые равнее
 
-</article></slide><slide class=""><hgroup><h2>Как оценить разброс значений?</h2></hgroup><article  id="как-оценить-разброс-значений">
+Это непрерывное распределение, получаемое из мерных данных. Однако, многие распределения других типов тоже могут приближаться к нормальному.
 
-<h3>Девиата (отклонение)</h3>
+![](03.1_descriptive_statistics_files/figure-html/ND.1-1.png)&lt;!-- --&gt;
 
-<p>— это разность между значением вариаты (измерения) и средним:</p>
+---
 
-<p>\[x_i - \bar{x}\]</p>
+## Относительная частота и плотность вероятности
 
-<pre class = 'prettyprint lang-r'>raw_deviates &lt;- apples - mean(apples)
-raw_deviates</pre>
+.pull-left[
 
-<pre >## [1] -1.55  0.85  1.25  0.65 -0.85  0.35 -0.95  0.25</pre>
+![](03.1_descriptive_statistics_files/figure-html/ND.2-1.png)&lt;!-- --&gt;
+]
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+.pull-right[
+На оси Y может быть отложена относительная частота значений Х в эмпирическом распределении, или вероятность из теоретического распределения.
 
-</article></slide><slide class=""><hgroup><h2>Меры разброса</h2></hgroup><article  id="меры-разброса">
+На оси Х отложены значения Х в интервале от 0 до 20, в действительности же кривая простирается от `\(-\infty\)` до `\(+\infty\)`
 
-<h3>Девиаты не годятся как мера разброса</h3>
+Площадь под кривой = 1.  Интегрируя кривую на промежутке `\((k,..,l)\)`, можно узнать вероятность встречи значений в этом промежутке `\((x_k,...x_l)\)`.
 
-<p>К сожалению мы не можем просто сложить все значения девиат и поделить их на объем выборки. Сумма девиат всегда будет равна нулю.</p>
+Но нельзя рассчитать вероятность одного значения `\(X = x_k\)`, так как это точка, и под ней нет площади.
+]
 
-<pre class = 'prettyprint lang-r'>round(sum(raw_deviates))</pre>
+---
 
-<pre >## [1] 0</pre>
+## Приятные особенности нормального распределения
 
-<p>\[\begin{aligned}
+Нормальных кривых бесконечно много, и их описывает формула с параметрами `\(\mu\)` и `\(\sigma\)`.
+
+`$$f(x) = \frac {1}{\sigma \sqrt{2 \pi}}\, e^{-\cfrac{(x-\mu)^2}{2\sigma^2}}$$`
+
+- `\(\mu\)` --- среднее,
+- `\(\sigma\)` --- стандартное отклонение.
+
+Достаточно знать значения этих двух параметов, чтобы восстановить или смоделировать любое нормальное распределение. И наоборот, если данные в выборке распределены нормально, то мы можем оценить параметры этого распределения.
+
+---
+
+class: middle, center, inverse
+
+# ЧАСТЬ 3. Среднее и стандартное отклонение
+
+---
+
+## Центральная тенденция
+
+### Среднее арифметическое
+
+`$$\bar{x}=\frac{\sum{x_i}}{n}$$`
+
+Рассчитаем вручную и проверим:
+
+
+```r
+sum(apples) / length(apples)
+```
+
+```
+[1] 8.85
+```
+
+```r
+mean(apples)
+```
+
+```
+[1] 8.85
+```
+
+---
+
+## Как оценить разброс значений?
+
+### Девиата (отклонение)
+--- это разность между значением вариаты (измерения) и средним:
+
+`$$x_i - \bar{x}$$`
+
+
+```r
+raw_deviates &lt;- apples - mean(apples)
+raw_deviates
+```
+
+```
+[1] -1.55  0.85  1.25  0.65 -0.85  0.35 -0.95  0.25
+```
+ 
+![](03.1_descriptive_statistics_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+
+---
+
+## Меры разброса
+
+### Девиаты не годятся как мера разброса
+
+К сожалению мы не можем просто сложить все значения девиат и поделить их на объем выборки. Сумма девиат всегда будет равна нулю.
+
+
+```r
+round(sum(raw_deviates))
+```
+
+```
+[1] 0
+```
+
+`$$\begin{aligned}
 \sum{(x_i - \bar{x})} &amp;= \sum x_i - \sum \bar x = \\
 &amp;= \sum x_i - n \bar x = \\
 &amp;= \sum x_i - n \cfrac{\sum x_i}{n} = 0
-\end{aligned}\]</p>
+\end{aligned}$$`
 
-</article></slide><slide class=""><hgroup><h2>Меры разброса</h2></hgroup><article  id="меры-разброса-1">
+---
 
-<h3>Сумма квадратов = SS, Sum of Squares</h3>
+## Меры разброса
 
-<p>Избавиться от знака девиаты можно, возведя значение в квадрат.</p>
+### Сумма квадратов = SS, Sum of Squares
 
-<p>\[SS = \sum{{(x_i - \bar{x})}^2} \ne 0\]</p>
+Избавиться от знака девиаты можно, возведя значение в квадрат.
 
-<pre class = 'prettyprint lang-r'>sum(raw_deviates^2)</pre>
+`$$SS = \sum{{(x_i - \bar{x})}^2} \ne 0$$`
 
-<p>Но на что разделить \(SS\), чтобы получить меру <strong>усредненного</strong> отклонения значений от среднего?</p>
 
-</article></slide><slide class=""><hgroup><h2>Меры разброса</h2></hgroup><article  id="меры-разброса-2">
+```r
+sum(raw_deviates^2)
+```
 
-<h3>Как усреднить отклонения от среднего значения?</h3>
+Но на что разделить `\(SS\)`, чтобы получить меру __усредненного__ отклонения значений от среднего?
 
-<p>Мы не можем делить на \(n\), поскольку отклонения от среднего \(x_i - \bar x\) не будут независимы.</p>
+---
 
-<p>Что это значит? Сумма отклонений всегда равна нулю \(\sum{(x_i - \bar{x})} = 0\).<br/>Поэтому, если мы знаем \(\bar x\) и \(n - 1\) отклонений, то всегда сможем точно вычислить последнее отклонение.</p>
+## Меры разброса
 
-<p><br /></p>
+### Как усреднить отклонения от среднего значения?
 
-<p>\(n - 1\) — это число независимых значений (число степеней свободы — <strong>degrees of freedom</strong>).</p>
+Мы не можем делить на `\(n\)`, поскольку отклонения от среднего  `\(x_i - \bar x\)` не будут независимы.
 
-</article></slide><slide class=""><hgroup><h2>Меры разброса</h2></hgroup><article  id="меры-разброса-3">
+Что это значит? Сумма отклонений всегда равна нулю `\(\sum{(x_i - \bar{x})} = 0\)`.  
+Поэтому, если мы знаем `\(\bar x\)` и `\(n - 1\)` отклонений, то всегда сможем точно вычислить последнее отклонение.
 
-<h3>Дисперсия = MS, Mean Square, Variance</h3>
+&lt;br /&gt;
 
-<p>Если мы теперь поделим сумму квадратов на объем выборки минус 1, то получим дисперсию по этой выборке.</p>
+`\(n - 1\)` --- это число независимых значений (число степеней свободы --- __degrees of freedom__).
 
-<p>\[s^2=\frac{\sum{(x_i - \bar{x})^2}}{n - 1}= \frac{SS}{n - 1}\]</p>
+---
 
-<pre class = 'prettyprint lang-r'>sum(raw_deviates^2) / (length(apples) - 1)
-var(apples)</pre>
+## Меры разброса
 
-<p>Дисперсию не получится нарисовать на графике, т.к. там используются не отклонения, а их квадраты</p>
+### Дисперсия = MS, Mean Square, Variance
 
-</article></slide><slide class=""><hgroup><h2>Меры разброса</h2></hgroup><article  id="меры-разброса-4">
+Если мы теперь поделим сумму квадратов на объем выборки минус 1, то получим дисперсию по этой выборке.
 
-<h3>Среднеквадратичное/стандартное отклонение = Standard Deviation</h3>
+`$$s^2=\frac{\sum{(x_i - \bar{x})^2}}{n - 1}= \frac{SS}{n - 1}$$`
 
-<p>Квадратный корень из дисперсии позволит вернуться к исходным единицам измерения</p>
 
-<p>\[s = \sqrt{s^2} = \sqrt{\frac{\sum{(x_i - \bar{x})^2}}{n - 1}} = SD\]</p>
+```r
+sum(raw_deviates^2) / (length(apples) - 1)
+var(apples)
+```
 
-<p>Стандартное отклонение — это средняя величина отклонения, и ее уже можно изобразить на графике.</p>
+Дисперсию не получится нарисовать на графике, т.к. там используются не отклонения, а их квадраты
 
-<pre class = 'prettyprint lang-r'>sqrt(sum(raw_deviates^2) / (length(apples) - 1))
-sd(apples)</pre>
+---
 
-</article></slide><slide class=""><hgroup><h2>Среднее и стандартное отклонение при помощи <code>stat_summary()</code></h2></hgroup><article  id="среднее-и-стандартное-отклонение-при-помощи-stat_summary" class="smaller">
+## Меры разброса
 
-<pre class = 'prettyprint lang-r'>ggplot(data = apple_data) + 
-  stat_summary(geom = &#39;pointrange&#39;, fun.data = mean_sdl, 
+### Среднеквадратичное/стандартное отклонение = Standard Deviation
+
+Квадратный корень из дисперсии позволит вернуться к исходным единицам измерения
+
+`$$s = \sqrt{s^2} = \sqrt{\frac{\sum{(x_i - \bar{x})^2}}{n - 1}} = SD$$`
+
+Стандартное отклонение --- это средняя величина отклонения, и ее уже можно изобразить на графике.
+
+
+```r
+sqrt(sum(raw_deviates^2) / (length(apples) - 1))
+sd(apples)
+```
+
+---
+
+## Среднее и стандартное отклонение при помощи `stat_summary()` 
+
+.pull-left-33[
+`stat_summary()` использует `geom_pointrange()`  
+точка --- среднее, усы изображают `\(\pm\)` стандартное отклонение
+
+`mean_sdl()` рассчитывает координаты точки и усов,  ее аргумент `mult = 1` показывает, сколько стандартных отклонений отложить
+]
+
+.pull-right-66[
+
+```r
+ggplot(data = apple_data) + 
+  stat_summary(geom = 'pointrange', fun.data = mean_sdl, 
                fun.args = list(mult = 1),
-               aes(x = &#39;Среднее \nи стандартное отклонение&#39;, y = diameter))</pre>
+               aes(x = 'Среднее \nи стандартное отклонение', 
+                   y = diameter))
+```
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+![](03.1_descriptive_statistics_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+]
 
-<p><code>stat_summary()</code> использует <code>geom_pointrange()</code><br/>точка — среднее, усы изображают \(\pm\) стандартное отклонение</p>
 
-<p><code>mean_sdl()</code> рассчитывает координаты точки и усов, ее аргумент <code>mult = 1</code> показывает, сколько стандартных отклонений отложить</p>
+---
 
-</article></slide><slide class=""><hgroup><h2>Особенности применения связки</h2></hgroup><article  id="особенности-применения-связки">
+## Особенности применения связки
 
-<ul>
-<li><p>только вместе,</p></li>
-<li><p>чувствительны к выбросам,</p></li>
-<li><p>плохо работают с несимметричными распределениями.</p></li>
-</ul>
+- только вместе,
 
-</article></slide><slide class=""><hgroup><h2>Сравните разброс (стандартное отклонение) в выборках</h2></hgroup><article  id="сравните-разброс-стандартное-отклонение-в-выборках">
+- чувствительны к выбросам,
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/sd_compare1-1.png" width="864" style="display: block; margin: auto;" /></p>
+- плохо работают с несимметричными распределениями.
 
-</article></slide><slide class=""><hgroup><h2>Проверим себя</h2></hgroup><article  id="проверим-себя">
+---
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/sd_compare2-1.png" width="864" style="display: block; margin: auto;" /></p>
+## Сравните разброс (стандартное отклонение) в выборках
 
-</article></slide><slide class=""><hgroup><h2>Задание 2</h2></hgroup><article  id="задание-2">
+![](03.1_descriptive_statistics_files/figure-html/sd_compare1-1.png)&lt;!-- --&gt;
 
-<p>Из 5 положительных чисел создайте выборку со средним = 10 и медианой = 7</p>
+---
 
-</article></slide><slide class=""><hgroup><h2>Решение</h2></hgroup><article  id="решение-1">
+## Проверим себя
 
-<p>В выборке с медианой = 7 и n = 5, мы точно знаем: <strong>(а)</strong> одно из значений должно быть равно 7, <strong>(б)</strong> два значения должны быть меньше, и два — больше 7.</p>
+![](03.1_descriptive_statistics_files/figure-html/sd_compare2-1.png)&lt;!-- --&gt;
 
-<p>Создадим вектор, в котором одно значение задано, а три других просто придумаем:</p>
+---
 
-<pre class = 'prettyprint lang-r'>example &lt;- c(2, 5, 7, 10)</pre>
+## Задание 2
 
-<p>Среднее это сумма всех значений выборки, поделенная на ее объем. Умножив среднее на 5 получим сумму всех значений.</p>
+Из 5 положительных чисел создайте выборку со средним = 10 и медианой = 7
 
-<p>Определим недостающее и проверим себя:</p>
+---
 
-<pre class = 'prettyprint lang-r'>10 * 5 - sum(example)</pre>
+## Решение
 
-<pre >## [1] 26</pre>
+В выборке с медианой = 7 и n = 5, мы точно знаем: __(а)__ одно из значений должно быть равно 7, __(б)__ два значения должны быть меньше, и два --- больше 7. 
 
-<pre class = 'prettyprint lang-r'>example &lt;- c(2, 5, 7, 10, 26) #перезапишем вектор
-mean(example)</pre>
+Создадим вектор, в котором одно значение задано, а три других просто придумаем:
 
-<pre >## [1] 10</pre>
 
-</article></slide><slide class=""><hgroup><h2>Как соотносятся способы оценки центра и размаха в выборке?</h2></hgroup><article  id="как-соотносятся-способы-оценки-центра-и-размаха-в-выборке" class="smaller">
+```r
+example &lt;- c(2, 5, 7, 10)
+```
 
-<pre class = 'prettyprint lang-r'>ggplot(data = apple_data) + 
-  geom_boxplot(aes(x = &#39;Медиана \nи квантили&#39;, y = apples)) +
-  stat_summary(geom = &#39;pointrange&#39;, fun.data = mean_sdl, 
+Среднее это сумма всех значений выборки, поделенная на ее объем. Умножив среднее на 5 получим сумму всех значений.
+
+Определим недостающее и проверим себя:
+
+
+```r
+10 * 5 - sum(example)
+```
+
+```
+[1] 26
+```
+
+```r
+example &lt;- c(2, 5, 7, 10, 26) #перезапишем вектор
+mean(example)
+```
+
+```
+[1] 10
+```
+
+---
+
+## Как соотносятся способы оценки центра и размаха в выборке? 
+
+
+```r
+ggplot(data = apple_data) + 
+  geom_boxplot(aes(x = 'Медиана \nи квантили', y = apples)) +
+  stat_summary(geom = 'pointrange', fun.data = mean_sdl, 
                fun.args = list(mult = 1), 
-               aes(x = &#39;Среднее \nи стандартное отклонение&#39;, y = diameter))</pre>
+               aes(x = 'Среднее \nи стандартное отклонение', y = diameter))
+```
 
-<p><img src="03.1_descriptive_statistics_files/figure-html/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+![](03.1_descriptive_statistics_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
 
-<p>Медиана и среднее дают сходные результаты, если выборка не содержит выбросов (сильно отличающихся от других наблюдений).</p>
+Медиана и среднее дают сходные результаты, если выборка не содержит выбросов (сильно отличающихся от других наблюдений).
 
-</article></slide><slide class=""><hgroup><h2>Take-home messages</h2></hgroup><article  id="take-home-messages">
+---
 
-<ul>
-<li>Описательные статистики ходят только в связке.</li>
-<li>Выбирая между медианой и средним, учитывайте природу данных.</li>
-</ul></article></slide>
+## Take-home messages
 
+- Описательные статистики ходят только в связке.
+- Выбирая между медианой и средним, учитывайте природу данных.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="assets/cols_macro.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "vs",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
 
-  <slide class="backdrop"></slide>
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
 
-</slides>
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<!-- https://github.com/fnaufel/xaringan-smartify-->
+<script type="text/javascript">
+  smartify();
+</script>
 
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
 </script>
-
-<!-- map slide visiblity events into shiny -->
-<script>
-  (function() {
-    if (window.jQuery) {
-       window.jQuery(document).on('slideleave', function(e) {
-         window.jQuery(e.target).trigger('hidden');
-      });
-       window.jQuery(document).on('slideenter', function(e) {
-         window.jQuery(e.target).trigger('shown');
-      });
-    }
-  })();
-</script>
-
-</body>
+  </body>
 </html>

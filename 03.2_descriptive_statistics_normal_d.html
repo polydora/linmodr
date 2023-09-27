@@ -1,589 +1,760 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Работа с распределениями</title>
+<html lang="" xml:lang="">
+  <head>
+    <title>Работа с распределениями</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Марина Варфоломеева" />
+    <meta name="author" content="Вадим Хайтов" />
+    <meta name="author" content="Юта Тамберг" />
+    <meta name="author" content="Анастасия Лянгузова" />
+    <script src="libs/header-attrs-2.23/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <!-- https://github.com/fnaufel/xaringan-smartify-->
+    <script
+    			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    			  integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+    			  crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/fnaufel/xaringan-smartify/smartify.min.js"></script>
+    <link rel="stylesheet" href="assets/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="assets/xaringan.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: middle, left, inverse, title-slide
 
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="chrome=1">
-  <meta name="generator" content="pandoc" />
+.title[
+# Работа с распределениями
+]
+.subtitle[
+## Линейные модели в R
+]
+.author[
+### Марина Варфоломеева
+]
+.author[
+### Вадим Хайтов
+]
+.author[
+### Юта Тамберг
+]
+.author[
+### Анастасия Лянгузова
+]
+
+---
 
 
 
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+---
 
-  <base target="_blank">
+class: middle, center, inverse
 
-  <script type="text/javascript">
-    var SLIDE_CONFIG = {
-      // Slide settings
-      settings: {
-                title: 'Работа с распределениями',
-                        subtitle: 'Линейные модели…',
-                useBuilds: true,
-        usePrettify: true,
-        enableSlideAreas: true,
-        enableTouch: true,
-                      },
+# Нормальное распределение
 
-      // Author information
-      presenters: [
-            {
-        name:  'Марина Варфоломеева, Вадим Хайтов' ,
-        company: '',
-        gplus: '',
-        twitter: '',
-        www: '',
-        github: ''
-      },
-            ]
-    };
-  </script>
+---
 
-  <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
-  <link href="site_libs/ioslides-13.5.1/fonts/fonts.css" rel="stylesheet" />
-  <link href="site_libs/ioslides-13.5.1/theme/css/default.css" rel="stylesheet" />
-  <link href="site_libs/ioslides-13.5.1/theme/css/phone.css" rel="stylesheet" />
-  <script src="site_libs/ioslides-13.5.1/js/modernizr.custom.45394.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/prettify/prettify.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/prettify/lang-r.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/prettify/lang-yaml.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/hammer.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/slide-controller.js"></script>
-  <script src="site_libs/ioslides-13.5.1/js/slide-deck.js"></script>
+## Нормальное распределение
 
-  <style type="text/css">
+.pull-left-66[
+![](03.2_descriptive_statistics_normal_d_files/figure-html/g-norm-1.png)&lt;!-- --&gt;
+]
 
-    b, strong {
-      font-weight: bold;
-    }
+.pull-right-33[
+- симметричное 
+- унимодальное
+- непрерывное
+]
 
-    em {
-      font-style: italic;
-    }
+.pull-left-66[
+`$$f(x) = \cfrac {1}{\sigma \sqrt{2 \pi}} \; e^{- \: \cfrac{(x-\mu)^2}{2\sigma^2}}$$`
 
-    summary {
-      display: list-item;
-    }
+- `\(\mu\)` --- среднее значение;
+- `\(\sigma\)` --- стандартное отклонение.
 
-    details > summary > p:only-child {
-      display: inline;
-    }
 
-    slides > slide {
-      -webkit-transition: all 0.4s ease-in-out;
-      -moz-transition: all 0.4s ease-in-out;
-      -o-transition: all 0.4s ease-in-out;
-      transition: all 0.4s ease-in-out;
-    }
+Это кратко записывается как `\(x \sim N(\mu, \sigma)\)`.
+]
 
-    .auto-fadein {
-      -webkit-transition: opacity 0.6s ease-in;
-      -webkit-transition-delay: 0.4s;
-      -moz-transition: opacity 0.6s ease-in 0.4s;
-      -o-transition: opacity 0.6s ease-in 0.4s;
-      transition: opacity 0.6s ease-in 0.4s;
-      opacity: 0;
-    }
-/* https://github.com/ropensci/plotly/pull/524#issuecomment-468142578 */
-slide:not(.current) .plotly.html-widget{
-  display: block;
-}
+---
 
-    code{white-space: pre-wrap;}
-    span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
-    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
-            pre > code.sourceCode { white-space: pre; position: relative; }
-            pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-            pre > code.sourceCode > span:empty { height: 1.2em; }
-            .sourceCode { overflow: visible; }
-            code.sourceCode > span { color: inherit; text-decoration: inherit; }
-            div.sourceCode { margin: 1em 0; }
-            pre.sourceCode { margin: 0; }
-            @media screen {
-            div.sourceCode { overflow: auto; }
-            }
-            @media print {
-            pre > code.sourceCode { white-space: pre-wrap; }
-            pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-            }
-            pre.numberSource code
-              { counter-reset: source-line 0; }
-            pre.numberSource code > span
-              { position: relative; left: -4em; counter-increment: source-line; }
-            pre.numberSource code > span > a:first-child::before
-              { content: counter(source-line);
-                position: relative; left: -1em; text-align: right; vertical-align: baseline;
-                border: none; display: inline-block;
-                -webkit-touch-callout: none; -webkit-user-select: none;
-                -khtml-user-select: none; -moz-user-select: none;
-                -ms-user-select: none; user-select: none;
-                padding: 0 4px; width: 4em;
-                color: #aaaaaa;
-              }
-            pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-            div.sourceCode
-              {   }
-            @media screen {
-            pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-            }
-            code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-            code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-            code span.at { color: #7d9029; } /* Attribute */
-            code span.bn { color: #40a070; } /* BaseN */
-            code span.bu { } /* BuiltIn */
-            code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-            code span.ch { color: #4070a0; } /* Char */
-            code span.cn { color: #880000; } /* Constant */
-            code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-            code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-            code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-            code span.dt { color: #902000; } /* DataType */
-            code span.dv { color: #40a070; } /* DecVal */
-            code span.er { color: #ff0000; font-weight: bold; } /* Error */
-            code span.ex { } /* Extension */
-            code span.fl { color: #40a070; } /* Float */
-            code span.fu { color: #06287e; } /* Function */
-            code span.im { } /* Import */
-            code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-            code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-            code span.op { color: #666666; } /* Operator */
-            code span.ot { color: #007020; } /* Other */
-            code span.pp { color: #bc7a00; } /* Preprocessor */
-            code span.sc { color: #4070a0; } /* SpecialChar */
-            code span.ss { color: #bb6688; } /* SpecialString */
-            code span.st { color: #4070a0; } /* String */
-            code span.va { color: #19177c; } /* Variable */
-            code span.vs { color: #4070a0; } /* VerbatimString */
-            code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-        
-  </style>
+## Вероятности --- это площади под кривой распределения
 
-  <link rel="stylesheet" href="assets/my_styles.css" type="text/css" />
+![](03.2_descriptive_statistics_normal_d_files/figure-html/g-norm-interval-1.png)&lt;!-- --&gt;
 
-</head>
 
-<body style="opacity: 0">
+`\(-\infty &lt; x &lt; +\infty\)`.
 
-<slides class="layout-widescreen">
+Площадь под всей кривой `\(= 1\)`.
 
-  <slide class="title-slide segue nobackground">
-        <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
-    <hgroup class="auto-fadein">
-      <h1 data-config-title><!-- populated from slide_config.json --></h1>
-      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
-      <p data-config-presenter><!-- populated from slide_config.json --></p>
-          </hgroup>
-  </slide>
+Вероятность встречи значений из определенного промежутка можно узнать, проинтегрировав функцию распределения.
 
-<slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Нормальное распределение</h2></hgroup><article  id="нормальное-распределение">
+---
 
-</article></slide><slide class=""><hgroup><h2>Нормальное распределение</h2></hgroup><article  id="нормальное-распределение-1">
+## Эмпирическое правило нормального распределения
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/g-norm-1.png" width="672" /></p>
+.center[
+![:scale 85%](images/emp_rule_Normal_Distribution_2.svg)
+]
+- 68% значений находятся в пределах 1 стандартного отклонения `\(\sigma\)`
+- 95% значений --- в пределах 2 `\(\sigma\)`
+- 99.7% значений --- в пределах 3 `\(\sigma\)` 
+---
 
-<p>\[f(x) = \cfrac {1}{\sigma \sqrt{2 \pi}} \; e^{- \: \cfrac{(x-\mu)^2}{2\sigma^2}}\]</p>
+## Стандартное нормальное распределение
 
-<ul>
-<li>\(\mu\) — среднее значение</li>
-<li>\(\sigma\) — стандартное отклонение</li>
-</ul>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-1-1.png)&lt;!-- --&gt;
 
-<p>Это кратко записывается как \(x \sim N(\mu, \sigma)\)</p>
+`$$N(0, 1)$$`
+---
 
-</article></slide><slide class=""><hgroup><h2>Вероятности — это площади под кривой распределения</h2></hgroup><article  id="вероятности-это-площади-под-кривой-распределения">
+## Стандартизация (Z-преобразование)
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/g-norm-interval-1.png" width="672" /></p>
 
-<p>\(-\infty &lt; x &lt; +\infty\).</p>
+.pull-left[
 
-<p>Площадь под всей кривой \(= 1\).</p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+]
 
-<p>Вероятность встречи значений из определенного промежутка можно узнать, проинтегрировав функцию распределения.</p>
+.pull-right[
+`$$z = \frac{x - \mu}{\sigma}$$`
 
-</article></slide><slide class=""><hgroup><h2>Стандартное нормальное распределение</h2></hgroup><article  id="стандартное-нормальное-распределение">
+После стандартизации любое нормальное распределение превращается в стандартное нормальное:
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+`$$Z \sim N(0, 1)$$`
+]
 
-<p>\[N(0, 1)\]</p>
+---
 
-</article></slide><slide class=""><hgroup><h2>Стандартизация (Z-преобразование)</h2></hgroup><article  id="стандартизация-z-преобразование">
+## Задание 1
 
-<div class="columns-2">
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-2-1.png" width="384" /></p>
+Стандартизуйте вектор `1:5`
 
-<p>\[z = \frac{x - \mu}{\sigma}\]</p>
+Чему после стандартизации будет равно среднее?
 
-<p>После стандартизации любое нормальное распределение превращается в стандартное нормальное:</p>
+Стандартное отклонение?
 
-<p>\[Z \sim N(0, 1)\]</p></div>
+---
 
-</article></slide><slide class=""><hgroup><h2>Задание 1</h2></hgroup><article  id="задание-1">
+## Стандартизация
 
-<p>Стандартизуйте вектор <code>1:5</code></p>
 
-<p>Чему после стандартизации будет равно среднее?</p>
+.pull-left[
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+]
 
-<p>Стандартное отклонение?</p>
+.pull-right[
+`$$z_i=\frac{x_i - \bar{x}}{s}$$`
 
-</article></slide><slide class=""><hgroup><h2>Стандартизация</h2></hgroup><article  id="стандартизация">
+Стандартизованная величина (Z-оценка) показывает, на сколько стандартных отклонений значение отличается от среднего
 
-<div class="columns-2">
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-3-1.png" width="384" /></p>
+**После стандартизации всегда**:
 
-<p>\[z_i=\frac{x_i - \bar{x}}{s}\]</p>
+- среднее `\(\bar{z} = 0\)`
+- стандартное отклонение `\(s_{z} = 1\)`
 
-<p>Стандартизованная величина (Z-оценка) показывает, на сколько стандартных отклонений значение отличается от среднего</p>
+]
 
-<p><strong>После стандартизации всегда</strong>:</p>
+---
 
-<ul>
-<li>среднее \(\bar{z} = 0\)</li>
-<li>стандартное отклонение \(s_{z} = 1\)</li>
-</ul></div>
+## Стандартизация позволяет уравнять шкалы, в которых измерены переменные
 
-</article></slide><slide class=""><hgroup><h2>Стандартизация позволяет уравнять шкалы, в которых измерены переменные</h2></hgroup><article  id="стандартизация-позволяет-уравнять-шкалы-в-которых-измерены-переменные">
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+---
 
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Проверка на нормальность</h2></hgroup><article  id="проверка-на-нормальность">
+# Проверка на нормальность
 
-</article></slide><slide class=""><hgroup><h2>Квантильный график</h2></hgroup><article  id="квантильный-график">
+## Квантильный график
 
-<p>По оси \(X\) отложены квантили стандартного нормального распределения, по оси \(Y\) — квантили данных. Если \(x \sim N(\mu,\sigma)\), то точки лягут на прямую линию.</p>
+По оси `\(X\)` отложены квантили стандартного нормального распределения, по оси `\(Y\)` --- квантили данных. Если `\(x \sim N(\mu,\sigma)\)`, то точки лягут на прямую линию.
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Квантильный график в <code>R</code></h2></hgroup><article  id="квантильный-график-в-r">
+---
 
-<pre class = 'prettyprint lang-r'>set.seed(9128)
+## Квантильный график в `R`
+
+
+```r
+set.seed(9128)
 my_vector &lt;- rnorm(n = 150, mean = 10, sd = 3)
 library(car)
-qqPlot(my_vector, id = FALSE) # квантильный график</pre>
+qqPlot(my_vector, id = FALSE) # квантильный график
+```
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-6-1.png" width="384" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Задание 2</h2></hgroup><article  id="задание-2">
+---
 
-<p>Выполните по одному блоки кода (см. код к этой презентации).</p>
+## Задание 2
 
-<p>Что вы можете сказать о свойствах распределений, изображенных на квантильных графиках?</p>
+Выполните по одному блоки кода (см. код к этой презентации).
 
-</article></slide><slide class=""><hgroup><h2>Бимодальное (двувершинное) распределение</h2></hgroup><article  id="бимодальное-двувершинное-распределение">
+Что вы можете сказать о свойствах распределений, изображенных на квантильных графиках?
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+---
 
-</article></slide><slide class=""><hgroup><h2>Дискретное распределение с длинным правым хвостом</h2></hgroup><article  id="дискретное-распределение-с-длинным-правым-хвостом">
+## Бимодальное (двувершинное) распределение
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Непрерывное распределение с толстыми хвостами</h2></hgroup><article  id="непрерывное-распределение-с-толстыми-хвостами">
+---
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+## Дискретное распределение с длинным правым хвостом
 
-</article></slide><slide class=""><hgroup><h2>Непрерывное распределение с длинным правым хвостом</h2></hgroup><article  id="непрерывное-распределение-с-длинным-правым-хвостом">
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
 
-<!-- Если интересны подробности, можно посмотреть симуляции, например, здесь https://stats.stackexchange.com/questions/101274/how-to-interpret-a-qq-plot -->
+---
 
-</article></slide><slide class=""><hgroup><h2>Задание 3</h2></hgroup><article  id="задание-3">
+## Непрерывное распределение с толстыми хвостами
 
-<p>Проверьте при помощи квантильного графика, подчиняются ли эти переменные нормальному распределению:</p>
 
-<ul>
-<li>Рост американских женщин (датасет <code>women</code>)</li>
-<li>Длина чашелистиков у ирисов (датасет <code>iris</code>)</li>
-<li>Число пойманных рысей в Канаде с 1821 по 1934г. (датасет <code>lynx</code>)</li>
-</ul>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Решение (3.1)</h2></hgroup><article  id="решение-3.1">
+---
 
-<pre class = 'prettyprint lang-r'>data(&quot;women&quot;)
-str(women)</pre>
+## Непрерывное распределение с длинным правым хвостом
 
-<pre >## &#39;data.frame&#39;:    15 obs. of  2 variables:
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+&lt;!-- Если интересны подробности, можно посмотреть симуляции, например, здесь https://stats.stackexchange.com/questions/101274/how-to-interpret-a-qq-plot --&gt;
+
+---
+
+## Задание 3
+
+Проверьте при помощи квантильного графика, подчиняются ли эти переменные нормальному распределению:
+
+- Рост американских женщин (датасет `women`)
+- Длина чашелистиков у ирисов (датасет `iris`)
+- Число пойманных рысей в Канаде с 1821 по 1934г. (датасет `lynx`)
+
+---
+
+## Решение (3.1)
+
+
+```r
+data("women")
+str(women)
+```
+
+```
+## 'data.frame':	15 obs. of  2 variables:
 ##  $ height: num  58 59 60 61 62 63 64 65 66 67 ...
-##  $ weight: num  115 117 120 123 126 129 132 135 139 142 ...</pre>
+##  $ weight: num  115 117 120 123 126 129 132 135 139 142 ...
+```
 
-<pre class = 'prettyprint lang-r'>qqPlot(women$height, id = FALSE)</pre>
+```r
+qqPlot(women$height, id = FALSE)
+```
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Решение (3.2)</h2></hgroup><article  id="решение-3.2">
+---
 
-<pre class = 'prettyprint lang-r'>data(&quot;iris&quot;)
-str(iris)</pre>
+## Решение (3.2)
 
-<pre >## &#39;data.frame&#39;:    150 obs. of  5 variables:
+
+```r
+data("iris")
+str(iris)
+```
+
+```
+## 'data.frame':	150 obs. of  5 variables:
 ##  $ Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
 ##  $ Sepal.Width : num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
 ##  $ Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
 ##  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...
-##  $ Species     : Factor w/ 3 levels &quot;setosa&quot;,&quot;versicolor&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</pre>
+##  $ Species     : Factor w/ 3 levels "setosa","versicolor",..: 1 1 1 1 1 1 1 1 1 1 ...
+```
 
-<pre class = 'prettyprint lang-r'>op &lt;- par(mfrow = c(1, 2))
+```r
+op &lt;- par(mfrow = c(1, 2))
 qqPlot(iris$Sepal.Length, id = FALSE)
-hist(iris$Sepal.Length)</pre>
+hist(iris$Sepal.Length)
+```
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
 
-<pre class = 'prettyprint lang-r'>par(op)</pre>
+```r
+par(op)
+```
 
-</article></slide><slide class=""><hgroup><h2>Решение (3.3)</h2></hgroup><article  id="решение-3.3">
+---
 
-<pre class = 'prettyprint lang-r'>data(&quot;lynx&quot;)
-str(lynx)</pre>
+## Решение (3.3)
 
-<pre >##  Time-Series [1:114] from 1821 to 1934: 269 321 585 871 1475 ...</pre>
 
-<pre class = 'prettyprint lang-r'>op &lt;- par(mfrow = c(1, 2))
+```r
+data("lynx")
+str(lynx)
+```
+
+```
+##  Time-Series [1:114] from 1821 to 1934: 269 321 585 871 1475 ...
+```
+
+```r
+op &lt;- par(mfrow = c(1, 2))
 qqPlot(lynx, id = FALSE)
-hist(lynx)</pre>
+hist(lynx)
+```
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
 
-<pre class = 'prettyprint lang-r'>par(op)</pre>
+```r
+par(op)
+```
 
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Оценка вероятностей при помощи распределений</h2></hgroup><article  id="оценка-вероятностей-при-помощи-распределений">
+---
 
-</article></slide><slide class=""><hgroup><h2>Кривые распределений можно использовать для оценки вероятностей</h2></hgroup><article  id="кривые-распределений-можно-использовать-для-оценки-вероятностей">
+# Оценка вероятностей при помощи распределений
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+## Кривые распределений можно использовать для оценки вероятностей
 
-</article></slide><slide class=""><hgroup><h2>Площадь под всей кривой распределения равна 1</h2></hgroup><article  id="площадь-под-всей-кривой-распределения-равна-1">
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+---
 
-</article></slide><slide class=""><hgroup><h2>Вероятность конкретного значения нельзя определить</h2></hgroup><article  id="вероятность-конкретного-значения-нельзя-определить">
+## Площадь под всей кривой распределения равна 1
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
 
-</article></slide><slide class=""><hgroup><h2>Можно определить вероятность того, что значение будет меньше заданного</h2></hgroup><article  id="можно-определить-вероятность-того-что-значение-будет-меньше-заданного">
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+---
 
-</article></slide><slide class=""><hgroup><h2>Остальные площади легко найти при помощи простых арифметических действий с площадями</h2></hgroup><article  id="остальные-площади-легко-найти-при-помощи-простых-арифметических-действий-с-площадями">
+## Вероятность конкретного значения нельзя определить
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
 
-</article></slide><slide class=""><hgroup><h2>Пример: Размеры улиток</h2></hgroup><article  id="пример-размеры-улиток">
+---
 
-<p>В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.</p>
+## Можно определить вероятность того, что значение будет меньше заданного
 
-<ul>
-<li>Какова вероятность того, что случайно выбранная улитка окажется <strong>меньше 3 см</strong>?</li>
-<li>Какова вероятность того, что случайно выбранная улитка окажется <strong>больше 6 см</strong>?</li>
-<li>Какова доля улиток с размером раковины <strong>в пределах 3–6 см</strong>?</li>
-</ul>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
 
-<img src='images/tres-caracoles-by-Alberto-Villen-on-freeimages.com.jpg' title=''/>
+---
 
-<p><small>tres caracoles by Alberto Villen on Freeimages.com</small></p>
+## Остальные площади легко найти при помощи простых арифметических действий с площадями
 
-</article></slide><slide class=""><hgroup><h2>Вероятность встретить значение меньше заданного</h2></hgroup><article  id="вероятность-встретить-значение-меньше-заданного">
+![](03.2_descriptive_statistics_normal_d_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
 
-<p>В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.</p>
 
-<h3>Какова вероятность того, что случайно выбранная улитка окажется <strong>меньше 3 см</strong>?</h3>
+---
 
-<pre class = 'prettyprint lang-r'>Z_1 &lt;- (3 - 5) / 1.5
-pnorm(q = Z_1)</pre>
+## Пример: Размеры улиток
 
-<pre >## [1] 0.0912</pre>
+В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.
 
-<pre class = 'prettyprint lang-r'># или то же самое
-pnorm(q = 3, mean = 5, sd = 1.5)</pre>
+- Какова вероятность того, что случайно выбранная улитка окажется __меньше 3 см__?
+- Какова вероятность того, что случайно выбранная улитка окажется __больше 6 см__?
+- Какова доля улиток с размером раковины __в пределах 3--6 см__?
 
-<pre >## [1] 0.0912</pre>
+![](images/tres-caracoles-by-Alberto-Villen-on-freeimages.com.jpg)
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/snail-small-1.png" width="384" /></p>
 
-</article></slide><slide class=""><hgroup><h2>Вероятность встретить значение больше заданного</h2></hgroup><article  id="вероятность-встретить-значение-больше-заданного">
+&lt;small&gt;tres caracoles by Alberto Villen on Freeimages.com&lt;/small&gt;
 
-<p>В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.</p>
+---
 
-<h3>Какова вероятность того, что случайно выбранная улитка окажется <strong>больше 6 см</strong>?</h3>
+## Вероятность встретить значение меньше заданного
 
-<p>Мы умеем интегрировать только влево от выбранного значения, поэтому</p>
+В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.
+### Какова вероятность того, что случайно выбранная улитка окажется __меньше 3 см__?
 
-<ul>
-<li>выясняем вероятность встретить значение меньше заданного \(p\)</li>
-<li>находим комплементарную вероятность \(1 - p\)</li>
-</ul>
+```r
+Z_1 &lt;- (3 - 5) / 1.5
+pnorm(q = Z_1)
+```
 
-<pre class = 'prettyprint lang-r'>1 - pnorm(q = 6, mean = 5, sd = 1.5)</pre>
+```
+## [1] 0.0912
+```
 
-<pre >## [1] 0.252</pre>
+```r
+# или то же самое
+pnorm(q = 3, mean = 5, sd = 1.5)
+```
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/snail-large-1.png" width="384" /></p>
+```
+## [1] 0.0912
+```
 
-</article></slide><slide class=""><hgroup><h2>Вероятность встретить значение в заданных пределах</h2></hgroup><article  id="вероятность-встретить-значение-в-заданных-пределах">
+![](03.2_descriptive_statistics_normal_d_files/figure-html/snail-small-1.png)&lt;!-- --&gt;
 
-<p>В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.</p>
+---
 
-<h3>Какова доля улиток с размером раковины <strong>в пределах 3–6 см</strong>?</h3>
+## Вероятность встретить значение больше заданного
 
-<pre class = 'prettyprint lang-r'>pnorm(q = 6, mean = 5, sd = 1.5) - 
-  pnorm(q = 3, mean = 5, sd = 1.5)</pre>
+В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.
 
-<pre >## [1] 0.656</pre>
+### Какова вероятность того, что случайно выбранная улитка окажется __больше 6 см__?
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/snail-medium-1.png" width="384" /></p>
+.pull-left-33[Мы умеем интегрировать только влево от выбранного значения, поэтому
 
-</article></slide><slide class=""><hgroup><h2>Задание 4</h2></hgroup><article  id="задание-4">
+- выясняем вероятность встретить значение меньше заданного `\(p\)`
+- находим комплементарную вероятность `\(1 - p\)`]
 
-<p>Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только людей с ростом от 160 до 190 см (по приказу Минтранса).</p>
+.pull-right-66[
 
-<ul>
-<li><p>Какова вероятность того, что случайно выбранный мужчина окажется <strong>ниже 160 см</strong>?</p></li>
-<li><p>Какова вероятность того, что случайно выбранный мужчина окажется <strong>больше 190 см</strong>?</p></li>
-<li><p>Какова доля мужчин, не подходящих по росту в пилоты, т.е. <strong>меньше 160 и больше 190 см</strong>?</p></li>
-</ul>
+```r
+1 - pnorm(q = 6, mean = 5, sd = 1.5)
+```
 
-</article></slide><slide class=""><hgroup><h2>Решение (4.1)</h2></hgroup><article  id="решение-4.1">
+```
+## [1] 0.252
+```
 
-<p>Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).</p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/snail-large-1.png)&lt;!-- --&gt;
+]
 
-<h3>Какова вероятность того, что случайно выбранный мужчина окажется <strong>ниже 160 см</strong>?</h3>
+---
 
-<pre class = 'prettyprint lang-r'>Z_short &lt;- (160 - 174.7) / 6.65
-pnorm(q = Z_short)</pre>
+## Вероятность встретить значение в заданных пределах
 
-<pre >## [1] 0.0135</pre>
+В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.
 
-<pre class = 'prettyprint lang-r'># или то же самое
-pnorm(q = 160, mean = 174.7, sd = 6.65)</pre>
+### Какова доля улиток с размером раковины __в пределах 3--6 см__?
 
-<pre >## [1] 0.0135</pre>
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/men-short-1.png" width="384" /></p>
+```r
+pnorm(q = 6, mean = 5, sd = 1.5) - 
+  pnorm(q = 3, mean = 5, sd = 1.5)
+```
 
-</article></slide><slide class=""><hgroup><h2>Решение (4.2)</h2></hgroup><article  id="решение-4.2">
+```
+## [1] 0.656
+```
 
-<p>Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).</p>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/snail-medium-1.png)&lt;!-- --&gt;
 
-<h3>Какова вероятность того, что случайно выбранный мужчина окажется <strong>больше 190 см</strong>?</h3>
+---
 
-<pre class = 'prettyprint lang-r'>1 - pnorm(q = 190, mean = 174.7, sd = 6.65)</pre>
+## Задание 4
 
-<pre >## [1] 0.0107</pre>
+Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только людей с ростом от 160 до 190 см (по приказу Минтранса).
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/men-tall-1.png" width="384" /></p>
+- Какова вероятность того, что случайно выбранный мужчина окажется __ниже 160 см__?
 
-</article></slide><slide class=""><hgroup><h2>Решение (4.3)</h2></hgroup><article  id="решение-4.3">
+- Какова вероятность того, что случайно выбранный мужчина окажется  __больше 190 см__?
 
-<p>Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).</p>
+- Какова доля мужчин, не подходящих по росту в пилоты, т.е. __меньше 160 и больше 190 см__?
 
-<h3>Какова доля мужчин, не подходящих по росту в пилоты, т.е. <strong>меньше 160 и больше 190 см</strong>?</h3>
+---
 
-<pre class = 'prettyprint lang-r'>(1 - pnorm(q = 190, mean = 174.7, sd = 6.65)) + 
-  pnorm(q = 160, mean = 174.7, sd = 6.65)</pre>
+## Решение (4.1)
 
-<pre >## [1] 0.0242</pre>
+Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/men-not-pilots-1.png" width="384" /></p>
+### Какова вероятность того, что случайно выбранный мужчина окажется __ниже 160 см__?
 
-</article></slide><slide class=""><hgroup><h2>Задание 5</h2></hgroup><article  id="задание-5">
 
-<p>Средний рост девушек в 16 лет — 162.2 см со стандартным отклонением 6.0 см.<br/>В пилоты берут только людей с ростом от 160 до 190 см (по приказу Минтранса).</p>
+```r
+Z_short &lt;- (160 - 174.7) / 6.65
+pnorm(q = Z_short)
+```
 
-<p>Какой процент девушек подходит по росту в пилоты?</p>
+```
+## [1] 0.0135
+```
 
-</article></slide><slide class=""><hgroup><h2>Решение</h2></hgroup><article  id="решение">
+```r
+# или то же самое
+pnorm(q = 160, mean = 174.7, sd = 6.65)
+```
 
-<p>Средний рост девушек в 16 лет — 162.2 см со стандартным отклонением 6.0 см.<br/>В пилоты берут только людей с ростом от 160 до 190 см (по приказу Минтранса).</p>
+```
+## [1] 0.0135
+```
 
-<h3>Какой процент девушек подходит по росту в пилоты?</h3>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/men-short-1.png)&lt;!-- --&gt;
 
-<pre class = 'prettyprint lang-r'>pnorm(q = 190, mean = 162.2, sd = 6.0) - 
-  pnorm(q = 160, mean = 162.2, sd = 6.0)</pre>
+---
 
-<pre >## [1] 0.643</pre>
+## Решение (4.2)
 
-<p>Только 64.3 % девушек пройдут в пилоты по росту.</p>
+Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/women-pilots-1.png" width="384" /></p>
+### Какова вероятность того, что случайно выбранный мужчина окажется  __больше 190 см__?
 
-</article></slide><slide class=""><hgroup><h2>Задание 6</h2></hgroup><article  id="задание-6">
 
-<p>Предположим, что вес новорожденных нормально распределен со средним значением 3500 г и стандартным отклонением 600 г.</p>
+```r
+1 - pnorm(q = 190, mean = 174.7, sd = 6.65)
+```
 
-<ul>
-<li>Какой процент детей рождается с весом больше 3200г.?</li>
-<li>Какой процент детей рождается с весом в пределах 2500-4500г.?</li>
-</ul>
+```
+## [1] 0.0107
+```
 
-</article></slide><slide class=""><hgroup><h2>Решение (1)</h2></hgroup><article  id="решение-1">
+![](03.2_descriptive_statistics_normal_d_files/figure-html/men-tall-1.png)&lt;!-- --&gt;
 
-<p>Предположим, что вес новорожденных нормально распределен со средним значением 3500 г и стандартным отклонением 600 г.</p>
+---
 
-<h3>Какой процент детей рождается с весом больше 3200г.?</h3>
+## Решение (4.3)
 
-<pre class = 'prettyprint lang-r'>1 - pnorm(q = 3200, mean = 3500, sd = 600)</pre>
+Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).
 
-<pre >## [1] 0.691</pre>
+### Какова доля мужчин, не подходящих по росту в пилоты, т.е. __меньше 160 и больше 190 см__?
 
-<p>69.1 % детей рождается с весом больше 3200г.</p>
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/baby-big-1.png" width="384" /></p>
 
-</article></slide><slide class=""><hgroup><h2>Решение (2)</h2></hgroup><article  id="решение-2">
+```r
+(1 - pnorm(q = 190, mean = 174.7, sd = 6.65)) + 
+  pnorm(q = 160, mean = 174.7, sd = 6.65)
+```
 
-<p>Предположим, что вес новорожденных нормально распределен со средним значением 3500 г и стандартным отклонением 600 г.</p>
+```
+## [1] 0.0242
+```
 
-<h3>Какой процент детей рождается с весом в пределах 2500-4500г.?</h3>
+![](03.2_descriptive_statistics_normal_d_files/figure-html/men-not-pilots-1.png)&lt;!-- --&gt;
 
-<pre class = 'prettyprint lang-r'>pnorm(q = 4500, mean = 3500, sd = 600) - pnorm(q = 2500, mean = 3500, sd = 600)</pre>
+---
 
-<pre >## [1] 0.904</pre>
+## Задание 5
 
-<p>90.4 % детей рождается с весом в пределах 2500-4500г.</p>
+Средний рост девушек в 16 лет --- 162.2 см со стандартным отклонением 6.0 см.  
+В пилоты берут только людей с ростом от 160 до 190 см (по приказу Минтранса).
 
-<p><img src="03.2_descriptive_statistics_normal_d_files/figure-html/baby-norm-1.png" width="384" /></p>
+Какой процент девушек подходит по росту в пилоты?
 
-</article></slide><slide class=""><hgroup><h2>Take-home messages</h2></hgroup><article  id="take-home-messages">
+---
 
-<ul>
-<li>Нормальное распределение \(N(\mu,\sigma)\)</li>
-<li>Стандартное нормальное распределение — \(N(0, 1)\)</li>
-<li>Стандартизация — \(z = \frac{x - \mu} {\sigma}\)</li>
-<li>Квантильный график — графический метод проверки формы распределения</li>
-<li>Вероятность попадания величины в любой интервал можно найти при помощи интегрирования</li>
-</ul></article></slide>
+## Решение
 
+Средний рост девушек в 16 лет --- 162.2 см со стандартным отклонением 6.0 см.  
+В пилоты берут только людей с ростом от 160 до 190 см (по приказу Минтранса).
 
-  <slide class="backdrop"></slide>
+### Какой процент девушек подходит по росту в пилоты?
 
-</slides>
 
+```r
+pnorm(q = 190, mean = 162.2, sd = 6.0) - 
+  pnorm(q = 160, mean = 162.2, sd = 6.0)
+```
+
+```
+## [1] 0.643
+```
+
+
+
+Только 64.3 % девушек пройдут в пилоты по росту.
+
+![](03.2_descriptive_statistics_normal_d_files/figure-html/women-pilots-1.png)&lt;!-- --&gt;
+
+---
+
+## Задание 6
+
+Предположим, что вес новорожденных нормально распределен со средним значением 3500 г и стандартным отклонением 600 г.
+
+- Какой процент детей рождается с весом больше 3200г.?
+- Какой процент детей рождается с весом в пределах 2500-4500г.?
+
+---
+
+## Решение (1)
+
+Предположим, что вес новорожденных нормально распределен со средним значением 3500 г и стандартным отклонением 600 г.
+
+### Какой процент детей рождается с весом больше 3200г.?
+
+
+```r
+1 - pnorm(q = 3200, mean = 3500, sd = 600)
+```
+
+```
+## [1] 0.691
+```
+
+
+
+69.1 % детей рождается с весом больше 3200г.
+
+![](03.2_descriptive_statistics_normal_d_files/figure-html/baby-big-1.png)&lt;!-- --&gt;
+
+---
+
+## Решение (2)
+
+Предположим, что вес новорожденных нормально распределен со средним значением 3500 г и стандартным отклонением 600 г.
+
+### Какой процент детей рождается с весом в пределах 2500-4500г.?
+
+
+```r
+pnorm(q = 4500, mean = 3500, sd = 600) - pnorm(q = 2500, mean = 3500, sd = 600)
+```
+
+```
+## [1] 0.904
+```
+
+
+
+90.4 % детей рождается с весом в пределах 2500-4500г.
+
+![](03.2_descriptive_statistics_normal_d_files/figure-html/baby-norm-1.png)&lt;!-- --&gt;
+
+---
+
+## Take-home messages
+
+- Нормальное распределение `\(N(\mu,\sigma)\)`
+- Стандартное нормальное распределение --- `\(N(0, 1)\)`
+- Стандартизация --- `\(z = \frac{x - \mu} {\sigma}\)`
+- Квантильный график --- графический метод проверки формы распределения
+- Вероятность попадания величины в любой интервал можно найти при помощи интегрирования
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="assets/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "vs",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<!-- https://github.com/fnaufel/xaringan-smartify-->
+<script type="text/javascript">
+  smartify();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
 </script>
-
-<!-- map slide visiblity events into shiny -->
-<script>
-  (function() {
-    if (window.jQuery) {
-       window.jQuery(document).on('slideleave', function(e) {
-         window.jQuery(e.target).trigger('hidden');
-      });
-       window.jQuery(document).on('slideenter', function(e) {
-         window.jQuery(e.target).trigger('shown');
-      });
-    }
-  })();
-</script>
-
-</body>
+  </body>
 </html>

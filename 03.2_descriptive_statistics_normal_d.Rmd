@@ -1,13 +1,27 @@
 ---
 title: "Работа с распределениями"
-author: "Марина Варфоломеева, Вадим Хайтов"
-subtitle: "Линейные модели..."
+subtitle: "Линейные модели в R"
+author: 
+  - Марина Варфоломеева
+  - Вадим Хайтов
+  - Юта Тамберг
+  - Анастасия Лянгузова
+company: 'Каф. Зоологии беспозвоночных, СПбГУ'
 output:
-  ioslides_presentation:
-    css: assets/my_styles.css
-    widescreen: yes
-editor_options: 
-  chunk_output_type: console
+  xaringan::moon_reader:
+    self-contained: true
+    lib_dir: libs
+    css: [default, tamu-fonts, ninjutsu, "assets/xaringan-themer.css", "assets/xaringan.css"]
+    df_print: default
+    nature:
+      highlightStyle: vs
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: [middle, left, inverse]
+      beforeInit: "assets/macros.js"
+    includes:
+      in_header: "assets/xaringan_in_header.html"
+      after_body: "assets/xaringan_after_body.html"
 ---
 
 ```{r setup, include = FALSE, cache = FALSE, purl = FALSE}
@@ -19,10 +33,17 @@ library(gridExtra)
 opts_chunk$set(tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE, message = FALSE)
 ```
 
+---
+
+class: middle, center, inverse
+
 # Нормальное распределение
+
+---
 
 ## Нормальное распределение
 
+.pull-left-66[
 ```{r g-norm, echo=FALSE, purl=FALSE}
 library(cowplot)
 library(ggplot2)
@@ -33,16 +54,25 @@ ND_curve <- ggplot(data = data.frame(x = 0:20), aes(x = x)) +
   labs(y = 'Плотность вероятности')
 ND_curve
 ```
+]
 
+.pull-right-33[
+- симметричное 
+- унимодальное
+- непрерывное
+]
 
+.pull-left-66[
 $$f(x) = \cfrac {1}{\sigma \sqrt{2 \pi}} \; e^{- \: \cfrac{(x-\mu)^2}{2\sigma^2}}$$
 
-- $\mu$ --- среднее значение
-- $\sigma$ --- стандартное отклонение
+- $\mu$ --- среднее значение;
+- $\sigma$ --- стандартное отклонение.
 
 
-Это кратко записывается как $x \sim N(\mu, \sigma)$
+Это кратко записывается как $x \sim N(\mu, \sigma)$.
+]
 
+---
 
 ## Вероятности --- это площади под кривой распределения
 
@@ -59,6 +89,17 @@ $-\infty < x < +\infty$.
 
 Вероятность встречи значений из определенного промежутка можно узнать, проинтегрировав функцию распределения.
 
+---
+
+## Эмпирическое правило нормального распределения
+
+.center[
+![:scale 85%](images/emp_rule_Normal_Distribution_2.svg)
+]
+- 68% значений находятся в пределах 1 стандартного отклонения $\sigma$
+- 95% значений --- в пределах 2 $\sigma$
+- 99.7% значений --- в пределах 3 $\sigma$ 
+---
 
 ## Стандартное нормальное распределение
 
@@ -71,36 +112,44 @@ ggplot(data = data.frame(x = -3.5:3.5), aes(x = x)) +
 ```
 
 $$N(0, 1)$$
-
+---
 
 ## Стандартизация (Z-преобразование)
 
 
-<div class="columns-2">
+.pull-left[
 
-```{r echo=FALSE, purl=FALSE, fig.width = 4, fig.height=5}
+```{r echo=FALSE, purl=FALSE, fig.width = 8, fig.height=10}
 gg_sample <- ggplot(data = data.frame(x = 0:20), aes(x = x)) +
   stat_function(fun = dnorm, args = list(mean = 10, sd = 2), 
                 colour = 'steelblue', size = 1) +
+    theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 20)) +
     labs(y = ' ')
 
 gg_z <- ggplot(data = data.frame(x = -5:5), aes(x = x)) +
   stat_function(fun = dnorm, args = list(mean = 0, sd = 1), 
                 colour = 'red3', size = 1) +
   scale_x_continuous(breaks = -5:5) +
-  labs(x = 'z', y = ' ')
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 20)) +
+  labs(x = 'z', y = ' ', size = 20)
 
 gg_sample_z <- plot_grid(gg_sample, gg_z, ncol = 1, align = 'v')
-ggdraw(gg_sample_z) + draw_label('Плотность вероятности', angle = 90, x = 0.015, y = 0.5, size = 11, fontfamily = 'GT Eesti Pro Display')
+ggdraw(gg_sample_z) + 
+  draw_label('Плотность вероятности', angle = 90, x = 0.015, y = 0.5, size = 20, fontfamily = 'GT Eesti Pro Display')
 ```
+]
 
+.pull-right[
 $$z = \frac{x - \mu}{\sigma}$$
 
 После стандартизации любое нормальное распределение превращается в стандартное нормальное:
 
 $$Z \sim N(0, 1)$$
+]
 
-</div>
+---
 
 ## Задание 1
 
@@ -110,12 +159,13 @@ $$Z \sim N(0, 1)$$
 
 Стандартное отклонение?
 
+---
+
 ## Стандартизация
 
 
-<div class="columns-2">
-
-```{r echo=FALSE, purl=FALSE, fig.width = 4, fig.height=5}
+.pull-left[
+```{r echo=FALSE, purl=FALSE, fig.width = 8, fig.height=10}
 set.seed(4122113)
 
 Xi <- round(rnorm(n = 10, mean = 10, sd = 2), 0)
@@ -136,7 +186,8 @@ gg_sample <- ggplot(data = Z, aes(x = Xi)) +
              colour = 'steelblue') +
   geom_vline(xintercept = mean(Xi) + sd(Xi) * c(-1, 1), 
              colour = 'steelblue', linetype = 'dashed') + 
-  labs(title = lab_sample, x = 'x')
+  labs(title = lab_sample, x = 'x') +
+  theme(text = element_text(size = 20))
   
 
 gg_z <- ggplot(data = Z, aes(x = Zi)) + 
@@ -145,14 +196,18 @@ gg_z <- ggplot(data = Z, aes(x = Zi)) +
              colour = 'red3') +
   geom_vline(xintercept = mean(Zi) + sd(Zi) * c(-1, 1), 
              colour = 'red3', linetype = 'dashed') +
-    labs(title = lab_z, x = 'z')
+  labs(title = lab_z, x = 'z') +
+  theme(text = element_text(size = 20))
+  
+    
 
 plot_grid(gg_sample + theme_void(),
           gg_z + theme_void(), 
           ncol = 1)
 ```
+]
 
-
+.pull-right[
 $$z_i=\frac{x_i - \bar{x}}{s}$$
 
 Стандартизованная величина (Z-оценка) показывает, на сколько стандартных отклонений значение отличается от среднего
@@ -162,11 +217,13 @@ $$z_i=\frac{x_i - \bar{x}}{s}$$
 - среднее $\bar{z} = 0$
 - стандартное отклонение $s_{z} = 1$
 
-</div>
+]
+
+---
 
 ## Стандартизация позволяет уравнять шкалы, в которых измерены переменные
 
-```{r echo=FALSE, purl=FALSE}
+```{r echo=FALSE, purl=FALSE, fig.width = 10, fig.height=7}
 library(dplyr)
 library(tidyr)
 data('birthwt', package = 'MASS')
@@ -176,7 +233,10 @@ gg_unscaled <- birthwt %>%
   ggplot(aes(x = variable, y = value)) + 
   geom_hline(yintercept = 0, colour = 'darkgrey') +
   geom_boxplot(fill = 'green4', width = 0.2) +
-  labs(title = 'До стандартизации')
+  labs(title = 'До стандартизации') + 
+  theme(text = element_text(size = 18))
+
+
 
 gg_scaled <- birthwt %>% 
   dplyr::select(age, bwt) %>% 
@@ -185,11 +245,13 @@ gg_scaled <- birthwt %>%
   ggplot(aes(x = variable, y = value)) + 
   geom_hline(yintercept = 0, colour = 'darkgrey') +
   geom_boxplot(fill = 'red3', width = 0.2) +
-  labs(title = 'После стандартизации')
+  labs(title = 'После стандартизации') + 
+  theme(text = element_text(size = 18))
 
 plot_grid(gg_unscaled, gg_scaled, ncol = 2)
 ```
 
+---
 
 # Проверка на нормальность
 
@@ -207,16 +269,18 @@ qqPlot(x, id = FALSE)
 par(mfrow = c(1, 1))
 ```
 
+---
+
 ## Квантильный график в `R`
 
-```{r fig.width=4, fig.height=4}
+```{r fig.width=4, fig.height=6}
 set.seed(9128)
 my_vector <- rnorm(n = 150, mean = 10, sd = 3)
 library(car)
 qqPlot(my_vector, id = FALSE) # квантильный график
 ```
 
-
+---
 
 ## Задание 2
 
@@ -224,11 +288,11 @@ qqPlot(my_vector, id = FALSE) # квантильный график
 
 Что вы можете сказать о свойствах распределений, изображенных на квантильных графиках?
 
-
+---
 
 ## Бимодальное (двувершинное) распределение
 
-```{r echo=FALSE, fig.height=5}
+```{r echo=FALSE, fig.height=7, fig.width=12}
 library(car)
 set.seed(3287447)
 x <-c(rnorm(n = 75, mean = 10, sd = 4), rnorm(n = 75, mean = 30, sd = 6))
@@ -238,10 +302,12 @@ qqPlot(x, id = FALSE)
 par(mfrow = c(1, 1))
 ```
 
+---
+
 ## Дискретное распределение с длинным правым хвостом
 
 
-```{r echo=FALSE, fig.height=5}
+```{r echo=FALSE, fig.height=7, fig.width=12}
 set.seed(8921)
 x <- rpois(n = 100, lambda = 4)
 par(mfrow = c(1, 2))
@@ -250,10 +316,12 @@ qqPlot(x, id = FALSE)
 par(mfrow = c(1, 1))
 ```
 
+---
+
 ## Непрерывное распределение с толстыми хвостами
 
 
-```{r echo=FALSE, fig.height=5}
+```{r echo=FALSE, fig.height=7, fig.width=12}
 set.seed(49199158)
 x <- rt(n = 150, df = 6)
 par(mfrow = c(1, 2))
@@ -262,10 +330,11 @@ qqPlot(x, id = FALSE)
 par(mfrow = c(1, 1))
 ```
 
+---
 
 ## Непрерывное распределение с длинным правым хвостом
 
-```{r echo=FALSE, fig.height=5}
+```{r echo=FALSE, fig.height=7, fig.width=12}
 set.seed(1298)
 x <- rchisq(n = 150, df = 1)
 par(mfrow = c(1, 2))
@@ -276,6 +345,8 @@ par(mfrow = c(1, 1))
 
 <!-- Если интересны подробности, можно посмотреть симуляции, например, здесь https://stats.stackexchange.com/questions/101274/how-to-interpret-a-qq-plot -->
 
+---
+
 ## Задание 3
 
 Проверьте при помощи квантильного графика, подчиняются ли эти переменные нормальному распределению:
@@ -284,6 +355,8 @@ par(mfrow = c(1, 1))
 - Длина чашелистиков у ирисов (датасет `iris`)
 - Число пойманных рысей в Канаде с 1821 по 1934г. (датасет `lynx`)
 
+---
+
 ## Решение (3.1)
 
 ```{r}
@@ -291,6 +364,8 @@ data("women")
 str(women)
 qqPlot(women$height, id = FALSE)
 ```
+
+---
 
 ## Решение (3.2)
 
@@ -303,6 +378,8 @@ hist(iris$Sepal.Length)
 par(op)
 ```
 
+---
+
 ## Решение (3.3)
 
 ```{r}
@@ -314,12 +391,13 @@ hist(lynx)
 par(op)
 ```
 
+---
 
 # Оценка вероятностей при помощи распределений
 
 ## Кривые распределений можно использовать для оценки вероятностей
 
-```{r purl=FALSE, echo=FALSE}
+```{r purl=FALSE, echo=FALSE, fig.height=5, fig.width=12}
 mu <- 0; sig <- 1; X1 <- -2; X2 <- 2
 dfr <- data.frame(z = seq(-4, 4, length.out = 1000))
 
@@ -330,7 +408,8 @@ gg_part <- ggplot(dfr, aes(x = z)) +
   stat_function(geom = 'area', fun = dnorm, args = list(mean = mu, sd = sig), 
                 size = 1, fill = 'red3', alpha = 0.5, xlim = c(-0.5, 1.25)) +
   stat_function(geom = 'line', fun = dnorm, args = list(mean = mu, sd = sig), 
-                size = 1, colour = 'red3')
+                size = 1, colour = 'red3') +
+  theme(text = element_text(size = 18))
 
 gg_part +
 annotate(geom = 'text', parse = TRUE,
@@ -338,11 +417,12 @@ annotate(geom = 'text', parse = TRUE,
            label = "P")
 ```
 
+---
 
 ## Площадь под всей кривой распределения равна 1
 
 
-```{r purl=FALSE, echo=FALSE}
+```{r purl=FALSE, echo=FALSE, fig.height=6, fig.width=12}
 mu <- 0; sig <- 1; X1 <- -1.5; X2 <- 1.5
 dfr <- data.frame(z = seq(-4, 4, length.out = 1000))
 
@@ -360,11 +440,11 @@ annotate(geom = 'text', parse = TRUE,
            label = "P[group('(',list(-infinity, infinity),')')] == 1")
 ```
 
-
+---
 
 ## Вероятность конкретного значения нельзя определить
 
-```{r purl=FALSE, echo=FALSE}
+```{r purl=FALSE, echo=FALSE, fig.height=6, fig.width=12}
 gg_X1 <- ggplot(dfr, aes(x = z)) +
   scale_x_continuous(name = 'z', breaks = -3:3) +
   labs(y = 'Плотность вероятности') + 
@@ -373,39 +453,44 @@ gg_X1 <- ggplot(dfr, aes(x = z)) +
   geom_vline(xintercept = X1, linetype = 'dashed', colour = 'red') +
   annotate('point', x = X1, y = dnorm(X1, mean = mu, sd = sig), 
            colour = 'red3', fill = 'lightblue', shape = 21, size = 3) +
-    annotate(geom = 'text', parse = TRUE, 
+  annotate(geom = 'text', parse = TRUE, 
              x = X1, y = dnorm(X1, mean = mu, sd = sig), 
              label = paste0("P[(x == ", X1, ")] == 0"), 
-             hjust = 1.1)
+             hjust = 1.1, size = 6) +
+  theme(text = element_text(size = 18))
+
 gg_X1
 
 
 ```
 
+---
 
 ## Можно определить вероятность того, что значение будет меньше заданного
 
-```{r purl=FALSE, echo=FALSE}
+```{r purl=FALSE, echo=FALSE, fig.height=5, fig.width=12}
 gg_less_X2 <- ggplot(data = dfr, aes(x = z)) +
   geom_vline(xintercept = X2, linetype = 'dashed', colour = 'red') +
   scale_x_continuous(name = 'z', breaks = -3:3) +
   stat_function(fun = dnorm, args = list(mean = mu, sd = sig), 
-                colour = 'red3', size = 1) +
+                colour = 'red3', size = 3) +
   labs(x = 'Значение', y = 'Плотность вероятности') +
   stat_function(geom = 'area', fun = dnorm, args = list(mean = mu, sd = sig), 
-                xlim = c(min(dfr$z), X2), alpha = 0.6, fill = 'red3')
+                xlim = c(min(dfr$z), X2), alpha = 0.6, fill = 'red3') +
+  theme(text = element_text(size = 18))
 
 gg_less_X2 +
     annotate(geom = 'text', parse = TRUE, 
            x = X2, y = dnorm(X2, mean = mu, sd = sig), 
            label = paste0("P[(x <= ", X2, ")]"), 
-           hjust = 1.1)
+           hjust = 1.1, size = 5)
 ```
 
+---
 
 ## Остальные площади легко найти при помощи простых арифметических действий с площадями
 
-```{r purl=FALSE, echo=FALSE}
+```{r purl=FALSE, echo=FALSE, fig.height=6, fig.width=12}
 gg_greater_X2 <- ggplot(data = dfr, aes(x = z)) +
   geom_vline(xintercept = X2, linetype = 'dashed', colour = 'red') +
   scale_x_continuous(name = 'z', breaks = -3:3) +
@@ -455,6 +540,8 @@ plot_grid(gg_greater, gg_between, nrow = 2)
 ```
 
 
+---
+
 ## Пример: Размеры улиток
 
 В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.
@@ -468,13 +555,12 @@ plot_grid(gg_greater, gg_between, nrow = 2)
 
 <small>tres caracoles by Alberto Villen on Freeimages.com</small>
 
+---
 
 ## Вероятность встретить значение меньше заданного
 
 В выборке улиток средний диаметр раковины 5 см со стандартным отклонением 1.5 см.
-
 ### Какова вероятность того, что случайно выбранная улитка окажется __меньше 3 см__?
-
 ```{r}
 Z_1 <- (3 - 5) / 1.5
 pnorm(q = Z_1)
@@ -482,7 +568,7 @@ pnorm(q = Z_1)
 pnorm(q = 3, mean = 5, sd = 1.5)
 ```
 
-```{r snail-small, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r snail-small, purl=FALSE, echo=FALSE, fig.width = 6, fig.height=3}
 mu <- 5; sig <- 1.5; X1 <- 3; X2 <- 6
 dfr <- data.frame(x = seq(0, 10, length.out = 1000))
 dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
@@ -497,6 +583,7 @@ ggplot(dfr, aes(x = x)) +
   geom_vline(xintercept = X1, colour = "red3", linetype = "dashed")
 ```
 
+---
 
 ## Вероятность встретить значение больше заданного
 
@@ -504,16 +591,17 @@ ggplot(dfr, aes(x = x)) +
 
 ### Какова вероятность того, что случайно выбранная улитка окажется __больше 6 см__?
 
-Мы умеем интегрировать только влево от выбранного значения, поэтому
+.pull-left-33[Мы умеем интегрировать только влево от выбранного значения, поэтому
 
 - выясняем вероятность встретить значение меньше заданного $p$
-- находим комплементарную вероятность $1 - p$
+- находим комплементарную вероятность $1 - p$]
 
+.pull-right-66[
 ```{r}
 1 - pnorm(q = 6, mean = 5, sd = 1.5)
 ```
 
-```{r snail-large, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r snail-large, purl=FALSE, echo=FALSE, fig.width = 7, fig.height=4.5}
 dfr <- data.frame(x = seq(0, 10, length.out = 1000))
 dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y[!(dfr$x > X2)] <- NA
@@ -525,6 +613,9 @@ ggplot(dfr, aes(x = x)) +
   geom_area(aes(x = x, y = y), fill = "steelblue", alpha = 0.5) +
   geom_vline(xintercept = X2, colour = "red3", linetype = "dashed")
 ```
+]
+
+---
 
 ## Вероятность встретить значение в заданных пределах
 
@@ -537,7 +628,7 @@ pnorm(q = 6, mean = 5, sd = 1.5) -
   pnorm(q = 3, mean = 5, sd = 1.5)
 ```
 
-```{r snail-medium, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r snail-medium, purl=FALSE, echo=FALSE, fig.width = 5, fig.height=3.5}
 dfr <- data.frame(x = seq(0, 10, length.out = 1000))
 dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y[!(dfr$x > X1 & dfr$x < X2)] <- NA
@@ -551,6 +642,7 @@ ggplot(dfr, aes(x = x)) +
   geom_vline(xintercept = X2, colour = "red3", linetype = "dashed")
 ```
 
+---
 
 ## Задание 4
 
@@ -562,6 +654,7 @@ ggplot(dfr, aes(x = x)) +
 
 - Какова доля мужчин, не подходящих по росту в пилоты, т.е. __меньше 160 и больше 190 см__?
 
+---
 
 ## Решение (4.1)
 
@@ -576,7 +669,7 @@ pnorm(q = Z_short)
 pnorm(q = 160, mean = 174.7, sd = 6.65)
 ```
 
-```{r men-short, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r men-short, purl=FALSE, echo=FALSE, fig.width = 5, fig.height=2.5}
 mu <- 174.7; sig <- 6.65; X1 <- 160; X2 <- 190
 dfr <- data.frame(x = seq(150, 200, length.out = 1000))
 dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
@@ -590,6 +683,8 @@ ggplot(dfr, aes(x = x)) +
   geom_vline(xintercept = X1, colour = "red3", linetype = "dashed")
 ```
 
+---
+
 ## Решение (4.2)
 
 Средний рост 18-летних мужчин в России 174.7 см со стандартным отклонением 6.65 см. В пилоты берут только с ростом от 160 до 190 см (по приказу Минтранса).
@@ -600,18 +695,20 @@ ggplot(dfr, aes(x = x)) +
 1 - pnorm(q = 190, mean = 174.7, sd = 6.65)
 ```
 
-```{r men-tall, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r men-tall, purl=FALSE, echo=FALSE, fig.width = 6, fig.height=4}
 dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y[!(dfr$x > X2)] <- NA
 ggplot(dfr, aes(x = x)) +
-  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 1, geom = "line", colour = "steelblue") +
+  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 3, geom = "line", colour = "steelblue") +
   scale_x_continuous(name = "Рост",
                      sec.axis = sec_axis(~(. - mu)/sig, name = "Z-оценка", breaks = -4:4)) +
   labs(y = "Плотность вероятности") +
   geom_area(aes(x = x, y = y), fill = "steelblue", alpha = 0.5) +
-  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed")
+  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed") +
+  theme(text = element_text(size = 18))
 ```
 
+---
 
 ## Решение (4.3)
 
@@ -625,23 +722,25 @@ ggplot(dfr, aes(x = x)) +
   pnorm(q = 160, mean = 174.7, sd = 6.65)
 ```
 
-```{r men-not-pilots, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r men-not-pilots, purl=FALSE, echo=FALSE, fig.width = 6, fig.height=4}
 dfr$y1 <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y1[!(dfr$x < X1)] <- NA
 dfr$y2 <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y2[!(dfr$x > X2)] <- NA
 
 ggplot(dfr, aes(x = x)) +
-  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 1, geom = "line", colour = "steelblue") +
+  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 2, geom = "line", colour = "steelblue") +
   scale_x_continuous(name = "Рост",
                      sec.axis = sec_axis(~(. - mu)/sig, name = "Z-оценка", breaks = -4:4)) +
   labs(y = "Плотность вероятности") +
   geom_area(aes(x = x, y = y1), fill = "steelblue", alpha = 0.5) +
   geom_area(aes(x = x, y = y2), fill = "steelblue", alpha = 0.5) +
   geom_vline(xintercept = X1, colour = "red3", linetype = "dashed") +
-  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed")
+  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed") +
+  theme(text = element_text(size = 18))
 ```
 
+---
 
 ## Задание 5
 
@@ -650,6 +749,7 @@ ggplot(dfr, aes(x = x)) +
 
 Какой процент девушек подходит по росту в пилоты?
 
+---
 
 ## Решение
 
@@ -671,7 +771,7 @@ prop_fem <- round(p_fem * 100, 1)
 
 Только `r prop_fem` % девушек пройдут в пилоты по росту.
 
-```{r women-pilots, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r women-pilots, purl=FALSE, echo=FALSE, fig.width = 7, fig.height=4.4}
 mu <- 162.2; sig <- 6.0; X1 <- 160; X2 <- 190
 
 dfr <- data.frame(x = seq(140, 200, length.out = 1000))
@@ -679,14 +779,17 @@ dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y[(dfr$x < X1) | (dfr$x > X2)] <- NA
 
 ggplot(dfr, aes(x = x)) +
-  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 1, geom = "line", colour = "orangered") +
+  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 3, geom = "line", colour = "orangered") +
   scale_x_continuous(name = "Рост",
                      sec.axis = sec_axis(~(. - mu)/sig, name = "Z-оценка", breaks = -4:4)) +
   labs(y = "Плотность вероятности") +
   geom_area(aes(x = x, y = y), fill = "orangered", alpha = 0.5) +
   geom_vline(xintercept = X1, colour = "red3", linetype = "dashed") +
-  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed")
+  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed") +
+  theme(text = element_text(size = 18))
 ```
+
+---
 
 ## Задание 6
 
@@ -694,6 +797,8 @@ ggplot(dfr, aes(x = x)) +
 
 - Какой процент детей рождается с весом больше 3200г.?
 - Какой процент детей рождается с весом в пределах 2500-4500г.?
+
+---
 
 ## Решение (1)
 
@@ -712,7 +817,7 @@ prop_baby_big <- round(p_baby_big * 100, 1)
 
 `r prop_baby_big` % детей рождается с весом больше 3200г.
 
-```{r baby-big, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r baby-big, purl=FALSE, echo=FALSE, fig.width = 6, fig.height=4.5}
 mu <- 3500; sig <- 600; X1 <- 3200
 
 dfr <- data.frame(x = seq(1500, 5500, length.out = 1000))
@@ -720,13 +825,16 @@ dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y[(dfr$x < X1)] <- NA
 
 ggplot(dfr, aes(x = x)) +
-  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 1, geom = "line", colour = "forestgreen") +
+  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 3, geom = "line", colour = "forestgreen") +
   scale_x_continuous(name = "Вес",
                      sec.axis = sec_axis(~(. - mu)/sig, name = "Z-оценка", breaks = -4:4)) +
   labs(y = "Плотность вероятности") +
   geom_area(aes(x = x, y = y), fill = "forestgreen", alpha = 0.5) +
-  geom_vline(xintercept = X1, colour = "red3", linetype = "dashed")
+  geom_vline(xintercept = X1, colour = "red3", linetype = "dashed") +
+  theme(text = element_text(size = 18))
 ```
+
+---
 
 ## Решение (2)
 
@@ -746,7 +854,7 @@ prop_baby <- round(p_baby * 100, 1)
 
 `r prop_baby` % детей рождается с весом в пределах 2500-4500г.
 
-```{r baby-norm, purl=FALSE, echo=FALSE, fig.width = 4, fig.height=2}
+```{r baby-norm, purl=FALSE, echo=FALSE, fig.width = 6.5, fig.height=4}
 mu <- 3500; sig <- 600; X1 <- 2500; X2 <- 4500
 
 dfr <- data.frame(x = seq(1500, 5500, length.out = 1000))
@@ -754,14 +862,17 @@ dfr$y <- dnorm(dfr$x, mean = mu, sd = sig)
 dfr$y[(dfr$x < X1) | (dfr$x > X2)] <- NA
 
 ggplot(dfr, aes(x = x)) +
-  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 1, geom = "line", colour = "cyan4") +
+  stat_function(fun = dnorm, args = list(mean = mu, sd = sig), size = 3, geom = "line", colour = "cyan4") +
   scale_x_continuous(name = "Вес",
                      sec.axis = sec_axis(~(. - mu)/sig, name = "Z-оценка", breaks = -4:4)) +
   labs(y = "Плотность вероятности") +
   geom_area(aes(x = x, y = y), fill = "cyan4", alpha = 0.5) +
   geom_vline(xintercept = X1, colour = "red3", linetype = "dashed") +
-  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed")
+  geom_vline(xintercept = X2, colour = "red3", linetype = "dashed") +
+  theme(text = element_text(size = 18))
 ```
+
+---
 
 ## Take-home messages
 

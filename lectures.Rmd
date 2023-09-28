@@ -59,18 +59,18 @@ install.packages("car")
 
 Часть 2
 
-<!-- - Презентация [03.2_descriptive_statistics_normal_d.html](03.2_descriptive_statistics_normal_d.html) -->
+- Презентация [03.2_descriptive_statistics_normal_d.html](03.2_descriptive_statistics_normal_d.html)
 - Код [03.2_descriptive_statistics_normal_d_code.R](03.2_descriptive_statistics_normal_d_code.R)
 
-<!-- ### 04 Тестирование гипотез -->
+### 04 Тестирование гипотез
 
-<!-- ```{r eval=FALSE} -->
-<!-- install.packages("dplyr") -->
-<!-- ``` -->
+```{r eval=FALSE}
+install.packages("dplyr")
+```
 
-<!-- - Презентация [04_hypothesis_testing.html](04_hypothesis_testing.html) -->
+- Презентация [04_hypothesis_testing.html](04_hypothesis_testing.html)
 <!-- - Код [04_hypothesis_testing_code.R](04_hypothesis_testing_code.R) -->
-<!-- - Данные [aml.csv](data/aml.csv) -->
+- Данные [aml.csv](data/aml.csv)
 
 <!-- ## Линейная регрессия -->
 

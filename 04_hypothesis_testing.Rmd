@@ -21,6 +21,9 @@ output:
 ---
 
 ```{r setup, include = FALSE, cache = FALSE, purl = FALSE, fig.showtext = TRUE}
+library(knitr)
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache =TRUE)
+
 source("assets/xaringan_setup.R")
 library(xaringanExtra)
 use_tile_view()
@@ -114,6 +117,97 @@ dnorm_limit <- function(x, alph = 0.05, mu = 0, sig = 1, sides = 2, what = "alph
 
 ---
 
+
+class: middle, center, inverse
+
+
+# Оценка параметров распределения по выборке
+
+
+---
+## Задание
+
+
+- Загрузите объект `population`. Это вектор, характеризующий размеры особей, в некоторой гипотетической популяции. 
+
+```{r}
+load("data/population.RData")
+```
+
+
+- Сделайте из этой совокупности случайную выборку в 5 измерений.
+
+```{r}
+my_sample <-  sample(x = population, size = 5)
+
+my_sample  
+```
+
+- Определите среднее значение и среднеквадратичное отклонение.
+
+```{r}
+mean(my_sample)
+sd(my_sample)
+```
+
+- Проведите такую выборку несколько раз.
+
+
+---
+
+## Выборочные оценки
+
+- Изучая интересующую нас систему, мы не знаем значений параметров распределения, которое описывает поведение вероятности в **генральной совокупности** (*population*).
+
+- Мы проводим **оценку** (*estimate*) этих параметров, используя **выборку** (*sample*).
+
+- Выборка имеет ограниченный **объем**(*N*, или *n*).
+
+- Выборка попадает в анализ в виде вектора значений $\{x_1, x_2, x_3, \dots , x_n\}$  
+
+---
+
+## Выборочные оценки
+
+Выборка может быть описана с помощью "5 number statistic": 
+
+--
+
+- Min
+- Q1
+- Q2 (Median)
+- Q3
+- Max
+
+---
+
+## Выборочные оценки
+
+Другой способ описания выборки 
+
+--
+- Среднее значение:  $\bar{x}=\frac{\Sigma{x_i} }{n}$
+
+--
+- Стандартное отклонение: $sd = \sqrt{\frac{\Sigma{(x_i - \bar{x})^2}}{n-1} }$ 
+
+--
+
+Если $x_i \in N(\mu, \sigma)$, то 
+
+--
+$$
+\bar{x} \xrightarrow[n\to\infty]{} \mu
+$$
+
+--
+$$
+sd \xrightarrow[n\to\infty]{} \sigma
+$$
+
+
+---
+
 class: middle, center, inverse
 
 # Выборочная оценка среднего
@@ -130,11 +224,11 @@ __Центральная предельная теорема__ (ЦПТ) гово
 
 $$\bar X \sim N (\mu_{\bar x}, \sigma_{\bar x})$$
 
-При чем $\sigma_{\bar x} = \sigma/\sqrt{n}$.
+При чем $\sigma_{\bar x} = \frac{\sigma}{\sqrt{n}}$.
 
 <br/>
 
-__Важно__: это так при больших объемах выборки ( $N > 30$, или даже $N > 100$), даже если $x$ в генеральной совокупности не подчиняется нормальному распределению.
+__Важно__: это будет так при *больших объемах выборки* ( $n > 30$, или даже $n > 100$), даже если $x$ в генеральной совокупности не подчиняется нормальному распределению.
 
 <br/>
 
@@ -272,7 +366,7 @@ plot_grid(gg_population + coord_cartesian(xlim = c(0, 20000)),
 ]
 .pull-right[
 
-## Распределение выборочных средних
+### Распределение выборочных средних при разных объемах выборки
 
 $$\bar X \sim N (\mu_{\bar x}, \sigma_{\bar x})$$
 
@@ -368,7 +462,7 @@ gg_conf_1
 
 --- это интервал, в который попадает заданный процент выборочных средних.
 
-В 95% доверительный интервал попадает выборочное среднее в 95% повторных выборок.
+В 95% доверительный интервал попадает выборочное среднее в 95% *повторных* выборок.
 
 <br/>
 
@@ -425,20 +519,20 @@ $z_{0.05} = 1.96$
 
 ## Если $\pmb \sigma$ не известна
 
-Если $\sigma$ в генеральной совокупности не известна, ее можно оценить по выборочному стандартному отклонению $s$.
+Если $\sigma$ в генеральной совокупности не известна, ее можно оценить по выборочному стандартному отклонению $sd$.
 
-$$\sigma / \sqrt{n} \approx s/\sqrt{n}$$
+$$\sigma / \sqrt{n} \approx sd/\sqrt{n}$$
 
 После стандартизации:
 
-$$\frac{\bar X - \mu}{SE_{\bar x}} = \frac{\bar X - \mu}{s / \sqrt{n}} \sim t_{df = n - 1}$$
+$$\frac{\bar X - \mu}{SE_{\bar x}} = \frac{\bar X - \mu}{sd / \sqrt{n}} \sim t_{df = n - 1}$$
 
 
 стандартизованное распределение выборочных средних подчиняется $t$-распределению с числом степеней свободы $df = n - 1$
 
 ---
 
-## _t_-распределение
+## _t_-распределение, или распределение Стьюдента
 
 .pull-left-55[
 
@@ -464,12 +558,16 @@ ggplot(data = data.frame(t = -4 : 4), aes(x = t)) +
         legend.background = element_blank())
 ```
 
-]
-.pull-right-45[
-
 - Симметричное колоколообразное распределение с толстыми хвостами. 
 - Единственный параметр — число степеней свободы (для доверительного интервала $df = n - 1$).
 - При увеличении объема выборки $t$-распределение приближается к нормальному.
+
+
+]
+.pull-right-45[
+![](images/William_Sealy_Gosset.png)
+
+William Sealy Gosset
 
 ]
 
@@ -538,8 +636,9 @@ $df = n - 1$
 library(dplyr)
 set.seed(14934)
 # Генеральная совокупность для симуляции
-x <- rnorm(10000, mean = 10, sd = 5)
-mu <- mean(x)
+x <- population 
+x <-  rnorm(10000, mean = 170, sd = 5)
+mu <- round(mean(x), 0)
 # Функция, которая берет выборку объемом sample_size из вектора x и возвращает ее среднее значение и доверительный интервал (по t)
 sample_mean_ci <- function(x, size){
   id <- sample(x = length(x), size)
@@ -563,22 +662,29 @@ perc <- round(mean(dfr_means$inside == 'Да') * 100, 1)
 gg_many_lims <- ggplot(data = dfr_means) +
   geom_segment(aes(x = interval, y = lower, xend = interval, yend = upper, colour = inside)) +
   geom_hline(yintercept = mean(x), colour = 'red', size = 1) +
-  scale_y_continuous('', breaks = mu, labels = expression(bar(x))) +
+  scale_y_continuous('', breaks = mu, labels = expression(mu)) +
   labs(x = 'Порядковый номер интервала в симуляции', y = 'x',
        color = 'Включает ли\nинтервал\nистинное\nсреднее \nзначение?') +
   coord_flip() +
     scale_x_reverse()
-gg_many_lims
+
+gg_many_lims + scale_color_manual(values = c("red", "blue"))
 ```
+
 
 ]
 .pull-right[
 
-Среднее в генеральной совокупности — это фиксированная величина (она либо попала в интервал, либо нет.
+- Для примера возьмем данные из объекта `population`. Здесь известно, что $\mu = `r mu`$.
 
-Доверительный интервал — случайная величина.
+- Симулируем взятие многих выборок из этой генеральной совокупности.
 
-В повторных выборках такого же размера $\approx 95\%$ всех доверительных интервалов "накроют" истинное среднее значение.
+- Среднее в генеральной совокупности — это фиксированная величина (она либо попала в интервал, либо нет.
+
+- Доверительный интервал — случайная величина.
+
+
+- В *повторных выборках* одинакового объема $\approx 95\%$ всех доверительных интервалов "накроют" истинное среднее значение.
 
 ]
 
@@ -605,7 +711,7 @@ err
 ```
 
 Можем записать среднюю цену бриллиантов хорошей огранки и ее доверительный интервал:
-$`r round(.mean, 1)` \pm `r round(err, 1)`$ 
+$`r round(.mean, 1)` \pm `r round(err, 1)` (\pm SE)$ 
 
 ---
 
@@ -621,7 +727,7 @@ ggplot(data = diamonds, aes(x = cut, y = price)) +
 
 ## Задание 1
 
-Посчитайте среднюю цену и доверительный интервал для бриллиантов с такими свойствами (одновременно):
+Посчитайте среднюю цену и доверительный интервал для бриллиантов с такими свойствами (*одновременно*):
 
 - качество огранки (`cut`) идеальное (`Ideal`)
 - прозрачность (`clarity`) наивысшая (`IF`)
@@ -659,6 +765,19 @@ ggplot(data = diamonds, aes(x = cut, y = price, colour = clarity)) +
   stat_summary(geom = 'pointrange', fun.data = mean_cl_normal)
 ```
 
+
+
+---
+
+## Решение: cпособ 1 (доработка)
+
+Теперь можно построить график средней цены с доверительными интервалами для бриллиантов разного качества огранки и прозрачности. Для этого нужно к предыдущему графику добавить информацию о прозрачности.
+
+```{r purl=FALSE, echo=TRUE, opts.label='fig.wider'}
+ggplot(data = diamonds, aes(x = cut, y = price, colour = clarity)) +
+  stat_summary(geom = 'pointrange', fun.data = mean_cl_normal, position = position_dodge(width = 0.5))
+```
+
 ---
 
 ## Решение: cпособ 2 (удовлетворительный)
@@ -674,7 +793,7 @@ ggplot(data = diamonds, aes(x = cut, y = price, colour = clarity)) +
 
 --
 
-Осторожно! Группы могут быть неоднородны. Здесь не учтен размер и т.п.
+Осторожно! Группы могут быть неоднородны: в каждой группе варьирует размер алмазов.  
 
 ---
 
@@ -786,6 +905,11 @@ class: middle, center, inverse
 | Отклонить H0 | Ошибка I рода с вероятностью <span class="orange">&alpha;</span></br>Ложно-положительный результат | 	Верно |
 | Сохранить H0 | Верно | Ошибка II рода с вероятностью <span class= "blue">&beta;</span> </br> Ложно-отрицательный результат |
 
+--
+
+Пока мы будем говорить о том, как контролируют уровень **Ошибок I рода**. 
+Про **Ошибки II рода** и **Power analysis** читайте дополнительную литературу.   
+
 ---
 
 ## Тестирование гипотез: Тестовые статистики
@@ -822,7 +946,7 @@ class: middle, center, inverse
 
 class: middle, center, inverse
 
-# Одновыборочный $t$-тест
+# Одновыборочный *t*-тест
 
 ---
 
@@ -843,7 +967,7 @@ mu <- 8
 
 Представьте, что в [одной статье](https://edis.ifas.ufl.edu/publication/UW441#:~:text=Reproductive%20rate%3A%20Clutch%20sizes%20range,to%20100%20years%20in%20captivity.) сказано, что средняя плодовитость черепах определенного вида — `r mu` яиц в кладке.
 
-В вашей выборке из $`r n`$ черепах — $\bar x = `r x`$, $s = `r s`$.
+В вашей выборке из $`r n`$ черепах — $\bar x = `r x`$, $sd = `r s`$.
 
 ```{r echo=FALSE, eval=FALSE}
 mu <- 8
@@ -854,7 +978,9 @@ X <- c(10, 11, 10, 7, 8, 7, 9, 8, 11, 11, 12, 8, 6, 7, 10, 11, 9,
 (s <- sd(X))
 ```
 
-Отличается ли реальная плодовитость в обследованной вами популяции черепах от того, что указано в статье?
+Отличается ли приведенное в статье значение от того, что наблюдается в изученной популяции. Можно ли считать, что авторы статьи изучали что-то иное (другой вид, или популяцию из иных условий).   
+
+<!-- Отличается ли реальная плодовитость в обследованной вами популяции черепах от того, что указано в статье? -->
 
 ![](images/gopher-tortoise.jpg)
 
@@ -897,11 +1023,15 @@ library(car)
 qqPlot(X, id = FALSE)
 ```
 
+--
+
+Нет оснований для сомнения, что наша выборка взята из генеральной совокупности с распределением отличающимся от нормального.
+
 ---
 
 ## Вычислим наблюдаемое значение $t$-статистики
 
-$$t = \cfrac{\bar x - \mu}{ s / \sqrt{n} }$$
+$$t = \cfrac{\bar x - \mu}{ sd / \sqrt{n} }$$
 Средняя плодовитость в выборке из `r n` черепах $\bar x = `r x`$, стандартное отклонение $s = `r s`$.
 В статье указана плодовитость $`r mu`$.
 
@@ -1058,7 +1188,10 @@ gg_test_alpha +  geom_vline(xintercept = qt(c(0.025, 0.975), df = n - 1), linety
 
 Критический уровень значимости $\alpha$ — это порог для принятия решений.
 
-Обычно используют $\alpha = 0.05$.
+Обычно используют $\alpha = 0.05$. 
+
+$\alpha$ - это допустимая вероятность **Ошибки I рода** (найти отличия там, где их нет).
+
 
 Если $p \le \alpha$ — отвергаем $H_0$  и принимаем $H_A$.
 
@@ -1081,8 +1214,11 @@ gg_test_alpha_p
 
 Мы получили $p < \alpha$, поэтому отвергаем $H_0$ и принимаем $H_A$.
 
-Фактическая плодовитость статистически значимо отличается от указанной в статье.
+Указанная в статье плодовитость **статистически значимо** отличается от плодовитости в изученной нами популяции. Мы изучали что-то иное (другую генеральную совокупность)!
 
+--
+
+*At!* Лучше не использовать популярное словосочетание "*достоверно отличается*". Достоверные события - это события, вероятность которых равна 1. 
 ]
 
 ---
@@ -1091,26 +1227,46 @@ gg_test_alpha_p
 
 --
 
-> Правда ли, что $p$ — вероятность того, что верна сама $H_0$?  
-> - Нет! Значение $p$ всегда считается __при условии, что $H_0$ верна__. Но $H_0$ может быть неверна.
+- Правда ли, что $p$ — вероятность того, что верна сама $H_0$?  
+
+--
+
+- Нет! Значение $p$ всегда считается __при условии, что $H_0$ верна__. Но $H_0$ может быть неверна.
 
 <br/>
 
 --
 
-> Правда ли, что $p$ — это вероятность получить такое значение статистики при справедливой $H_0$?
-> - Нет! Вероятность вычисляется как площадь под участком кривой.  Конкретное значение статистики — это точка и под ней нет площади.
+Правда ли, что $p$ — это вероятность получить такое значение статистики при справедливой $H_0$?
+
+--
+
+- Нет! Вероятность вычисляется как площадь под участком кривой.  Конкретное значение статистики — это точка и под ней нет площади.
 
 <br/>
 
 --
 
-> Правда ли, что если $p > 0.05$, то различий между группами на самом деле нет?  
-> - Нет! Это значит, что наблюдаемый эффект согласуется с нулевой гипотезой. Различия могут быть.
+Правда ли, что если $p > 0.05$, то различий между группами на самом деле нет?  
+
+--
+
+- Нет! Это значит, что имеющиеся данные не позволяют отвергнуть нулевую гипотезу. Различия могут быть.
+
+--
+
+*p*-value - это всего лишь вероятность того, что *в мире, где справедлива $H_0$,* при повторных выборках из той же генеральной совокупности значение выбранной статистики (например *t*) будет больше или равно наблюдаемого в нашей выборке. 
+
 
 ---
 
 class: middle, center, inverse
+
+
+##############################################################
+Внимание. Кусок лекции про power откладываем до луших времен
+
+##############################################################
 
 # Статистические ошибки при проверке гипотез
 
@@ -1152,8 +1308,8 @@ gg_H0 <- ggplot(data = data.frame(t = -7:7), aes(x = t)) +
 
 # Нулевая и альтернативная
 nc <- (x - mu)/(s/sqrt(n))
-gg_H0A <- gg_H0 + stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
+gg_H0A <- gg_H0 + stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
                 geom = "line", colour = 'steelblue', size = 1, linetype = 2) +
   annotate('text', label = 'H[0]', parse = TRUE, x = -Inf, y = Inf, hjust = - 0.5, vjust = 1.7, size = 5) +
   annotate('text', label = 'H[A]', parse = TRUE, x = Inf, y = Inf, hjust = 1.5, vjust = 1.7, size = 5) +
@@ -1165,30 +1321,30 @@ gg_H0A <- gg_H0 + stat_function(fun = dt,
 gg_alpha <- gg_H0 +
   geom_vline(xintercept = qt(c(0.025, 0.975), df = n - 1), linetype = 2) +
   # Уровень значимости
-  stat_function(geom = 'area', fun = dt, args = list(df = n - 1), 
+  stat_function(geom = 'area', fun = dt, args = list(df = n - 1),
                 aes(fill = 'alpha'), xlim = c(-5, qt(0.025, df = n - 1)), alpha = 0.5) +
-  stat_function(geom = 'area', fun = dt, args = list(df = n - 1), 
+  stat_function(geom = 'area', fun = dt, args = list(df = n - 1),
                 aes(fill = 'alpha'), xlim = c(qt(0.975, df = n - 1), 5), alpha = 0.5) +
   scale_fill_manual('', values = cols, labels = labs)
 # gg_alpha
 
 # Нулевая с альфой и альтернативная
 gg_nc <- gg_alpha +
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
                 geom = "line", colour = 'steelblue', size = 1, linetype = 2)
 # gg_nc
 
 # Нулевая с альфой и альтернативная + бета
-gg_beta <- gg_alpha + 
+gg_beta <- gg_alpha +
   # beta
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
-                geom = "area", aes(fill = 'beta'), alpha = 0.7, 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
+                geom = "area", aes(fill = 'beta'), alpha = 0.7,
                 xlim = qt(p = c(0.0275, 0.975), df = n - 1)) +
   # H_A curve
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
                 geom = "line", colour = "steelblue", size = 1, linetype = 2) +
   scale_fill_manual('', values = cols, labels = labs)
 # gg_beta
@@ -1197,19 +1353,19 @@ gg_beta <- gg_alpha +
 gg_beta_1 <- gg_H0 +
   geom_vline(xintercept = qt(c(0.005, 0.995), df = n - 1), linetype = 2) +
     # Уровень значимости
-  stat_function(geom = 'area', fun = dt, args = list(df = n - 1), 
+  stat_function(geom = 'area', fun = dt, args = list(df = n - 1),
                 aes(fill = 'alpha'), xlim = c(-5, qt(0.005, df = n - 1)), alpha = 0.5) +
-  stat_function(geom = 'area', fun = dt, args = list(df = n - 1), 
+  stat_function(geom = 'area', fun = dt, args = list(df = n - 1),
                 aes(fill = 'alpha'), xlim = c(qt(0.995, df = n - 1), 5), alpha = 0.5) +
-  scale_fill_manual('', values = cols, labels = labs) + 
+  scale_fill_manual('', values = cols, labels = labs) +
     # beta
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
-                geom = "area", aes(fill = 'beta'), alpha = 0.7, 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
+                geom = "area", aes(fill = 'beta'), alpha = 0.7,
                 xlim = qt(p = c(0.005, 0.995), df = n - 1)) +
   # H_A curve
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
                 geom = "line", colour = "steelblue", size = 1, linetype = 2) +
   scale_fill_manual('', values = cols, labels = labs)
   # gg_beta_1
@@ -1219,13 +1375,13 @@ p_nc <- pt(qt(p = c(0.0275, 0.975), df = n - 1), df = n - 1, ncp = nc)
 lims_nc <- qt(p = p_nc, df = n - 1, ncp = nc)
 gg_power <- gg_beta +
   # power - upper
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
                  geom = "area", aes(fill = '1 - beta'), alpha = 0.7,
                 xlim = c(lims_nc[2], 6)) +
   # power- lower
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc),
                 geom = "area", aes(fill = '1 - beta'), alpha = 0.7,
                 xlim = c(-6, lims_nc[1])) +
   scale_fill_manual('', values = cols, breaks = br, labels = labs)
@@ -1236,25 +1392,25 @@ nc_1 <- (x_1 - mu)/(s/sqrt(n))
 p_nc_1 <- pt(qt(p = c(0.0275, 0.975), df = n - 1), df = n - 1, ncp = nc_1)
 lims_nc_1 <- qt(p = p_nc_1, df = n - 1, ncp = nc_1)
 
-gg_power_1 <- gg_alpha + 
+gg_power_1 <- gg_alpha +
   # beta
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_1), 
-                geom = "area", aes(fill = 'beta'), alpha = 0.7, 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_1),
+                geom = "area", aes(fill = 'beta'), alpha = 0.7,
                 xlim = qt(p = c(0.0275, 0.975), df = n - 1)) +
   # H_A curve
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_1), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_1),
                 geom = "line", colour = "steelblue", size = 1, linetype = 2) +
   scale_fill_manual('', values = cols, labels = labs) +
   # power - upper
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_1), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_1),
                  geom = "area", aes(fill = '1 - beta'), alpha = 0.7,
                 xlim = c(lims_nc_1[2], 7)) +
   # power- lower
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_1), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_1),
                 geom = "area", aes(fill = '1 - beta'), alpha = 0.7,
                 xlim = c(-7, lims_nc_1[1])) +
   scale_fill_manual('', values = cols, breaks = br, labels = labs) +
@@ -1271,17 +1427,17 @@ lims_nc_2 <- qt(p = p_nc_2, df = n - 1, ncp = nc_2)
 gg_sm <- gg_H0 +
   geom_vline(xintercept = qt(c(0.025, 0.975), df = n - 1), linetype = 2) +
   # H_A curve
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_2), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_2),
                 geom = "line", colour = "steelblue", size = 1, linetype = 2) +
   # power - upper
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_2), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_2),
                 geom = "area", aes(fill = '1 - beta'), alpha = 0.7,
                 xlim = c(lims_nc_2[2], 7)) +
   # power- lower
-  stat_function(fun = dt, 
-                args = list(df = n - 1, ncp = nc_2), 
+  stat_function(fun = dt,
+                args = list(df = n - 1, ncp = nc_2),
                 geom = "area", aes(fill = '1 - beta'), alpha = 0.7,
                 xlim = c(-7, lims_nc_2[1])) +
   scale_fill_manual('', values = cols, breaks = br, labels = labs) +
@@ -1406,7 +1562,7 @@ dat$effect <- factor(dat$effect, levels = c(0.2, 0.5, 0.8),
 #   theme(legend.key = element_blank(),
 #         axis.line = element_line(colour = "black"))
 # pwr_size
-# 
+#
 # pwr_size_apha <- ggplot(data = dat[dat$effect == "d = 0.5", ],
 #                         aes(x = size, y = value, color = sig.level)) +
 #   geom_line(size = 1.5) +
@@ -1431,7 +1587,7 @@ pwr_size_alpha_d <- ggplot(data = dat, aes(x = size, y = value, color = sig.leve
 pwr_size_alpha_d
 ```
 
----
+
 
 class: middle, center, inverse
 

@@ -102,8 +102,9 @@ ggplot(data = baby, aes(x = bpd)) + #Базовый уровень с перви
 
 ggplot(data = baby, aes(x = bpd)) +
   geom_point(aes(y = bwt)) +
-  geom_ribbon(data = MyData, aes(x = bpd, ymin = Predicted - 1.96*SE, ymax = Predicted + 1.96*SE), alpha = 0.6, fill = "gray") +
-  geom_line(data = MyData, aes(x = bpd, y = Predicted), color = "blue", size = 2)
+  geom_ribbon(data = MyData, aes(x = bpd, ymin = Predicted - 1.96*SE, ymax = Predicted + 1.96*SE), alpha = 0.6, fill = "green") +
+  geom_line(data = MyData, aes(x = bpd, y = Predicted), color = "blue", size = 2) +
+  geom_ribbon(data = MyData, aes(x = bpd, ymin = lwr, ymax = upr), alpha = 0.4, fill = "gray") # 95% диапазон предсказания
 
 
 

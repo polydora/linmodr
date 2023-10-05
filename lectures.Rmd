@@ -53,7 +53,7 @@ install.packages("car")
 
 Часть 1
 
-<!-- - Презентация [03.1_descriptive_statistics.html](03.1_descriptive_statistics.html) -->
+- Презентация [03.1_descriptive_statistics.html](03.1_descriptive_statistics.html)
 - Код [03.1_descriptive_statistics_code.R](03.1_descriptive_statistics_code.R)
 - Данные [diatome_count.csv](data/diatome_count.csv)
 
@@ -71,28 +71,28 @@ install.packages("dplyr")
 ```
 
 
-<!-- - Презентация [04_hypothesis_testing.html](04_hypothesis_testing_version_2023.html) -->
+- Презентация [04_hypothesis_testing.html](04_hypothesis_testing_version_2023.html)
 - Код [04_hypothesis_testing_code.R](04_hypothesis_testing_code.R)
 - Данные [aml.csv](data/aml.csv)
 
 
-<!-- ## Линейная регрессия -->
+## Линейная регрессия
 
-<!-- ### 05 Простая линейная регрессия -->
+### 05 Простая линейная регрессия
 
-<!-- ```{r eval=FALSE} -->
-<!-- install.packages("gridExtra") -->
-<!-- install.packages("cowplot") -->
-<!-- ``` -->
+```{r eval=FALSE}
+install.packages("gridExtra")
+install.packages("cowplot")
+```
 
 <!-- - Презентация: [05_LM.html](05_LM.html) -->
 
-<!-- - Код: -->
-<!--     + [05_LM_code.R](05_LM_code.R) -->
-<!--     + [05_LM_task.R](05_LM_task.R) -->
-<!-- - Данные: -->
-<!--     + [IQ_brain.csv](data/IQ_brain.csv) -->
-<!--     + [secher.xls](data/secher.xls) -->
+- Код:
+    + [05_LM_code.R](05_LM_code.R)
+    + [05_LM_task.R](05_LM_task.R)
+- Данные:
+    + [IQ_brain.csv](data/IQ_brain.csv)
+    + [secher.xls](data/secher.xls)
 
 
 <!-- ### 06 Основы линейной алгебры -->

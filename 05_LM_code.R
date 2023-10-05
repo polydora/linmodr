@@ -12,9 +12,11 @@ head(brain)
 
 
 ## Строим график
+brain_plot <-
+brain_plot
 
 
-
+#Вычисление коэффициента корреляции
 
 
 #Вычисление матрицы корреляций
@@ -50,6 +52,38 @@ pl_alpha3 <- pl_brain + geom_smooth(method="lm", level=0.999) + ggtitle(bquote(a
 
 
 grid.arrange(pl_alpha1, pl_alpha2, pl_alpha3, ncol=3)
+
+## Зависимость в генеральной совокупности
+
+pop_x <- rnorm(1000, 10, 3)
+pop_y <- 10 + 10*pop_x + rnorm(1000, 0, 20)
+population <- data.frame(x = pop_x, y = pop_y)
+
+pop_plot <- ggplot(population, aes(x = x, y = y)) +
+  geom_point(alpha = 0.3, color = "red") +
+  geom_abline(aes(intercept = 10, slope = 10),
+              color="blue", size = 2) +
+  theme(text = element_text(size = 15))
+pop_plot
+
+## Доверительный интервал
+
+samp_coef <- data.frame(b0 = rep(NA, 100), b1=rep(NA, 100))
+
+for(i in 1:100) {
+  samp_num <- sample(1:1000, 20)
+  samp <- population[samp_num, ]
+  fit <- lm(y ~ x, data = samp)
+  samp_coef$b0[i] <- coef(fit)[1]
+  samp_coef$b1[i] <- coef(fit)[2]
+
+}
+
+ggplot(population, aes(x = x, y = y)) +
+  geom_point(alpha = 0.3, color = "red") +
+  geom_abline(aes(intercept = b0, slope = b1), data = samp_coef) +
+  geom_abline(aes(intercept = 10, slope = 10), color="blue", size = 2) +
+  theme(text = element_text(size = 18))
 
 
 ## Вычисляем 95%  зону предсказания

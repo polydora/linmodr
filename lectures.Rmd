@@ -90,6 +90,8 @@ install.packages("cowplot")
 - Код:
     + [05_LM_code.R](05_LM_code.R)
     + [05_LM_task.R](05_LM_task.R)
+    + [05_Correlation_permutation_test.R](05_Correlation_permutation_test.R)
+
 - Данные:
     + [IQ_brain.csv](data/IQ_brain.csv)
     + [secher.xls](data/secher.xls)

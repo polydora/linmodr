@@ -141,6 +141,8 @@ ggplot(dat1, aes(x = x1, y = y1)) + geom_point() +
 
 
 
+
+
 # ## Задание 3, блок 2 -----------------------------
 set.seed(7657674)
 x2 <- runif(1000, 1, 100)
@@ -174,3 +176,5 @@ ggplot(dat3, aes(x = x3, y = y3)) + geom_point() +
 # Выполните последнее задание в одном из этих файлов:
 # - 07_task_assumptions_catsM.R
 # - 07_task_assumptions_GAG.R
+
+

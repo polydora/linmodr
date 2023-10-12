@@ -13,7 +13,7 @@
 
 <title>Презентации и данные</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -29,7 +29,7 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
@@ -42,6 +42,7 @@
   div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
   ul.task-list{list-style: none;}
     </style>
+
 
 
 <style type="text/css">
@@ -120,13 +121,20 @@ code span.wa { color: #008000; font-weight: bold; } /* Warning */
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -162,6 +170,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -219,11 +230,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -252,8 +267,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -261,16 +276,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -432,55 +440,68 @@ div.tocify {
 <div id="знакомство-с-r" class="section level3">
 <h3>01 Знакомство с R</h3>
 <ul>
-<li><p>Презентация: <a href="01_intro_to_r.html">Знакомство с R</a></p></li>
-<li><p>Презентация pdf: <a href="01_intro_to_r.pdf">Знакомство с R</a></p></li>
-<li><p>Код: <a href="01_intro_to_r_code.R">01_intro_to_r_code.R</a></p></li>
+<li><p>Презентация: <a href="01_intro_to_r.html">Знакомство с
+R</a></p></li>
+<li><p>Презентация pdf: <a href="01_intro_to_r.pdf">Знакомство с
+R</a></p></li>
+<li><p>Код: <a
+href="01_intro_to_r_code.R">01_intro_to_r_code.R</a></p></li>
 </ul>
 </div>
-<div id="знакомство-с-r-практикум-по-основам-языка" class="section level3">
+<div id="знакомство-с-r-практикум-по-основам-языка"
+class="section level3">
 <h3>01 Знакомство с R (Практикум по основам языка)</h3>
 <ul>
-<li>Задание для практикума: <a href="01_intro_to_r_practice.html">Знакомство с R</a></li>
+<li>Задание для практикума: <a
+href="01_intro_to_r_practice.html">Знакомство с R</a></li>
 <li>Данные: <a href="data/catsM.xlsx">catsM.xlsx</a></li>
 </ul>
 </div>
 <div id="основы-ggplot2" class="section level3">
 <h3>02 Основы ggplot2</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;ggplot2&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;readxl&quot;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;tidyr&quot;</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;MASS&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;ggplot2&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;readxl&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;tidyr&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;MASS&quot;</span>)</span></code></pre></div>
 <ul>
 <li>Презентация: <a href="02_intro_ggplot.html">Основы ggplot2</a></li>
 <li>Код: <a href="02_intro_ggplot.R">02_intro_ggplot.R</a></li>
 <li>Данные: <a href="data/Titanic.csv">Titanic.csv</a></li>
 <li>Данные: <a href="data/fev.xls">fev.xls</a></li>
-<li>Тренировка: <a href="02_intro_ggplot_training.html">02_intro_ggplot_training.html</a></li>
+<li>Тренировка: <a
+href="02_intro_ggplot_training.html">02_intro_ggplot_training.html</a></li>
 </ul>
 </div>
 <div id="описательная-статистика" class="section level3">
 <h3>03 Описательная статистика</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;car&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;car&quot;</span>)</span></code></pre></div>
 <p>Часть 1</p>
 <ul>
-<li>Презентация <a href="03.1_descriptive_statistics.html">03.1_descriptive_statistics.html</a></li>
-<li>Код <a href="03.1_descriptive_statistics_code.R">03.1_descriptive_statistics_code.R</a></li>
+<li>Презентация <a
+href="03.1_descriptive_statistics.html">03.1_descriptive_statistics.html</a></li>
+<li>Код <a
+href="03.1_descriptive_statistics_code.R">03.1_descriptive_statistics_code.R</a></li>
 <li>Данные <a href="data/diatome_count.csv">diatome_count.csv</a></li>
 </ul>
 <p>Часть 2</p>
 <ul>
-<li>Презентация <a href="03.2_descriptive_statistics_normal_d_version_2023.html">03.2_descriptive_statistics_normal_d.html</a></li>
-<li>Объект “population” <a href="data/population.RData">population.RData</a><br />
+<li>Презентация <a
+href="03.2_descriptive_statistics_normal_d_version_2023.html">03.2_descriptive_statistics_normal_d.html</a></li>
+<li>Объект “population” <a
+href="data/population.RData">population.RData</a><br />
 </li>
-<li>Код <a href="03.2_descriptive_statistics_normal_d_code.R">03.2_descriptive_statistics_normal_d_code.R</a></li>
+<li>Код <a
+href="03.2_descriptive_statistics_normal_d_code.R">03.2_descriptive_statistics_normal_d_code.R</a></li>
 </ul>
 </div>
 <div id="тестирование-гипотез" class="section level3">
 <h3>04 Тестирование гипотез</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;dplyr&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;dplyr&quot;</span>)</span></code></pre></div>
 <ul>
-<li>Презентация <a href="04_hypothesis_testing_version_2023.html">04_hypothesis_testing.html</a></li>
-<li>Код <a href="04_hypothesis_testing_code.R">04_hypothesis_testing_code.R</a></li>
+<li>Презентация <a
+href="04_hypothesis_testing_version_2023.html">04_hypothesis_testing.html</a></li>
+<li>Код <a
+href="04_hypothesis_testing_code.R">04_hypothesis_testing_code.R</a></li>
 <li>Данные <a href="data/aml.csv">aml.csv</a></li>
 </ul>
 </div>
@@ -489,15 +510,16 @@ div.tocify {
 <h2>Линейная регрессия</h2>
 <div id="простая-линейная-регрессия" class="section level3">
 <h3>05 Простая линейная регрессия</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;gridExtra&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;cowplot&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;gridExtra&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;cowplot&quot;</span>)</span></code></pre></div>
 <ul>
 <li><p>Презентация: <a href="05_LM.html">05_LM.html</a></p></li>
 <li><p>Код:</p>
 <ul>
 <li><a href="05_LM_code.R">05_LM_code.R</a></li>
 <li><a href="05_LM_task.R">05_LM_task.R</a></li>
-<li><a href="05_Correlation_permutation_test.R">05_Correlation_permutation_test.R</a></li>
+<li><a
+href="05_Correlation_permutation_test.R">05_Correlation_permutation_test.R</a></li>
 </ul></li>
 <li><p>Данные:</p>
 <ul>
@@ -509,20 +531,35 @@ div.tocify {
 <div id="основы-линейной-алгебры" class="section level3">
 <h3>06 Основы линейной алгебры</h3>
 <ul>
-<li>Презентация: <a href="06_intro_to_linear_algebra.html">06_Introduction_to_linear_algebra.html</a></li>
-<li>Код: <a href="06_intro_to_linear_algebra_code.R">06_Introduction_to_linear_algebra_code.R</a></li>
+<li>Презентация: <a
+href="06_intro_to_linear_algebra.html">06_Introduction_to_linear_algebra.html</a></li>
+<li>Код: <a
+href="06_intro_to_linear_algebra_code.R">06_Introduction_to_linear_algebra_code.R</a></li>
 </ul>
-<!-- ### 07 Описание, проверка значимости и валидности линейной модели -->
+</div>
+<div id="описание-проверка-значимости-и-валидности-линейной-модели"
+class="section level3">
+<h3>07 Описание, проверка значимости и валидности линейной модели</h3>
 <!-- - Презентация: [07_model_description_and_validation.html](07_model_description_and_validation.html) -->
-<!-- - Код: -->
-<!--     + [07_model_description_and_validation_code.R](07_model_description_and_validation_code.R) -->
-<!--     + [07_task_assumptions_catsM.R](07_task_assumptions_catsM.R) -->
-<!--     + [07_task_assumptions_GAG.R](07_task_assumptions_GAG.R) -->
-<!-- - Данные: -->
-<!--     + [IQ_brain.csv](data/IQ_brain.csv) -->
-<!--     + [catsM.xlsx](data/catsM.xlsx) -->
-<!--     + [GAGurine.xlsx](data/GAGurine.xlsx) -->
-<!--     + [orly_owl_Lin_4p_5_flat.txt](data/orly_owl_Lin_4p_5_flat.txt) -->
+<ul>
+<li>Код:
+<ul>
+<li><a
+href="07_model_description_and_validation_code.R">07_model_description_and_validation_code.R</a></li>
+<li><a
+href="07_task_assumptions_catsM.R">07_task_assumptions_catsM.R</a></li>
+<li><a
+href="07_task_assumptions_GAG.R">07_task_assumptions_GAG.R</a></li>
+</ul></li>
+<li>Данные:
+<ul>
+<li><a href="data/IQ_brain.csv">IQ_brain.csv</a></li>
+<li><a href="data/catsM.xlsx">catsM.xlsx</a></li>
+<li><a href="data/GAGurine.xlsx">GAGurine.xlsx</a></li>
+<li><a
+href="data/orly_owl_Lin_4p_5_flat.txt">orly_owl_Lin_4p_5_flat.txt</a></li>
+</ul></li>
+</ul>
 <!-- ### 08 Множественная линейная регрессия. Выбор оптимальной модели -->
 <!-- Часть 1. Множественная линейная регрессия -->
 <!-- ```{r eval=FALSE} -->

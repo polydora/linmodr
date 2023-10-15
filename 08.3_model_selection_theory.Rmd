@@ -1,0 +1,320 @@
+---
+title: "Поиск оптимальной модели (теоретические основы)"
+author: Марина Варфоломеева, Вадим Хайтов
+output:
+  ioslides_presentation:
+    widescreen: true
+    css: assets/my_styles.css
+    logo: assets/Linmod_logo.png
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE, cache = FALSE, purl = FALSE}
+# output options
+options(width = 70, scipen = 6)
+library(knitr)
+# chunk default options
+opts_chunk$set(fig.align='center', tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE, message = FALSE)
+```
+
+
+```{r, echo=FALSE, message=FALSE, purl=FALSE}
+library(ggplot2)
+theme_set(theme_bw())
+library(gridExtra)
+```
+
+# Принципы выбора лучшей линейной модели {.columns-2}
+
+"Essentially, all models are wrong,  
+but some are useful"  
+Georg E. P. Box
+
+"Entia non sunt multiplicanda praeter necessitatem"    
+Gulielmus Occamus
+
+
+## Важно не только тестирование гипотез, но и построение моделей
+
+- Проверка соответствия наблюдаемых данных предполагаемой связи между зависимой переменной и предикторами:
+    - оценки параметров,
+    - __тестирование гипотез__,
+    - оценка объясненной изменчивости ($R^2$),
+    - анализ остатков 
+
+- __Построение моделей__ для предсказания значений в новых условиях:
+    - Выбор оптимальной модели
+    - Оценка предсказательной способности модели **на новых данных**
+
+```{r echo=FALSE, purl=FALSE, eval=TRUE}
+library(tidyr)
+library(dplyr)
+
+n <- 40
+max_span <- 0.8
+my_spans <- c(0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2)
+sd_e <- 1.8
+
+# Training set -----------------------------------
+set.seed(199)
+data_training <- data.frame(x = runif(n, 1, 10)) %>%
+  mutate(y = 2*sin(x) + 1 * x  + rnorm(n, 0, 0.9)) %>%
+  crossing(span = my_spans) %>%
+  group_by(span) %>%
+  nest(x, y, .key = "data")
+
+# Trained models
+mod_training <- data_training %>%
+  mutate(model = purrr::map2(data, span, ~ loess(y ~ x, data = .x, span = .y)))
+
+# Predictions on the training set
+pred_training <- mod_training %>%
+  mutate(pred = purrr::map2(model, data, ~ predict(.x, newdata = .y))) %>%
+  group_by(span) %>% 
+  unnest(c(data, pred)) %>%
+  ungroup() %>% 
+  mutate(span = factor(span, labels = sort(my_spans, decreasing = TRUE), levels = sort(my_spans, decreasing = TRUE)))
+# MSE training
+MSe_training <- pred_training %>%
+  group_by(span) %>%
+  summarise(training = mean(y - pred)^2)
+
+# Testing set ------------------------------------
+set.seed(12312)
+data_testing <- data.frame(x = runif(n, 1, 10)) %>%
+  mutate(y = 2 * sin(x) + 1 * x  + rnorm(n, 0, sd_e)) %>%
+  crossing(span = my_spans) %>%
+  group_by(span) %>%
+  nest()
+# The same model
+data_testing$model <- mod_training$model
+# Predictions on the testing set
+pred_testing <- data_testing %>%
+  mutate(pred = purrr::map2(model, data, ~ predict(.x, newdata = .y))) %>%
+  group_by(span) %>% 
+  unnest(c(data, pred)) %>%
+  ungroup() %>% 
+  mutate(span = factor(span, labels = sort(my_spans, decreasing = TRUE), levels = sort(my_spans, decreasing = TRUE)))
+  # MSE testing
+MSe_testing <- pred_testing %>% group_by(span) %>%
+  summarise(testing = mean(y - pred, na.rm = TRUE)^2)
+
+# All predictions of the smoothers ---------------
+data_all <- data.frame(x = seq(1, 10, length.out = 400)) %>%
+  crossing(span = my_spans) %>%
+  group_by(span) %>%
+  nest()
+# The same model
+data_all$model <- mod_training$model
+# Predictions on an artificial grid for plotting
+pred_all <- data_all %>%
+  mutate(pred = purrr::map2(model, data, ~ predict(.x, newdata = .y))) %>%
+  group_by(span) %>% 
+  unnest(c(data, pred)) %>%
+  ungroup() %>% 
+  mutate(span = factor(span, labels = sort(my_spans, decreasing = TRUE), levels = sort(my_spans, decreasing = TRUE)))
+
+# Plot of predictions -----------------------
+gg_dat <- ggplot(pred_all, aes(x = x, y = pred, colour = span, group = span)) +
+  geom_point(data = pred_training, aes(x = x, y = y), colour = "black", shape = 19) +
+  # geom_point(data = pred_testing, aes(x = x, y = y), colour = "black", shape = 21) +
+  # geom_line(size = 1) +
+  # facet_wrap(~as.factor(span), nrow = 2) +
+  labs(colour = "Сложность\nмодели", y = "y") +
+  theme(legend.position = "bottom")
+
+# Plot of predictions with training set -------
+gg_train <- ggplot(pred_all, aes(x = x, y = pred, colour = span, group = span)) +
+  geom_point(data = pred_training, aes(x = x, y = y), colour = "black", shape = 19) +
+  geom_line(size = 1) +
+  facet_wrap(~as.factor(span), nrow = 2) +
+  labs(colour = "Сложность\nмодели", y = "y") +
+  theme(legend.position = "bottom")
+
+
+# Plot of predictions with training and testing sets -------
+gg_pred <- ggplot(pred_all, aes(x = x, y = pred, colour = span, group = span)) +
+  geom_point(data = pred_training, aes(x = x, y = y, shape = "использованные в модели"), colour = "black") +
+  geom_point(data = pred_testing, aes(x = x, y = y, shape = "новые"), colour = "black") +
+  geom_line(size = 1) +
+  facet_wrap(~as.factor(span), nrow = 2) +
+  scale_shape_manual(values = c(19, 21), guide = FALSE) +
+  labs(colour = "Сложность\nмодели", y = "y", shape = "Данные") +
+  theme(legend.position = "bottom")
+
+# Plot of training and testing MSe -----
+dat_mse <- merge(MSe_training, MSe_testing) %>% gather(Data, MSe, -span) %>%
+  mutate(Complexity = factor(span,
+                             levels = sort(my_spans, decreasing = TRUE),
+                             labels = sort(my_spans, decreasing = TRUE)),
+         Data = factor(Data,
+                levels = c("training", "testing"), 
+                labels = c("испольованные в модели",
+                           "новые")))
+gg_mse <- ggplot(dat_mse, aes(x = Complexity, y = MSe, group = Data)) +
+  geom_line() +
+  geom_point(aes(shape = Data), size = 3) +
+  scale_shape_manual(values = c(19, 21), guide = guide_legend(nrow = 2)) +
+  labs(x = "Сложность модели", y = "Ошибка предсказаний", shape = "Данные") +
+  theme(legend.position = "bottom")
+
+# grid.arrange(
+# gg_pred,
+# gg_mse,
+# nrow = 1, widths = c(0.6, 0.4))
+```
+
+
+
+
+## Зачем может понадобится упрощать модель?
+
+Since all models are wrong the scientist cannot obtain a "correct" one by excessive elaboration. On the contrary following William of Occam he should seek an economical description of natural phenomena. [...] overelaboration and overparameterization is often the mark of mediocrity (Box, 1976).
+
+*Поскольку все модели ошибочны, ученый не может получить «правильную» модель даже если очень постарается. Напротив, вслед за Уильямом Оккамом он должен искать экономичное описание природы. […] чрезмерное усложнение модели часто является признаком посредственности. (Box, 1976).*
+
+
+While a model can never be “truth,” a model might be ranked from very useful, to useful, to somewhat useful to, finally, essentially useless (Burnham & Anderson, 2002).
+
+*Хотя модель никогда не может быть «правдой», модели можно ранжировать от очень полезных к полезным, до некоторой степени полезным и , наконец, к абсолютно бесполезным (Burnham & Anderson, 2002).*  
+
+
+## Какую модель можно подобрать для описания этой закономерности?
+
+
+```{r, echo=FALSE, fig.height=3, fig.width=5, purl=FALSE}
+gg_dat
+```
+
+>- Эти данные можно смоделировать очень разными способами. Мы попробуем посмотреть, как это будет выглядеть на примере loess--- локальной полиномиальной регрессии. (Если интересно, [подробнее о loess-регрессии](https://www.mathworks.com/help/curvefit/smoothing-data.html#bq_6ys3-4))
+
+## Какая из этих моделей лучше описывает данные? {.smaller}
+
+На этих графиках показаны предсказания loess-регрессии для одних и тех же исходных данных.
+
+Cложность модели --- в общем случае, это число параметров. Для loess-регрессии сложность модели отражает степень сглаживания: у более сложных моделей маленькая степень сглаживания. 
+
+```{r models-no-labs, echo=FALSE, fig.height=4, fig.width=10, purl=FALSE}
+gg_train
+```
+
+- Простые модели недообучены (underfitted) --- слишком мало параметров, предсказания неточны.   
+- Сложные модели переобучены (overfitted) --- слишком много параметров, предсказывают еще и случайный шум.
+
+## Что будет, если получить предсказания моделей на новых данных? {.smaller}
+
+```{r echo=FALSE, purl=FALSE, message=FALSE, warining=FALSE, fig.width=10, fig.height=4}
+gg_pred + scale_shape_manual(values = c(19, 21), guide = guide_legend(nrow = 2))
+```
+
+На новых данных предсказания моделей не будут идеальными.
+
+
+## Как при усложнении модели меняется качество предсказаний? {.smaller}
+
+```{r echo=FALSE, purl=FALSE, fig.width=10, fig.height=3.5}
+grid.arrange(
+  gg_pred, 
+  gg_mse, 
+  nrow = 1, widths = c(0.6, 0.4))
+```
+
+Ошибка предсказаний на новых данных практически всегда больше, чем на исходных данных. Более сложные модели лучше описывают существующие данные, но на новых данных их предсказания хуже.
+
+Обычно  при усложнении модели:
+
+- ошибки предсказаний на исходных данных убывают (иногда, до какого-то уровня) (L-образная кривая)
+- ошибки предсказаний на новых данных убывают, затем возрастают из-за переобучения (U-образная кривая) 
+
+## Погрешность и точность
+
+```{r echo=FALSE, purl=FALSE, fig.height=3.5}
+library(ggforce)
+
+n_reps <- 6
+set.seed(9328)
+dfr <- data.frame(
+  x0 = rep(0, 6),
+  y0 =  rep(0, 6),
+  r = seq(1, 0.1, length.out = 6),
+  fl = rep(1:2, 3)
+)
+dart <- ggplot() + geom_circle(data = dfr, aes(x0 = x0, y0 = y0, r = r, fill = fl)) +
+  scale_fill_gradient(low = "#9ecae1", high = "#deebf7", guide = "none") +
+  coord_equal() + theme_void() + theme(plot.title = element_text(hjust = 0.5))
+
+HvLb <- dart +
+  annotate(geom = "point", size = 3, shape = 21, colour = "black", fill = "orange",
+                x = rnorm(n_reps, 0, 0.25), y = rnorm(n_reps, 0, 0.25)) +
+  labs(title = "Большая дисперсия, \nмаленькая погрешность")
+
+LvHb <- dart +
+  annotate(geom = "point", size = 3, shape = 21, colour = "black", fill = "orange",
+                x = rnorm(n_reps, 0, 0.1), y = rnorm(n_reps, 0, 0.1)) +
+labs(title = "Маленькая дисперсия, \nмаленькая погрешность")
+
+HvHb <- dart +
+  annotate(geom = "point", size = 3, shape = 21, colour = "black", fill = "orange",
+                x = rnorm(n_reps, 0.4, 0.25), y = rnorm(n_reps, 0.3, 0.25)) +
+labs(title = "Большая дисперсия, \nбольшая погрешность")
+
+LvLb <- dart +
+  annotate(geom = "point", size = 3, shape = 21, colour = "black", fill = "orange",
+                x = rnorm(n_reps, 0.4, 0.1), y = rnorm(n_reps, 0.3, 0.1)) +
+  labs(title = "Маленькая дисперсия, \nбольшая погрешность")
+
+grid.arrange(HvLb, HvHb, LvHb, LvLb, nrow = 2)
+```
+
+- Погрешность (accuracy, точность)--- отсутствие погрешности (bias).
+- Точность (precision, тоже точность --- другой аспект) --- разброс значений
+
+Предсказания, сделанные на новых данных, будут отличаться от истинных значений не только из-за погрешности или неточности. Еще один источник отличий --- это так называемая неснижаемая ошибка.
+
+## Компромисс между погрешностью и разбросом значений предсказаний (Bias-Variance Tradeoff)
+
+```{r echo=FALSE, purl=FALSE}
+ggplot(data = data.frame(x = seq(-2, 2, by = 0.1)), aes(x = x)) +
+  stat_function(fun = function(x) (0.5)^x, 
+                size = 2, aes(colour = "Погрешность^2")) +
+  stat_function(fun = function(x) 2^x, 
+                size = 2, aes(colour = "Дисперсия")) +
+  stat_function(fun = function(x) 1.5, 
+                size = 2, aes(colour = "Неснижаемая ошибка")) +
+  stat_function(fun = function(x) (0.5)^x + 2^x + 1.5, 
+                size = 2, aes(colour = "Полная ошибка")) +
+  scale_colour_manual(values = c("Погрешность^2" = "darkcyan",
+                                 "Дисперсия" = "dodgerblue",
+                                 "Неснижаемая ошибка" = "pink3",
+                                 "Полная ошибка" = "orangered3"),
+                      breaks = c("Полная ошибка", "Дисперсия",
+                                 "Погрешность^2", "Неснижаемая ошибка")) +
+  theme_classic() + theme(axis.text = element_blank())  +
+  labs(x = "Сложность модели", y = "Ошибка", colour = "Источник ошибок")
+```
+
+$$Полная~ошибка = Дисперсия + (Погрешность)^2 + Неснижаемая~ошибка$$
+При увеличении сложности модели снижается погрешность предсказаний, но возрастает их разброс. Поэтому общая ошибка предсказаний велика у недообученных или переобученных моделей, а у моделей средней сложности она будет минимальной.
+
+## Критерии и методы выбора моделей зависят от задачи
+
+__Объяснение закономерностей, описание функциональной зависимости__
+
+- Нужна точность оценки параметров
+- Нужны точные тесты влияния предикторов: F-тесты или тесты отношения правдоподобий (likelihood-ratio tests)
+
+__Предсказание значений зависимой переменной__
+
+- Нужна простая модель: "информационные" критерии (АIC, BIC, и т.д.)
+- Нужна оценка качества модели на данных, которые не использовались для ее первоначальной подгонки: методы ресамплинга (кросс-валидация, бутстреп)
+
+### Не позволяйте компьютеру думать за вас!
+
+- Хорошая модель должна соответствовать условиям применимости, иначе вы не сможете доверять результатам тестов.
+
+- Другие соображения: разумность, целесообразность модели, простота, ценность выводов, важность предикторов.
+
+
+
+

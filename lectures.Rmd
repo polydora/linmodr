@@ -125,14 +125,14 @@ install.packages("gridExtra")
 install.packages("ISwR")
 ```
 
-<!-- - Презентация: [08.1_multiple_LM.html](08.1_multiple_LM.html) -->
+- Презентация: [08.1_multiple_LM.html](08.1_multiple_LM.html)
 
 - Код: [08.1_multiple_LM_code.R](08.1_multiple_LM_code.R)
 - Данные: [loyn.csv](data/loyn.csv)
 
 Часть 2. Выбор оптимальной модели
 
-<!-- - Презентация: [08.2_model_selection.html](08.2_model_selection.html) -->
+- Презентация: [08.2_model_selection.html](08.2_model_selection.html)
 
 
 - Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_model_selection_theory.html](08.2_model_selection.html)
@@ -140,15 +140,15 @@ install.packages("ISwR")
 - Код: [08.2_model_selection_code.R](08.2_model_selection_code.R)
 - Данные: [loyn.csv](data/loyn.csv)
 
-<!-- ## Общие линейные модели -->
+## Общие линейные модели
 
-<!-- ### 09 Модели с непрерывными и дискретными предикторами (ANCOVA) -->
+### 09 Модели с непрерывными и дискретными предикторами (ANCOVA)
 
-<!-- ```{r eval=FALSE} -->
-<!-- install.packages("readxl") -->
-<!-- install.packages("cowplot") -->
-<!-- install.packages("dplyr") -->
-<!-- ``` -->
+```{r eval=FALSE}
+install.packages("readxl")
+install.packages("cowplot")
+install.packages("dplyr")
+```
 
 <!-- Часть 1. Модели с разными значениями отрезка (intercept) для групп -->
 

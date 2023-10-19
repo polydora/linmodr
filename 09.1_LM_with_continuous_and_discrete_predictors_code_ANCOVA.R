@@ -30,6 +30,7 @@ tlc$age_group <- factor(tlc$age_group, levels = c('teenagers', 'young', 'adult')
 table(tlc$age_group, tlc$sex)
 
 Mod <- lm(tlc ~ age_group, data = tlc)
+
 summary(Mod)
 
 X <- model.matrix(Mod)

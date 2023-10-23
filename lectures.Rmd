@@ -135,7 +135,7 @@ install.packages("ISwR")
 - Презентация: [08.2_model_selection.html](08.2_model_selection.html)
 
 
-- Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_model_selection_theory.html](08.2_model_selection.html)
+- Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_model_selection_theory.html](08.3_model_selection_theory.html)
 
 - Код: [08.2_model_selection_code.R](08.2_model_selection_code.R)
 - Данные: [loyn.csv](data/loyn.csv)

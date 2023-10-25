@@ -1,7 +1,7 @@
 ---
 title: "Дисперсионный анализ, часть 2"
 subtitle: "Линейные модели..."
-author: "Марина Варфоломеева, Вадим Хайтов"
+author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"
 date: "Осень `r format(Sys.Date(), '%Y')`"
 output:
   xaringan::moon_reader:
@@ -71,37 +71,40 @@ class: middle, center, inverse
 
 ---
 
-## Пример: Удобрение и беспозвоночные
+## Пример: Пингвины 
 
-Влияет ли добавление азотных и фосфорных удобрений на беспозвоночных?
+Зависит ли вес пингвина от его видовой принадлежности и пола?
 
-Небольшие искуственные субстраты экспонировали в течение разного времени в верхней части сублиторали (Hall et al., 2000).
+.pull-left[Измерения особей пингвинов из рода *Pygoscelis* лежат в датасете `penguins` в пакете `palmerpenguins`. Исходные данные были опубликованы в работе Gorman et al., 2014. Помимо веса и пола животных, датасет содержит информацию об острове, на котором пингвины проживали, и измерения клюва. В анализ мы возьмём только следующие переменные:
+
 
 Зависимая переменная:
 
-- `richness` --- Число видов
+- `body_mass_g` --- вес в граммах
 
 Факторы:
 
-- `time` --- срок экспозиции (2, 4 и 6 месяцев)
-- `treat` --- удобрения (добавляли или нет)
+- `species` --- вид пингвина
+- `sex` --- пол пингвина]
 
-Планировали сделать 5 повторностей для каждого сочетания факторов
-
-.small[Данные:Quinn, Keough, 2002]
+.pull-right[
+![](images/penguin.jpg)
+.small[
+.pull-right[On [Pinterest](https://www.pinterest.com/pin/explore-the-natural-world--153544668520878653/)]
+]
+]
 
 ---
 
 ## Знакомимся с данными
 
 ```{r}
-fert <- read.csv(file='data/hall.csv')
-str(fert)
-# Для удобства названия переменных маленькими буквами
-colnames(fert) <- tolower(colnames(fert))
-# Факторы делаем факторами
-fert$treat <- factor(fert$treat)
-fert$time <- factor(fert$time)
+# Открываем данные
+library(palmerpenguins)
+peng <- as.data.frame(penguins[, c(1, 6, 7)]) 
+str(peng)
+# Переименовываем столбцы
+colnames(peng) <- c('sp', 'mass', 'sex')
 ```
 
 ---
@@ -109,19 +112,22 @@ fert$time <- factor(fert$time)
 ## Пропущенные значения
 
 ```{r}
-colSums(is.na(fert))
+colSums(is.na(peng))
 ```
 
---
+Удаляем пропущенные значения (каких-то пингвинов не измерили :()
 
-- Нет пропущенных значений
+```{r}
+pengs <- peng[complete.cases(peng), ]
+colSums(is.na(pengs))
+```
 
 ---
 
 ## Объемы выборок в группах
 
 ```{r}
-table(fert$time, fert$treat)
+table(pengs$sp, pengs$sex)
 ```
 
 --
@@ -135,29 +141,9 @@ table(fert$time, fert$treat)
 ```{r gg-mean-ci}
 library(ggplot2)
 theme_set(theme_bw(base_size = 14))
-gg_rich <- ggplot(data = fert, aes(x = time, y = richness, colour = treat)) + 
+gg_mass <- ggplot(data = pengs, aes(x = sp, y = mass, colour = sex)) + 
   stat_summary(geom = 'pointrange', fun.data = mean_cl_normal)
-gg_rich
-```
-
---
-
-- Вполне возможно, здесь есть гетерогенность дисперсий. Позже мы это проверим.
-
----
-
-## Преобразовываем данные
-
-Зависимая переменная `richness` -- это счетная величина. Она подчиняется распределению Пуассона (и чем больше ее среднее значение, тем больше дисперсия). 
-
-Правильно было бы воспользоваться обобщенными линейными моделями с Пуассоновским распределением ошибок вместо нормального.
-
-Но сейчас мы с вами попробуем действовать грубее (пока еще не разобрались, как это делать правильно). 
-
-Давайте мы попробуем  преобразовать зависимую переменную, чтобы ее распределение стало больше походить на нормальное. Это может помочь, а может и нет.
-
-```{r}
-fert$log_rich <- log10(fert$richness + 1)
+gg_mass
 ```
 
 ---
@@ -172,17 +158,51 @@ class: middle, center, inverse
 
 Дисперсионный анализ становится многофакторным, если в модели используется несколько дискретных факторов.
 
-В таком анализе появляется взаимодействие факторов.
+Дизайн такого рода анализа может быть разным. 
+
+.pull-left[
+### Вложенные (иерархичные) модели
+
+В модели внутри какого-то фактора расположены дополнительные предикторы. Особенность таких моделей в том, что категории вложенных факторов в пределах уровней основного фактора различны. 
+
+**Пример:** измерения обилия беспозвоночных животных на литорали в разные годы и месяцы. 
+]
+
+.pull-right[
+### Факторные модели
+
+Дизайн эксперимента предполагает, что разные факторы пересекаются друг с другом. Таким образом возможны любые комбинации между разными уровнями разных факторов. 
+
+Наш случай! Факторов может быть несколько, мы будем разбираться на примере двухфакторного дисперсионного анализа.
+]
+
+---
+
+## Какие бывают факторы
+
+Свойства | Фиксированные факторы | Случайные факторы
+---- | ---- | ----
+Уровни фактора | фиксированные, заранее определенные и потенциально воспроизводимые уровни | случайная выборка из всех возможных уровней
+Используются для тестирования гипотез | о средних значениях отклика между уровнями фактора <br/> $H _{0}: \mu _1 = \mu _2 = \ldots = \mu _i = \mu$ | о дисперсии отклика между уровнями фактора <br/> $H _{0}: \sigma_{rand.fact.}^2 = 0$
+Выводы можно экстраполировать | только на уровни из анализа | на все возможные уровни
+
+Мы сейчас работает с фиксированными факторами. В случае, когда в модели присутстуют и фиксированные, и случайные факторы --- используют смешанные линейные модели, о которых мы поговорим позже. 
+
+---
+
+## Взаимодействие факторов
+
+При добавлении новых факторов в модель появляется **взаимодействие** факторов.
 
 Взаимодействие факторов возникает, когда у одного фактора эффект разный в зависимости от уровней другого.
 
-Разберемся с этим на схемах.
+Такое взаимодействие необходимо учитывать, в т.ч. при интепретации результатов.
 
 ---
 
 ## Что такое взаимодействие дискретных предикторов
 
-Взаимодействие факторов - когда эффект фактора B разный в зависимости от уровней фактора A и наоборот.
+Взаимодействие факторов --- когда эффект фактора B разный в зависимости от уровней фактора A и наоборот.
 
 На каких рисунках есть взаимодействие факторов? (.small[Logan, 2010, fig.12.2])
 
@@ -201,8 +221,6 @@ class: middle, center, inverse
 - a, d - есть взаимодействие (эффект фактора B разный для групп по фактору A, на графиках линии для разных групп по фактору B расположены под наклоном).
 
 ]
-
-
 
 ---
 
@@ -268,7 +286,6 @@ class: middle, center, inverse
 Если есть значимое взаимодействие, то 
 - главные эффекты обсуждать  не имеет смысла  
 - пост хок тесты проводятся только для взаимодействия
-
 ]
 
 ---
@@ -281,21 +298,17 @@ class: middle, center, inverse
 
 ## Переменные-индикаторы
 
-В нашем примере отклик --- видовое богатство, и два дискретных фактора: 
+В нашем примере отклик --- вес пингвина, и два дискретных фактора: 
 
---
-
-- `treat` --- 2 уровня (базовый `control`), для кодирования нужна одна переменная.
+- `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
 ```{r}
-contr.treatment(levels(fert$treat))
+contr.treatment(levels(pengs$sex))
 ```
 
---
-
--  `time` --- 3 уровня (базовый `2`), для кодирования нужно две переменных.
+-  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
 
 ```{r}
-contr.treatment(levels(fert$time))
+contr.treatment(levels(pengs$sp))
 ```
 
 ---
@@ -306,14 +319,14 @@ contr.treatment(levels(fert$time))
 
 Фрагмент модельной матрицы:
 
-treat <br/>  | time <br/>  | treatnutrient <br/>  $x_1$  | time4 <br/> $x_2$ | time6 <br/> $x_3$| treatnutrient:time4 <br/> $x_4$ | treatnutrient:time6 <br/> $x_5$
+sex <br/>  | sp <br/>  | sexsp <br/>  $x_1$  | spChinstrap <br/> $x_2$ | spGentoo <br/> $x_3$| sexmale:Chinstrap <br/> $x_4$ | sexmale:Gentoo <br/> $x_5$
 ---- | ---- | ---- | ---- | ---- | ---- | ---- 
-control   |  2   | 0 | 0 | 0 | 0 | 0          
-nutrient  |  2   | 1 | 0 | 0 | 0 | 0
-control   |  4   | 0 | 1 | 0 | 0 | 0          
-nutrient  |  4   | 1 | 1 | 0 | 1 | 0
-control   |  6   | 0 | 0 | 1 | 0 | 0          
-nutrient  |  6   | 1 | 0 | 1 | 0 | 1
+female   |  Adelie   | 0 | 0 | 0 | 0 | 0          
+male  |  Adelie   | 1 | 0 | 0 | 0 | 0
+female   |  Chinstrap   | 0 | 1 | 0 | 0 | 0          
+male  |  Chinstrap   | 1 | 1 | 0 | 1 | 0
+female   |  Gentoo   | 0 | 0 | 1 | 0 | 0          
+male  |  Gentoo   | 1 | 0 | 1 | 0 | 1
 
 ---
 
@@ -322,26 +335,26 @@ nutrient  |  6   | 1 | 0 | 1 | 0 | 1
 $$y _{i} = b _0 + b _1 x _{1i} + b _2 x _{2i} + b _3 x _{3i} + b _4 x _{4i} + b _5 x _{5i}+ e _{i}$$
 
 
-- $b_0$ --- значение отклика для контроля через 2 месяца (на базовом уровне обоих факторов)
+- $b_0$ --- значение отклика для самок вида Adelie (на базовом уровне обоих факторов)
 
 Отклонения относительно базового уровня обоих факторов:
 
-- $b_1$ --- для удобренных площадок
-- $b_2$ и $b_3$ --- для площадок с экспозицией 4 или 6 мес
-- $b_4$ и $b_5$ --- для удобренных площадок с экспозицией 4 или 6 мес
+- $b_1$ --- для самцов
+- $b_2$ и $b_3$ --- для самок Chinstrap и Gentoo, соответственно
+- $b_4$ и $b_5$ --- для самцов Chinstrap и Gentoo, соответственно
 
 ---
 
 ## Подбираем линейную модель <br/> в параметризации индикаторов (contr.treatment)
 
 ```{r purl=FALSE}
-mod_treatment <- lm(log_rich ~ treat * time, data = fert)
-mod_treatment
+mod_treat_pengs <- lm(mass ~ sex * sp, data = pengs) 
+mod_treat_pengs
 ```
 
 Общее уравнение модели
 
-$$\begin{aligned}\widehat{log\_rich} _{i} = 0.828 + 0.05 treat_{nutrient\,i} + 0.463 time_{4\,i} + 0.603 time_{6\,i} + \\ + 0.138 treat_{nutrient}\ time_{4\,i} + 0.046 treat_{nutrient}\ time_{6\,i} \end{aligned}$$
+$$\begin{aligned}\widehat{mass} _{i} = 3369 + 675 sex_{male,i} + 158 sp_{Chinstrap\,i} + 1311 sp_{Gentoo\,i} + \\ - 263 sex_{male}\ sp_{Chinstrap\,i} + 130 sex_{male}\ sp_{Gentoo\,i} \end{aligned}$$
 
 ---
 
@@ -353,21 +366,18 @@ class: middle, center, inverse
 
 ## Переменные-эффекты
 
-В нашем примере отклик --- видовое богатство, и два дискретных фактора: 
+В нашем примере отклик --- вес пингвина, и два дискретных фактора: 
 
---
+- `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
 
-- `treat` --- 2 уровня (базовый `control`), для кодирования нужна одна переменная.
 ```{r}
-contr.sum(levels(fert$treat))
+contr.sum(levels(pengs$sp))
 ```
 
---
-
--  `time` --- 3 уровня (базовый `2`), для кодирования нужно две переменных.
+-  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
 
 ```{r}
-contr.sum(levels(fert$time))
+contr.sum(levels(pengs$sex))
 ```
 
 ---
@@ -378,14 +388,14 @@ contr.sum(levels(fert$time))
 
 Фрагмент модельной матрицы:
 
-treat | time | treat1 <br/> $x_1$ | time1 <br/> $x_2$ | time2 <br/> $x_3$ | treat1:time1 <br/> $x_4$ | treat1:time2 <br/> $x_5$
+sex <br/>  | sp <br/>  | sex1 <br/> $x_1$ | sp1 <br/> $x_2$ | sp2 <br/> $x_3$ | sex1:sp1 <br/> $x_4$ | sex1:sp2 <br/> $x_5$
 :---- | :----: | :----: | :----: | :----: | :----: | :----:
-control   |  2   |  1 |  1 |  0 |  1 |  0           
-nutrient  |  2   | -1 |  1 |  0 | -1 |  0 
-control   |  4   |  1 |  0 |  1 |  0 |  1           
-nutrient  |  4   | -1 |  0 |  1 |  0 | -1 
-control   |  6   |  1 | -1 | -1 | -1 | -1           
-nutrient  |  6   | -1 | -1 | -1 |  1 |  1 
+female   |  Adelie   |  1 |  1 |  0 |  1 |  0           
+male  |  Adelie   | -1 |  1 |  0 | -1 |  0 
+female   |  Chinstrap   |  1 |  0 |  1 |  0 |  1           
+male  |  Chinstrap   | -1 |  0 |  1 |  0 | -1 
+female   |  Gentoo   |  1 | -1 | -1 | -1 | -1           
+male  |  Gentoo   | -1 | -1 | -1 |  1 |  1 
 
 ---
 
@@ -397,23 +407,23 @@ $$y _{i} = b _0 + b _1 x _{1i} + b _2 x _{2i} + b _3 x _{3i} + b _4 x _{4i} + b 
 
 Отклонения от общего среднего значений отклика:
 
-- $b_1$ --- в зависимости от тритмента (фактор `treat`)
-- $b_2$ и $b_3$ --- в зависимости от экспозиции (фактор `time`)
-- $b_4$ и $b_5$ --- для тритментов в зависимости от экспозиции  (взаимодействие)
+- $b_1$ --- в зависимости от пола (фактор `sex`)
+- $b_2$ и $b_3$ --- в зависимости от вида (фактор `sp`)
+- $b_4$ и $b_5$ --- для пола в зависимости от вида  (взаимодействие)
 
 ---
 
 ## Подбираем линейную модель <br/> в параметризации эффектов (contr.sum)
 
 ```{r purl=FALSE}
-mod_sum <- lm(log_rich ~ treat * time, data = fert,
-              contrasts = list(treat = 'contr.sum', time = 'contr.sum'))
-mod_sum
+mod_sum_pengs <- lm(mass ~ sex * sp, data = pengs, 
+                    contrasts = list(sp = 'contr.sum', sex = 'contr.sum')) 
+coef(mod_sum_pengs)
 ```
 
 Общее уравнение модели
 
-$$\begin{aligned}\widehat{log\_rich}_i = 1.24 -0.056 treat_{1\,i} -0.386 time_{1\,i} + 0.146 time_{2\,i} + \\ + 0.031 treat_{1\,i}time_{1\,i} -0.038 treat_{1\,i}time_{2\,i} \end{aligned}$$
+$$\begin{aligned}\widehat{mass}_i = 417.85 - 315.25 sex_{female\,i} - 467.68 sp_{Adelie\,i} - 440.76 sp_{Chinstrap\,i} - \\ - 22.08 sex_{female\,i}sp_{Adelie\,i} + 109.37 sex_{female\,i}sp_{Chinstrap\,i} \end{aligned}$$
 
 ---
 
@@ -430,8 +440,8 @@ class: middle, center, inverse
 Данные для анализа остатков
 
 ```{r R.options=list(width = 60)}
-mod_treatment_diag <- fortify(mod_treatment) # функция из пакета ggplot2
-head(mod_treatment_diag, 2)
+mod_treat_peng_diag <- fortify(mod_treat_pengs) # функция из пакета ggplot2
+head(mod_treat_peng_diag, 2)
 ```
 
 ---
@@ -439,7 +449,7 @@ head(mod_treatment_diag, 2)
 ## График расстояния Кука
 
 ```{r cooksd}
-ggplot(mod_treatment_diag, aes(x = 1:nrow(mod_treatment_diag), y = .cooksd)) +
+ggplot(mod_treat_peng_diag, aes(x = 1:nrow(mod_treat_peng_diag), y = .cooksd)) +
   geom_bar(stat = 'identity')
 ```
 
@@ -453,7 +463,7 @@ ggplot(mod_treatment_diag, aes(x = 1:nrow(mod_treatment_diag), y = .cooksd)) +
 
 
 ```{r resid-fitted}
-gg_resid <- ggplot(data = mod_treatment_diag, aes(x = .fitted, y = .stdresid)) +
+gg_resid <- ggplot(data = mod_treat_peng_diag, aes(x = .fitted, y = .stdresid)) +
   geom_point() + geom_hline(yintercept = 0)
 gg_resid
 ```
@@ -462,33 +472,22 @@ gg_resid
 
 - Влиятельных наблюдений нет (все в пределах 3 SD). 
 
-- Одно наблюдение не совсем обычно (2SD < .stdresid < 3SD), но поскольку расстояние Кука для него было небольшим, это не страшно.
+- Несколько наблюдений не совсем обычны (2SD < .stdresid < 3SD), но поскольку расстояние Кука для них небольшое, это нестрашно.
 
 ---
 
 ## График зависимости остатков от предикторов в модели
 
-.pull-left[
 
 ```{r resid-predictors}
-ggplot(data = mod_treatment_diag, aes(x = treat, y = .stdresid, colour = time)) +
+ggplot(data = mod_treat_peng_diag, aes(x = sex, y = .stdresid, colour = sp)) +
   geom_boxplot() + geom_hline(yintercept = 0)
 ```
 
 
-Удобнее смотреть на боксплот.
+Удобнее смотреть на боксплот. Нет гетерогенности дисперсии, всё хорошо!
 
-]
 
---
-
-.pull-right[
-
-- Видна гетерогенность дисперсии. 
-
-В данном случае это не страшно, т.к. дисперсионный анализ устойчив к ситуации, когда в одной из групп разброс меньше, чем в других (особенно, если данные не слишком несбалансированные) (Underwood, 1997, McGuinness, 2002)
-
-]
 
 ---
 
@@ -496,13 +495,13 @@ ggplot(data = mod_treatment_diag, aes(x = treat, y = .stdresid, colour = time)) 
 
 ```{r qq-plot, echo=TRUE, purl=TRUE, eval=FALSE}
 library(car)
-qqPlot(mod_treatment, id = FALSE) # функция из пакета car
+qqPlot(mod_treat_pengs, id = FALSE) # функция из пакета car
 ```
 
 ```{r qq-plot1, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=3.5}
 library(car)
 op <- par(mar = c(3, 3, 0.5, 0.5))
-qqPlot(mod_treatment, id = FALSE)
+qqPlot(mod_treat_pengs, id = FALSE)
 par(op)
 ```
 
@@ -512,7 +511,7 @@ par(op)
 
 ---
 
-class: segue-yellow
+class: middle, center, inverse
 
 # Несбалансированные данные, типы сумм квадратов
 
@@ -549,7 +548,7 @@ class: segue-yellow
 
 - Оценки средних в разных группах с разным уровнем точности (Underwood 1997)
 
-- ANOVA менее устойчив к отклонениям от условий применимости (особенно от гомогенности дисперсий) при разных размерах групп (Quinn Keough 2002, section 8.3)
+- ANOVA менее устойчив к отклонениям от условий применимости (особенно от __гомогенности__ дисперсий) при разных размерах групп (Quinn Keough 2002, section 8.3)
 
 - Проблемы с расчетом мощности. Если $\sigma _{\epsilon}^2 > 0$ и размеры выборок разные, то $MS _{x} \over MS _{e}$ не следует F-распределению (Searle et al. 1992).  
 
@@ -560,21 +559,17 @@ class: segue-yellow
 
 Старайтесь _планировать_ группы равной численности!
 Но если не получилось - не страшно:
-- Для фикс. эффектов неравные размеры - проблема при нарушении условий применимости только, если значения доверительной вероятности _p_ близки к выбранному критическому уровню значимости $\alpha$
+- Для фикс. эффектов неравные размеры - проблема при нарушении условий применимости только, если значения доверительной вероятности _p_ близки к выбранному критическому уровню значимости $\alpha$.
 
 ---
 
 ## Суммы квадратов в многофакторном дисперсионном анализе со взаимодействием
-
---
 
 ### Если данные сбалансированы, то ...
 
 - взаимодействие и эффекты факторов независимы (в любой параметризации),
 - все суммы квадратов и соответствующие тесты можно посчитать в одном анализе,
 - результат не зависит от порядка включения факторов в модель.
-
---
 
 ### Если данные несбалансированы, то ...
 
@@ -643,9 +638,9 @@ class: middle, center, inverse
 При таком способе, сначала тестируется взаимодействие, затем отдельные факторы в модели без взаимодействия.
 
 ```{r}
-mod_treatment <- lm(log_rich ~ treat * time, data = fert)
+mod_treat_pengs <- lm(mass ~ sp * sex, data = pengs) 
 library(car)
-Anova(mod_treatment, type = 'II')
+Anova(mod_treat_pengs, type = "II")
 ```
 
 ---
@@ -668,9 +663,9 @@ __Внимание: при использовании III типа сумм кв
 --
 
 ```{r tidy.opts=list(width.cutoff=40)}
-mod_sum <- lm(log_rich ~ treat * time, data = fert, 
-            contrasts = list(treat = contr.sum, time = contr.sum))
-Anova(mod_sum, type = 3)
+mod_sum_pengs <- lm(mass ~ sp * sex, data = pengs, 
+                    contrasts = list(sp = 'contr.sum', sex = 'contr.sum')) 
+Anova(mod_sum_pengs, type = "III")
 ```
 
 ---
@@ -684,7 +679,7 @@ Anova(mod_sum, type = 3)
 __В параметризации индикаторных переменных предикторы и взаимодействие коллинеарны__, т.е. суммы квадратов III типа будут рассчитаны неправильно.
 
 ```{r}
-vif(mod_treatment)
+vif(mod_treat_pengs)
 ```
 
 --
@@ -692,12 +687,12 @@ vif(mod_treatment)
 __В параметризации эффектов переменных предикторы и взаимодействие независимы__, значит получатся верные суммы квадратов III типа.
 
 ```{r}
-vif(mod_sum)
+vif(mod_sum_pengs)
 ```
 
 ---
 
-class: segue-yellow
+class: middle, center, inverse
 
 # Пост хок тест для взаимодействия факторов
 
@@ -728,13 +723,13 @@ class: segue-yellow
 
 ```{r eval=FALSE, purl=TRUE}
 # Создаем переменную-взаимодействие
-fert$treat_time <- interaction(fert$treat, fert$time)
-# Подбираем линейную модель от этой переменной без свободного члена
+pengs$sp_sex <- interaction(pengs$sex, pengs$sp)
+# Подбираем линейную модель без свободного члена
 fit_inter <- lm()
 # Делаем пост хок тест для этой модели
-library(multcomp)
-dat_tukey <- glht(, linfct = mcp( = 'Tukey'))
-summary()
+library()
+dat_tukey <- glht(, linfct = mcp( = ))
+summary(dat_tukey)
 ```
 
 ---
@@ -743,12 +738,12 @@ summary()
 
 ```{r phoc, eval=FALSE, purl=FALSE}
 # Создаем переменную-взаимодействие
-fert$treat_time <- interaction(fert$treat, fert$time)
+pengs$sex_sp <- interaction(pengs$sex, pengs$sp)
 # Подбираем линейную модель без свободного члена
-fit_inter <- lm(log_rich ~ treat_time - 1, data = fert)
+fit_inter <- lm(mass ~ sex_sp - 1, data = pengs)
 # Делаем пост хок тест для этой модели
 library(multcomp)
-dat_tukey <- glht(fit_inter, linfct = mcp(treat_time = 'Tukey'))
+dat_tukey <- glht(fit_inter, linfct = mcp(sex_sp = 'Tukey'))
 summary(dat_tukey)
 ```
 
@@ -766,17 +761,14 @@ summary(dat_tukey)
 У нас два дискретных фактора, поэтому вначале используем `expand.grid()`
 
 ```{r}
-MyData <- expand.grid(treat = levels(fert$treat),
-                      time = levels(fert$time))
-MyData <- data.frame(
-  MyData,
-  predict(mod_treatment, newdata = MyData, interval = 'confidence')
-  )
-# Обратная трансформация (не забываем про единичку, которую прибавляли)
-MyData$richness <- 10^MyData$fit - 1
-MyData$LWR <- 10^MyData$lwr - 1
-MyData$UPR <- 10^MyData$upr - 1
-MyData
+MyData_pengs <- expand.grid(sex = levels(pengs$sex),
+                            sp = levels(pengs$sp))
+MyData_pengs <- data.frame(
+  MyData_pengs,
+  predict(mod_treat_pengs, newdata = MyData_pengs, interval = 'confidence')
+)
+
+MyData_pengs
 ```
 
 ---
@@ -790,37 +782,28 @@ MyData
 - верхнюю и нижнюю границы доверительных интервалов
 
 ```{r eval=FALSE}
-MyData <- expand.grid(treat = levels(fert$treat),
-                     time = levels())
-X <- model.matrix(~ , data = )
-betas <- coef()
-MyData$fit <- 
-MyData$se <-   (X %*% vcov(mod_treatment) %*% t(X))
-MyData$lwr <- MyData$ - 2 * 
-MyData$upr <- MyData$ + 2 * 
-
-# Обратная трансформация
-MyData$richness <- 
-MyData$LWR <- 
-MyData$UPR <- 
-MyData
+MyData_pengs <- expand.grid(sex = levels(pengs$sex),
+                            sp = levels(pengs$sp))
+X_pengs <- model.matrix(~ , data = )
+betas_pengs <- coef()
+MyData_pengs$fit <- 
+MyData_pengs$se <- (( %*% vcov() %*% t()))
+MyData_pengs$lwr <- MyData_pengs$ - 2 * MyData_pengs$
+MyData_pengs$upr <- MyData_pengs$ + 2 * MyData_pengs$
+MyData_pengs
 ```
 
 
 ```{r task-mydata, purl=FALSE, echo=FALSE}
-MyData <- expand.grid(treat = levels(fert$treat),
-                     time = levels(fert$time))
-X <- model.matrix(~ treat * time, data = MyData)
-betas <- coef(mod_treatment)
-MyData$fit <- X %*% betas
-MyData$se <- sqrt(diag(X %*% vcov(mod_treatment) %*% t(X)))
-MyData$lwr <- MyData$fit - 2 * MyData$se
-MyData$upr <- MyData$fit + 2 * MyData$se
-# Обратная трансформация
-MyData$richness <- 10^MyData$fit - 1
-MyData$LWR <- 10^MyData$lwr - 1
-MyData$UPR <- 10^MyData$upr - 1
-MyData
+MyData_pengs <- expand.grid(sex = levels(pengs$sex),
+                            sp = levels(pengs$sp))
+X_pengs <- model.matrix(~ sp * sex, data = MyData_pengs)
+betas_pengs <- coef(mod_treat_pengs)
+MyData_pengs$fit <- X_pengs %*% betas_pengs
+MyData_pengs$se <- sqrt(diag(X_pengs %*% vcov(mod_treat_pengs) %*% t(X_pengs)))
+MyData_pengs$lwr <- MyData_pengs$fit - 2 * MyData_pengs$se
+MyData_pengs$upr <- MyData_pengs$fit + 2 * MyData_pengs$se
+MyData_pengs
 ```
 
 ---
@@ -848,10 +831,10 @@ gg_linep
 
 ```{r gg-lineplot, tidy.opts=list(width.cutoff=60), eval=TRUE, purl=FALSE, echo=FALSE}
 pos <- position_dodge(width = 0.2)
-gg_linep <- ggplot(data = MyData, aes(x = time, y = richness, 
-              ymin = LWR,  ymax = UPR, colour = treat)) + 
+gg_linep <- ggplot(data = MyData_pengs, aes(x = sp, y = fit, 
+                                      ymin = lwr,  ymax = upr, colour = sex)) + 
   geom_point(position = pos) +
-  geom_line(aes(group = treat), position = pos) +
+  geom_line(aes(group = sex), position = pos) +
   geom_errorbar(position = pos, width = 0.1) 
 gg_linep
 ```
@@ -868,9 +851,9 @@ gg_linep
 ## Приводим график в приличный вид
 
 ```{r tidy.opts=list(width.cutoff=60)}
-gg_final <- gg_linep + labs(x = 'Экспозиция',  y = 'Число видов') + 
-  scale_colour_brewer(name = '', palette = 'Dark2', 
-    labels = c('Контроль', 'Эксперимент'))
+gg_final <- gg_linep + labs(x = 'Вид', y = 'Масса тела, г') + 
+  scale_colour_manual(name = '', labels = c('Самки', 'Самцы'),
+                      values = c('#FF0091', '#0077FF'))
 gg_final
 ```
 

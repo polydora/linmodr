@@ -192,17 +192,20 @@ install.packages(c("DAAG", "multcomp"))
     + [chickwts.csv](data/chickwts.csv)
     + [tomato.csv](data/tomato.csv)
 
-<!-- ### 11 Многофакторный дисперсионный анализ -->
+### 11 Многофакторный дисперсионный анализ
+
+```{r eval=FALSE}
+install.packages("palmerpenguins")
+```
 
 <!-- - Презентация: [11_two-way_anova_and_interactions.html](11_two-way_anova_and_interactions.html) -->
-<!-- - Код: -->
-<!--     + [11_two-way_anova_and_interactions_code.R](11_two-way_anova_and_interactions_code.R) -->
-<!--     + [11_two-way_anova_practice_ants.R](11_two-way_anova_practice_ants.R) -->
-<!--     + [11_two-way_anova_practice_rice.R](11_two-way_anova_practice_rice.R) -->
-<!-- - Данные: -->
-<!--     + [hall.csv](data/hall.csv) -->
-<!--     + [rice.csv](data/rice.csv) -->
-<!--     + [SandwichAnts.csv](data/SandwichAnts.csv) -->
+- Код:
+    + [11_two-way_anova_and_interactions_code.R](11_two-way_anova_and_interactions_code.R)
+    + [11_two-way_anova_practice_ants.R](11_two-way_anova_practice_ants.R)
+    + [11_two-way_anova_practice_rice.R](11_two-way_anova_practice_rice.R)
+- Данные:
+    + [rice.csv](data/rice.csv)
+    + [SandwichAnts.csv](data/SandwichAnts.csv)
 
 
 <!-- ## Обобщенные линейные модели (GLM) -->

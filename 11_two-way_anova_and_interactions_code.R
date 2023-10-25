@@ -1,92 +1,91 @@
 # ---
 # title: "Дисперсионный анализ, часть 2"
 # subtitle: "Линейные модели..."
-# author: "Марина Варфоломеева, Вадим Хайтов"
+# author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"
 # institute: "Кафедра Зоологии беспозвоночных, Биологический факультет, СПбГУ"
 
-# ## Пример: Удобрение и беспозвоночные ########################
+# ## Пример: Пингвины ########################
 #
-# Влияет ли добавление азотных и фосфорных
-# удобрений на беспозвоночных?
-# Небольшие искуственные субстраты экспонировали в
-# течение разного времени в верхней части
-# сублиторали (Hall et al., 2000).
-# Зависимая переменная:
-# - `richness` --- Число видов
+# Измерения особей пингвинов из рода Pygoscelis лежат в датасете `penguins` в пакете `palmerpenguins`. Исходные данные были опубликованы в работе Gorman et al., 2014. Помимо веса и пола животных, датасет содержит информацию об острове, на котором пингвины проживали, и измерения клюва. В анализ мы возьмём только следующие переменные:
+#
+#
+#   Зависимая переменная:
+#
+#   - `body_mass_g` --- вес в граммах
+#
 # Факторы:
-# - `time` --- срок экспозиции (2, 4 и 6 месяцев)
-# - `treat` --- удобрения (добавляли или нет)
-# Планировали сделать 5 повторностей для каждого сочетания факторов
-# Данные из Quinn, Keough, 2002
 #
-# ## Знакомимся с данными
-fert <- read.csv(file="data/hall.csv")
-str(fert)
-# Для удобства названия переменных маленькими буквами
-colnames(fert) <- tolower(colnames(fert))
-# Факторы делаем факторами
-fert$treat <- factor(fert$treat)
-fert$time <- factor(fert$time)
+#   - `species` --- вид пингвина
+#   - `sex` --- пол пингвина
+
+# ## Открываем данные
+library(palmerpenguins)
+peng <- as.data.frame(penguins[, c(1, 6, 7)])
+str(peng)
+# Переименовываем столбцы
+colnames(peng) <- c('sp', 'mass', 'sex')
 
 # ## Пропущенные значения
-colSums(is.na(fert))
+colSums(is.na(peng))
+# Удаляем пропущенные
+pengs <- peng[complete.cases(peng), ]
+colSums(is.na(pengs)) # всё ок
 
 # ## Объемы выборок в группах
-table(fert$time, fert$treat)
+table(pengs$sp, pengs$sex)
 
 # ##   Посмотрим на график
 library(ggplot2)
 theme_set(theme_bw())
-gg_rich <- ggplot(data = fert, aes(x = time, y = richness, colour = treat)) +
-  stat_summary(geom = "pointrange", fun.data = mean_cl_normal)
-gg_rich
+gg_mass <- ggplot(data = pengs, aes(x = sp, y = mass, colour = sex)) +
+  stat_summary(geom = 'pointrange', fun.data = mean_cl_normal)
+gg_mass
 
-# - Вполне возможно, здесь есть гетерогенность дисперсий...
-
-# ## Преобразовываем данные
-fert$log_rich <- log10(fert$richness + 1)
 
 # # Многофакторный дисперсионный анализ ######################------------>>>
 
+## Переменные-индикаторы для факторов
+contr.treatment(levels(pengs$sp))
+contr.treatment(levels(pengs$sex))
+
 # # Двухфакторный дисперсионный анализ в параметризации индикаторов
 # ## Подбираем линейную модель в параметризации индикаторов (contr.treatment)
-mod_treatment <- lm(log_rich ~ treat * time, data = fert)
-mod_treatment
+mod_treat_pengs <- lm(mass ~ sex * sp, data = pengs)
+mod_treat_pengs
 
 # # Двухфакторный дисперсионный анализ в параметризации эффектов
+
+## Переменные-эффекты для факторов
+contr.sum(levels(pengs$sp))
+contr.sum(levels(pengs$sex))
+
 # ## Подбираем линейную модель в параметризации эффектов (contr.sum)
-mod_sum <- lm(log_rich ~ treat * time, data = fert,
-              contrasts = list(treat = 'contr.sum', time = 'contr.sum'))
-mod_sum
+mod_sum_pengs <- lm(mass ~ sex * sp, data = pengs,
+                    contrasts = list(sp = 'contr.sum', sex = 'contr.sum'))
+coef(mod_sum_pengs)
 
 # # Диагностика линейной модели ###########################################
 
 # Данные для анализа остатков
-mod_treatment_diag <- fortify(mod_treatment) # функция из пакета ggplot2
-head(mod_treatment_diag, 2)
+mod_treat_peng_diag <- fortify(mod_treat_pengs) # функция из пакета ggplot2
+head(mod_treat_peng_diag, 2)
 
 # ## График расстояния Кука
-ggplot(mod_treatment_diag, aes(x = 1:nrow(mod_treatment_diag), y = .cooksd)) +
+ggplot(mod_treat_peng_diag, aes(x = 1:nrow(mod_treat_peng_diag), y = .cooksd)) +
   geom_bar(stat = 'identity')
 
 # ## График остатков от предсказанных значений
-gg_resid <- ggplot(data = mod_treatment_diag, aes(x = .fitted, y = .stdresid)) +
+gg_resid <- ggplot(data = mod_treat_peng_diag, aes(x = .fitted, y = .stdresid)) +
   geom_point() + geom_hline(yintercept = 0)
 gg_resid
 
 # ## График зависимости остатков от предикторов в модели (и не в модели, если есть)
-ggplot(data = mod_treatment_diag, aes(x = treat, y = .stdresid, colour = time)) +
+ggplot(data = mod_treat_peng_diag, aes(x = sex, y = .stdresid, colour = sp)) +
   geom_boxplot() + geom_hline(yintercept = 0)
 
 # ## Квантильный график остатков
 library(car)
-qqPlot(mod_treatment, id = FALSE) # функция из пакета car
-
-
-
-# # Несбалансированные данные, типы сумм квадратов ######################---->>>
-
-
+qqPlot(mod_treat_pengs, id = FALSE) # функция из пакета car
 
 
 # # Многофакторный дисперсионный анализ в R ##################################
@@ -94,17 +93,19 @@ qqPlot(mod_treatment, id = FALSE) # функция из пакета car
 # ## Дисперсионный анализ со II типом сумм квадратов
 # При таком способе, сначала тестируется взаимодействие, затем отдельные факторы
 # в модели без взаимодействия.
-mod_treatment <- lm(log_rich ~ treat * time, data = fert)
+mod_treat_pengs <- lm(mass ~ sex * sp, data = pengs)
 library(car)
-Anova(mod_treatment, type = "II")
+Anova(mod_treat_pengs, type = "II")
 
 # ## Дисперсионный анализ c III типом сумм квадратов
 # При этом способе вначале тестируют взаимодействие, когда все другие факторы
 # есть в модели. Затем тестируют факторы, когда все другие факторы и
 # взаимодействие есть в модели.
-mod_sum <- lm(log_rich ~ treat * time, data = fert,
-            contrasts = list(treat = contr.sum, time = contr.sum))
-Anova(mod_sum, type = 3)
+mod_sum_pengs <- lm(mass ~ sex * sp, data = pengs,
+                    contrasts = list(sp = 'contr.sum', sex = 'contr.sum'))
+Anova(mod_sum_pengs, type = "III")
+
+
 
 # # Пост хок тест для взаимодействия факторов ############---->>>---->>>---->>>
 
@@ -117,13 +118,13 @@ Anova(mod_sum, type = 3)
 # Дополните этот код, чтобы посчитать пост хок тест Тьюки по взаимодействию факторов
 
 # Создаем переменную-взаимодействие
-fert$treat_time <- interaction(fert$treat, fert$time)
-# Подбираем линейную модель от этой переменной без свободного члена
+pengs$sex_sp <- interaction(pengs$sex, pengs$sp)
+# Подбираем линейную модель без свободного члена
 fit_inter <- lm()
 # Делаем пост хок тест для этой модели
-library(multcomp)
-dat_tukey <- glht(, linfct = mcp( = "Tukey"))
-summary()
+library()
+dat_tukey <- glht(, linfct = mcp( = ))
+summary(dat_tukey)
 
 
 
@@ -132,17 +133,14 @@ summary()
 # ## Данные для графика при помощи `predict()`
 
 # У нас два дискретных фактора, поэтому вначале используем `expand.grid()`
-MyData <- expand.grid(treat = levels(fert$treat),
-                      time = levels(fert$time))
-MyData <- data.frame(
-  MyData,
-  predict(mod_treatment, newdata = MyData, interval = "confidence")
-  )
-# Обратная трансформация (не забываем про единичку, которую прибавляли)
-MyData$richness <- 10^MyData$fit - 1
-MyData$LWR <- 10^MyData$lwr - 1
-MyData$UPR <- 10^MyData$upr - 1
-MyData
+MyData_pengs <- expand.grid(sex = levels(pengs$sex),
+                            sp = levels(pengs$sp))
+MyData_pengs <- data.frame(
+  MyData_pengs,
+  predict(mod_treat_pengs, newdata = MyData_pengs, interval = 'confidence')
+)
+
+MyData_pengs
 
 
 # ## Задание 2 ---------------------------------------------------
@@ -151,21 +149,15 @@ MyData
 # - стандартные ошибки
 # - верхнюю и нижнюю границы доверительных интервалов
 
-MyData <- expand.grid(treat = levels(fert$treat),
-                     time = levels())
-X <- model.matrix(~ , data = )
-betas <- coef()
-MyData$fit <-
-MyData$se <-   (X %*% vcov(mod_treatment) %*% t(X))
-MyData$lwr <- MyData$ - 2 *
-MyData$upr <- MyData$ + 2 *
-
-# Обратная трансформация
-MyData$richness <-
-MyData$LWR <-
-MyData$UPR <-
-MyData
-
+MyData_pengs <- expand.grid(sex = levels(pengs$sp),
+                            sp = levels(pengs$sex))
+X_pengs <- model.matrix(~ , data = )
+betas_pengs <- coef()
+MyData_pengs$fit <-
+MyData_pengs$se <- (( %*% vcov() %*% t()))
+MyData_pengs$lwr <- MyData_pengs$ - 2 * MyData_pengs$
+MyData_pengs$upr <- MyData_pengs$ + 2 * MyData_pengs$
+MyData_pengs
 
 # ## Задание 3 ----------------------------------------------------
 # Постройте график результатов, на котором будут
@@ -182,8 +174,8 @@ gg_linep
 
 
 # ## Приводим график в приличный вид
-gg_final <- gg_linep + labs(x = "Экспозиция",  y = "Число видов") +
-  scale_colour_brewer(name = "", palette = "Dark2",
-    labels = c("Контроль", "Эксперимент"))
+gg_final <- gg_linep + labs(x = 'Вид', y = 'Масса тела, г') +
+  scale_colour_manual(name = '', labels = c('Самки', 'Самцы'),
+                      values = c('#FF0091', '#0077FF'))
 gg_final
 

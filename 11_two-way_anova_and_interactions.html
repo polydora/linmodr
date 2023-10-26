@@ -442,6 +442,19 @@ class: middle, center, inverse
 
 
 ```r
+contr.sum(levels(pengs$sex))
+```
+
+```
+       [,1]
+female    1
+male     -1
+```
+
+-  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
+
+
+```r
 contr.sum(levels(pengs$sp))
 ```
 
@@ -450,19 +463,6 @@ contr.sum(levels(pengs$sp))
 Adelie       1    0
 Chinstrap    0    1
 Gentoo      -1   -1
-```
-
--  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
-
-
-```r
-contr.sum(levels(pengs$sex))
-```
-
-```
-       [,1]
-female    1
-male     -1
 ```
 
 ---

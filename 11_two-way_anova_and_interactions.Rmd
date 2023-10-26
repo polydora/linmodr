@@ -371,13 +371,13 @@ class: middle, center, inverse
 - `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
 
 ```{r}
-contr.sum(levels(pengs$sp))
+contr.sum(levels(pengs$sex))
 ```
 
 -  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
 
 ```{r}
-contr.sum(levels(pengs$sex))
+contr.sum(levels(pengs$sp))
 ```
 
 ---

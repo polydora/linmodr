@@ -394,8 +394,8 @@ female   |  Adelie   |  1 |  1 |  0 |  1 |  0
 male  |  Adelie   | -1 |  1 |  0 | -1 |  0 
 female   |  Chinstrap   |  1 |  0 |  1 |  0 |  1           
 male  |  Chinstrap   | -1 |  0 |  1 |  0 | -1 
-female   |  Gentoo   |  1 | -1 | -1 | -1 | -1           
-male  |  Gentoo   | -1 | -1 | -1 |  1 |  1 
+female   |  Gentoo   |  1 | -1 | -1 | 1 | 1           
+male  |  Gentoo   | -1 | -1 | -1 |  -1 |  -1 
 
 ---
 

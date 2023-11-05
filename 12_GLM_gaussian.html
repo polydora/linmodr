@@ -3,24 +3,24 @@
   <head>
     <title>Обобщенные линейные модели с нормальным распределением остатков</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов" />
-    <script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
-    <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
-    <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
-    <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
-    <script src="site_libs/fabric-4.3.1/fabric.min.js"></script>
-    <link href="site_libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
-    <script src="site_libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
+    <script src="libs/header-attrs-2.23/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
-    <script src="site_libs/mark.js-8.11.1/mark.min.js"></script>
-    <link href="site_libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
-    <script src="site_libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
     <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
-    <script src="site_libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
-    <script src="site_libs/freezeframe-5.0.2/freezeframe.min.js"></script>
-    <script src="site_libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
     <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
-    <link href="site_libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
     <!-- https://github.com/fnaufel/xaringan-smartify-->
     <script
     			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -42,13 +42,14 @@ class: middle, left, inverse, title-slide
 ## Линейные модели…
 ]
 .author[
-### Марина Варфоломеева, Вадим Хайтов
+### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
 ]
 .date[
 ### Осень 2023
 ]
 
 ---
+
 
 
 
@@ -470,7 +471,7 @@ Faraway J.J. (2017) Extending the linear model with R, p.154 - написано 
 
 .pull-right-55[
 
-Правдоподобие - это произведение вероятностей данных:
+Правдоподобие --- это произведение вероятностей данных:
 
 `$$L(\theta| y_i) = \Pi^n _{i = 1}\color{purple}{f(y_i| \theta)}$$`
 
@@ -923,10 +924,6 @@ summary(mod)
 Call:
 glm(formula = PctDM ~ Age * Month, data = FishEggs)
 
-Deviance Residuals: 
-   Min      1Q  Median      3Q     Max  
--2.956  -0.558   0.231   0.752   2.503  
-
 Coefficients:
              Estimate Std. Error t value Pr(&gt;|t|)    
 (Intercept)   38.1211     1.0644   35.82   &lt;2e-16 ***
@@ -1102,7 +1099,9 @@ PctDM ~ Age * Month
 Age:Month  1     47.9 118      0.0317     0.86
 ```
 
-**2. Тестируем значимость предикторов, когда взаимодействие удалено**
+---
+
+## 2. Тестируем значимость предикторов, когда взаимодействие удалено
 
 
 ```r
@@ -1424,7 +1423,7 @@ class: middle, center, inverse
 
 ## Информационный критерий Акаике (Akaike Information Criterion, AIC)
 
-.pull-left-60[
+.pull-left-66[
 `$$AIC = -2 logLik + 2p$$`
 
 - `\(logLik\)` --- логарифм правдоподобия для модели
@@ -1439,7 +1438,7 @@ AIC --- относительная мера качества модели. Т.е
 __Важно!__   Информационные критерии можно использовать для сравнения __даже для невложенных моделей__. Но модели должны быть __подобраны с помощью ML__ и __на одинаковых данных__!
 ]
 
-.pull-right-40[
+.pull-right-33[
 ![](images/Akaike.png)
 ]
 

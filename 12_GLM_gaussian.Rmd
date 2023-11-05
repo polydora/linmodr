@@ -1,7 +1,7 @@
 ---
 title: "Обобщенные линейные модели с нормальным распределением остатков"
 subtitle: "Линейные модели..."
-author: "Марина Варфоломеева, Вадим Хайтов"
+author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"
 date: "Осень `r format(Sys.Date(), '%Y')`"
 output:
   xaringan::moon_reader:
@@ -39,11 +39,12 @@ use_tachyons()
 ```
 
 ```{r libs, include=FALSE, warning=FALSE}
-library("tidyverse")
-library("cowplot")
-library("ggplot2")
+library(tidyverse)
+library(cowplot)
 theme_set(theme_bw(base_size = 20))
+library(ggplot2)
 ```
+
 
 ```{r setup1, include = FALSE, cache = FALSE, purl = FALSE}
 options(knitr.kable.NA = '')
@@ -652,7 +653,7 @@ par(op)
 
 .pull-right-55[
 
-Правдоподобие - это произведение вероятностей данных:
+Правдоподобие --- это произведение вероятностей данных:
 
 $$L(\theta| y_i) = \Pi^n _{i = 1}\color{purple}{f(y_i| \theta)}$$
 
@@ -1146,7 +1147,9 @@ anova(null_model, mod, test = 'Chi')
 drop1(mod, test = 'Chi')
 ```
 
-**2. Тестируем значимость предикторов, когда взаимодействие удалено**
+---
+
+## 2. Тестируем значимость предикторов, когда взаимодействие удалено
 
 ```{r}
 mod_no_int <- update(mod, . ~ . -Age:Month)
@@ -1348,7 +1351,7 @@ class: middle, center, inverse
 
 ## Информационный критерий Акаике (Akaike Information Criterion, AIC)
 
-.pull-left-60[
+.pull-left-66[
 $$AIC = -2 logLik + 2p$$
 
 - $logLik$ --- логарифм правдоподобия для модели
@@ -1363,7 +1366,7 @@ AIC --- относительная мера качества модели. Т.е
 __Важно!__   Информационные критерии можно использовать для сравнения __даже для невложенных моделей__. Но модели должны быть __подобраны с помощью ML__ и __на одинаковых данных__!
 ]
 
-.pull-right-40[
+.pull-right-33[
 ![](images/Akaike.png)
 ]
 

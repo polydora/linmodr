@@ -96,6 +96,8 @@ class: middle, center, inverse
 Личинки на одном дереве имеют право быть похожими друг на друга больше, чем на личинок с другого дерева  
 И т.п.
 
+---
+
 ## Другие примеры вложенных факторов
 
 - регион --> город --> больница --> наблюдение (пациент)
@@ -106,6 +108,8 @@ class: middle, center, inverse
 
 - улитка --> спороциста в улитке --> наблюдение (редия)
 
+
+---
 
 ## Пример: Высота растений и выпас скота
 
@@ -131,6 +135,8 @@ class: middle, center, inverse
 Данные:
 Gennet, S., Spotswood, E., Hammond, M. and Bartolome, J.W., 2017. Livestock grazing supports native plants and songbirds in a California annual grassland. PloS one, 12(6), p.e0176367.
 ]
+
+---
 
 ## Открываем данные
 

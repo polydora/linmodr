@@ -13,7 +13,7 @@
 
 <title>Презентации и данные</title>
 
-<script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -29,7 +29,7 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
@@ -717,8 +717,9 @@ class="section level3">
 <h3>14 GLM для бинарных данных (=логистическая регрессия)</h3>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;ISwR&quot;</span>, <span class="st">&quot;cowplot&quot;</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;catdata&quot;</span>)</span></code></pre></div>
-<!-- - Презентация: [14_GLM_binary.pdf](14_GLM_binary.pdf) -->
 <ul>
+<li><p>Презентация: <a
+href="14_GLM_binary.pdf">14_GLM_binary.pdf</a></p></li>
 <li><p>Код: <a
 href="14_GLM_binary_code.R">14_GLM_binary_code.R</a></p></li>
 <li><p>Задание: <a
@@ -730,23 +731,39 @@ href="14_GLM_binary_training.R">14_GLM_binary_training.R</a></p></li>
 <li><a href="data/ICU.csv">ICU.csv</a></li>
 </ul></li>
 </ul>
-<!-- ## Смешанные модели (GLMM) -->
-<!-- ### 15 GLMM для нормально-распределенных данных -->
-<!-- ```{r eval=FALSE} -->
-<!-- install.packages(c("lme4", "pbkrtest")) -->
-<!-- ``` -->
+</div>
+</div>
+<div id="смешанные-модели-glmm" class="section level2">
+<h2>Смешанные модели (GLMM)</h2>
+<div id="glmm-для-нормально-распределенных-данных"
+class="section level3">
+<h3>15 GLMM для нормально-распределенных данных</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;lme4&quot;</span>, <span class="st">&quot;pbkrtest&quot;</span>))</span></code></pre></div>
 <!-- - Презентация: -->
 <!--     + [15.1_GLMM_gaussian_random_intercept_slope.html](15.1_GLMM_gaussian_random_intercept_slope.html) -->
 <!--     + [15.2_GLMM_gaussian_nested.html](15.2_GLMM_gaussian_nested.html) -->
-<!-- - Код: -->
-<!--     + [15.1_GLMM_gaussian_random_intercept_slope_code.R](15.1_GLMM_gaussian_random_intercept_slope_code.R) -->
-<!--     + [15.2_GLMM_gaussian_nested_code.R](15.2_GLMM_gaussian_nested_code.R) -->
-<!-- - Данные: [Grazing_native_plants_Gennet_et_al._2017_S1.xlsx](data/Grazing_native_plants_Gennet_et_al._2017_S1.xlsx) -->
-<!-- - Задание: -->
-<!--     + Код: [15.GLMM_gaussian_choccake_practice.R](15.GLMM_gaussian_choccake_practice.R) -->
-<!--     + Данные: [choccake.csv](data/choccake.csv) -->
+<ul>
+<li>Код:
+<ul>
+<li><a
+href="15.1_GLMM_gaussian_random_intercept_slope_code.R">15.1_GLMM_gaussian_random_intercept_slope_code.R</a></li>
+<li><a
+href="15.2_GLMM_gaussian_nested_code.R">15.2_GLMM_gaussian_nested_code.R</a></li>
+</ul></li>
+<li>Данные: <a
+href="data/Grazing_native_plants_Gennet_et_al._2017_S1.xlsx">Grazing_native_plants_Gennet_et_al._2017_S1.xlsx</a></li>
+<li>Задание:
+<ul>
+<li>Код: <a
+href="15.GLMM_gaussian_choccake_practice.R">15.GLMM_gaussian_choccake_practice.R</a></li>
+<li>Данные: <a href="data/choccake.csv">choccake.csv</a></li>
+</ul></li>
+</ul>
 <!--     + Решение (частичное): [15.GLMM_gaussian_choccake_solution.R](15.GLMM_gaussian_choccake_solution.R) -->
-<!-- - Демонстрация LRT при помощи бутстрепа: [15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R](15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R) -->
+<ul>
+<li>Демонстрация LRT при помощи бутстрепа: <a
+href="15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R">15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R</a></li>
+</ul>
 <!-- ### 16 Моделирование структуры дисперсии в смешанных моделях -->
 <!-- - Презентация: [16_variance_structure.pdf](16_variance_structure.pdf) -->
 <!-- - Код: [16_variance_structure_code.R](16_variance_structure_code.R) -->

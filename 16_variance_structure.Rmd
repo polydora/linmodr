@@ -1,49 +1,276 @@
 ---
 title: "Моделирование структуры дисперсии в смешанных моделях"
 subtitle: "Линейные модели..."
-author: "Вадим Хайтов, Марина Варфоломеева"
+author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"
+date: "Осень `r format(Sys.Date(), '%Y')`"
 output:
-  beamer_presentation:
-    theme: default
-    toc: no
-    colortheme: beaver
-    latex_engine: xelatex
-    slide_level: 2
-    fig_crop: false
-    highlight: tango
+  xaringan::moon_reader:
+    self_contained: true
+    lib_dir: libs
+    css: [ninjutsu, "assets/xaringan-themer.css", "assets/xaringan.css"]
+    df_print: default
+    nature:
+      highlightStyle: googlecode
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: [middle, left, inverse]
+      beforeInit: "assets/macros.js"
     includes:
-      in_header: ./includes/header.tex
+      in_header: "assets/xaringan_in_header.html"
+      after_body: "assets/xaringan_after_body.html"
 ---
 
-```{r setup, include=FALSE, cache=FALSE, purl=FALSE}
-# output options
-options(width = 90)
-library (knitr)
-library (scales)
-# chunk default options
-opts_chunk$set(fig.show='hold', size='footnotesize', comment='#', 
-               fig.width=4.5, out.width='3in',
-               fig.height=2.25, out.height='1.5in',
-               cache=FALSE,
-               dev='cairo_pdf',
-               
-               warning=FALSE, message=FALSE)
-# Тема для иллюстраций
-library (ggplot2)
-library (gridExtra)
-theme_spbu <- function () { 
-    theme_bw(base_size = 11, base_family='GT Eesti Pro Display') + 
-    theme(plot.title = element_text(face = 'bold', colour = '#1e1e1e'), 
-          panel.border = element_rect(fill = NA, size = 0.75), 
-          panel.grid = element_blank(),
-          strip.background = element_blank(), 
-          strip.text = element_text(face = 'bold', colour = '#1e1e1e'))
-}
+```{r setup, include = FALSE, cache = FALSE, purl = FALSE, fig.showtext = TRUE}
+source("assets/xaringan_setup.R")
+library(xaringanExtra)
+use_tile_view()
+use_scribble()
+use_search(show_icon = FALSE)
+use_progress_bar(color = "#6d2b5e", location = "bottom", height = "10px")
+use_freezeframe()
+# use_webcam()
+# use_panelset()
+# use_extra_styles(hover_code_line = TRUE)
+
+# http://tachyons.io/docs/
+# https://roperzh.github.io/tachyons-cheatsheet/
+use_tachyons()
+# use_broadcast()
+
+# library(renderthis)
+# to_pdf(from = "16_variance_structure.html",
+#        to = "16_variance_structure.pdf",
+#        complex_slides = TRUE, partial_slides = TRUE)
+```
+
+```{r libs, include=FALSE, warning=FALSE}
+library("tidyverse")
+library("cowplot")
+library("ggplot2")
+library(gridExtra)
+theme_set(theme_bw(base_size = 20))
 ar <- arrow(type = "closed", length = unit(0.15,"cm"))
 arb <- arrow(type = "closed", length = unit(0.15,"cm"), ends = "both")
 ```
 
-# "Эволюция" регрессии {.segue}
+```{r setup1, include = FALSE, cache = FALSE, purl = FALSE}
+options(knitr.kable.NA = '')
+source("support_linmodr.R")
+```
+
+---
+
+class: middle, center, inverse 
+
+# Моделирование дисперсии
+
+---
+
+## Вы узнаете
+
+- как бороться с гетерогенностью дисперсии
+- что такое обобщённый метод наименьших квадратов 
+
+### Вы сможете
+
+- применять обобщённые линейные модели, включающие ковариату дисперсии 
+- подобрать функцию, которая свяжет величину дисперсии с ковариатой дисперсии так, чтобы правдоподобие (likelihood) было бы максимальным 
+- смоделировать структуру дисперсии для модели, включающей дискретные предикторы и случайные факторы
+
+---
+
+class: middle, center, inverse
+
+# Пример -- сексуальная активность мух 
+
+---
+
+## Зависит ли продолжительность жизни самцов от их сексуальной активности?
+
+.pull-left[
+
+![](images/fruit-flies-drosophila-red-eyes-450w-625417247.jpg)
+
+.tiny[
+from [Shutterstock](https://www.shutterstock.com/ru/image-photo/fruit-flies-drosophila-red-eyes-625417247)
+]
+]
+
+.pull-right[
+Вопрос исследования:     
+Зависит ли продолжительность жизни самца от его половой активности? 
+
+__Зависимая переменная:__        
+- `longevity`	--- Продолжительность жизни самца (количество дней);      
+
+__Предикторы:__    
+- `activity` --- дискретный фактор, характеризующий условия активности самцов;          
+
+- `thorax` --- длина груди, непрерывная величина (мм).           
+]
+
+---
+
+## Дизайн эксперимента
+
+.pull-left[
+![](images/Fly_experiment_design.png)
+]
+
+.pull-right[
+В фокусе исследования переменная `activity` однако известно, что крупные самцы живут дольше мелких. В качестве ковариаты взят размер самца `thorax`.
+]
+
+---
+
+## Читаем данные
+
+```{r}
+library(faraway)
+data(fruitfly)
+fly <- fruitfly # Переименуем датасет для краткости
+str(fly)
+```
+
+---
+
+## Проверяем данные 
+
+```{r}
+# Есть ли пропущенные значения?
+colSums(is.na(fly))
+# Сколько измерений по каждой из градаций?
+table(fly$activity)
+```
+
+---
+
+## Нет ли выбросов: пишем код
+
+```{r}
+library(ggplot2)
+theme_set(theme_bw())
+
+gg_dot <- ggplot(fly, aes(y = 1:nrow(fly))) +
+  geom_point()
+Pl1 <- gg_dot + aes(x = longevity)
+Pl2 <- gg_dot + aes(x = thorax)
+
+```
+
+---
+
+## Нет ли выбросов: строим диаграммы Кливленда
+
+```{r}
+library(cowplot)
+plot_grid(Pl1, Pl2)
+```
+
+Выбросов нет
+
+---
+
+## Нет ли коллинеарности
+
+```{r}
+ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
+```
+
+Коллинеарности предикторов нет
+
+---
+
+## Гипотеза и модель 
+
+Гипотеза: Продолжительность жизни зависит от половой активности
+
+Модель:
+
+$$Longivity_{i} = \beta_0 + \beta_1 Thorax_{i} + \beta_{2} I_{isolated} + \beta_{3} I_{one} + \beta_{4} I_{many} + \beta_{5} I_{low} + \\ + Interactions + \varepsilon_{i}$$
+
+$$\varepsilon_{i} \sim N(0, \sigma^2)$$
+
+---
+
+## Код для подгонки модели 
+
+```{r}
+mod_formula <- longevity ~ thorax*activity
+M1 <- lm(mod_formula, data = fruitfly)
+
+library(car)
+Anova(M1)
+```
+
+---
+
+## Диагностика модели
+
+```{r}
+M1_diagn <- fortify(M1)
+ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0)
+```
+
+Мы не можем доверять результатам оценки, так как присутствуют явные признаки гетероскедастичности.
+
+---
+
+## Чем опасна гетероскедастичность
+
+.pull-left-60[
+Возьмем 1000 выборок из этих совокупностей по 10 наблюдений и построим много линейных моделей
+
+```{r}
+N <- 1000; b_0 <- 0; b_1 <- 0
+
+# нет гетероскедастичности
+set.seed(123456)
+x <- rnorm(N, 10, 3)
+eps_1 <- rnorm(N, 0, 10)
+y_1 <- b_0 + b_1*x + eps_1
+
+# есть гетероскедастичность
+h <- function(x) x^(2*0.7) 
+eps_2 <- rnorm(N, 0, h(x))
+y_2 <- b_0 + b_1*x + eps_2
+dat2 <- data.frame(x, y_1, y_2)
+
+p_values <- data.frame(p_no_heter = rep(NA, 1000), p_heter = NA)
+
+for(i in 1:1000){
+  df <- dat2[sample(1:1000, 10), ]
+  M_no_heter <- lm(y_1 ~ x, data = df)
+  M_heter <- lm(y_2 ~ x, data = df)
+  p_values$p_no_heter[i] <- summary(M_no_heter)$coefficients[2, 4] #p-value из summary модели 
+  p_values$p_heter[i] <- summary(M_heter)$coefficients[2, 4] #p-value из summary модели     
+  }
+```
+]
+
+.pull-right-40[
+- Нет гетероскедастичности и нет связи между $y$ и $x$ (справедлива $H_0$) частота ошибок составляет. 
+
+```{r}
+mean(p_values$p_no_heter < 0.05)
+
+```
+
+- Для совокупности с гетероскедастичностью, при отсутствии связи между  $y$ и $x$ (справедлива $H_0$) частота ошибок составляет 
+
+```{r}
+mean(p_values$p_heter < 0.05)
+
+```
+]
+
+---
+
+class: middle, center, inverse
+
+# "Эволюция" регрессии 
+
+---
 
 ## Простая регрессионная модель
 
@@ -51,18 +278,21 @@ $$
 \mathbf Y = \mathbf X\boldsymbol\beta + \varepsilon
 $$
 
-Фиксированная часть модели: $\mathbf X\boldsymbol\beta$   
-Случайная часть модели:  $\varepsilon$    
+Фиксированная часть модели: $\mathbf X\boldsymbol\beta$.  
+Случайная часть модели:  $\varepsilon$.    
 
 
-В моделях, основанных на нормальном распределении  $\varepsilon \sim N(0, \sigma^2)$
+В моделях, основанных на нормальном распределении  $\varepsilon \sim N(0, \sigma^2)$.
 
-**Важно!** Остатки независимы и одинаково распределены со средним 0 и дисперсией $\sigma^2$, одинаковой для всех уровней $y_i$. То есть остатки - это шум, в котором нет каких-то паттернов.
+**Важно!** Остатки независимы и одинаково распределены со средним 0 и дисперсией $\sigma^2$, одинаковой для всех уровней $y_i$. То есть остатки --- это шум, в котором нет каких-то паттернов.
+
+---
 
 ## Смешанные модели
 
-\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{images/Fixed_and_random.png}
+![](images/Fixed_and_random.png)
 
+---
 
 ## Смешанные модели на языке матриц
 
@@ -82,6 +312,8 @@ $$
 \mathbf b_i \sim N(0, \mathbf{D})
 $$
 
+---
+
 ## Расширенная смешанная линейная модель
 
 $$
@@ -92,188 +324,67 @@ $$
 \varepsilon _i \sim N(0, \sigma^2 \boldsymbol{\Lambda}_i)
 $$
 
-Поведение остатков в пределах групп, связанных со случайными факторами, модифицируется (моделируется) матрицей $\Lambda$  
+Поведение остатков в пределах групп, связанных со случайными факторами, модифицируется (моделируется) матрицей $\Lambda$.  
 
 $$
 \mathbf b_i \sim N(0, \mathbf{D})
 $$
 
-
-
-
+---
 
 ## Ковариата дисперсии (Variance covariate)
 
-Расширенная модель может включать еще один компонент 
+Расширенная модель может включать еще один компонент: 
 $$
 \varepsilon \sim N(0, \sigma^2 \times \LARGE{f} \small(VC))
 $$
 
-$VC$ -  ковариата дисперсии   
-$\LARGE{f} \small(VC)$ - функция, вводящая поправку, стабилизирующую дисперсию 
+$VC$ ---  ковариата дисперсии;   
+$\LARGE{f} \small(VC)$ --- функция, вводящая поправку, стабилизирующую дисперсию. 
 
 
-В зависимости от формы функции $\LARGE{f} \small(VC)$ мы получим разную структуру дисперсии в модели
+В зависимости от формы функции $\LARGE{f} \small(VC)$ мы получим разную структуру дисперсии в модели.
 
+---
 
+class: middle, center, inverse
 
+# Generalized Least Squares 
 
-# Пример -- сексуальная активность мух {.segue}
-
-
-## Зависит ли продолжительность жизни самцов от их сексуальной активности?
-
-\columnsbegin
-\column{0.48\textwidth}
-
-\includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{images/fruit-flies-drosophila-red-eyes-450w-625417247.jpg}
-
-\tiny{https://www.shutterstock.com/ru/image-photo/fruit-flies-drosophila-red-eyes-625417247}
-
-
-\column{0.48\textwidth}
-Вопрос исследования:     
-Зависит ли продолжительность жизни самца от его половой активности? 
-
-Зависимая переменная        
--`longevity`	 Продолжительность жизни самца (количество дней)      
-
-Предикторы    
--`activity`--- дискретный фактор, характеризующий условия активности самцов.          
-
--`thorax` --- длина груди, непрерывная величина (мм)           
-
-
-\columnsend
-
-## Дизайн эксперимента
-\columnsbegin
-\column{0.48\textwidth}
-
-\includegraphics[width=0.9\textwidth,keepaspectratio]{images/Fly_experiment_design.png}
-
-\column{0.48\textwidth}
-В фокусе исследования переменная `activity` однако известно, что крупные самцы живут дольше мелких. В качестве ковариаты взят размер самца `thorax`
-
-
-\columnsend
-
-
-## Читаем данные
-
-```{r}
-library(faraway)
-data(fruitfly)
-fly <- fruitfly # Переименуем датасет для краткости
-str(fly)
-```
-
-## Проверяем данные 
-
-```{r}
-# Есть ли пропущенные значения?
-colSums(is.na(fly))
-# Сколько измерений по каждой из градаций?
-table(fly$activity)
-```
-
-
-
-## Нет ли выбросов: пишем код
-
-```{r}
-library(ggplot2)
-theme_set(theme_bw())
-
-gg_dot <- ggplot(fly, aes(y = 1:nrow(fly))) +
-  geom_point()
-Pl1 <- gg_dot + aes(x = longevity)
-Pl2 <- gg_dot + aes(x = thorax)
-
-```
-
-## Нет ли выбросов: строим диаграммы Кливленда
-
-```{r}
-library(cowplot)
-plot_grid(Pl1, Pl2)
-```
-
-Выбросов нет
-
-## Нет ли коллинеарности
-
-```{r}
-ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
-```
-
-Коллинеарности предикторов нет
-
-## Гипотеза и модель 
-
-Гипотеза: Продолжительность жизни зависит от половой активности
-
-Модель:
-
-$$
-Longivity_{i} = \beta_0 + \beta_1 Thorax_{i} + \beta_{2} I_{isolated} + \beta_{3} I_{one} + \beta_{4} I_{many} + \beta_{5} I_{low} + Interactions + \varepsilon_{i}
-$$
-
-$$
-\varepsilon_{i} \sim N(0, \sigma^2)
-$$
-
-
-
-
-## Код для подгонки модели 
-
-
-```{r}
-mod_formula <- longevity ~ thorax*activity
-M1 <- lm(mod_formula, data = fruitfly)
-
-library(car)
-Anova(M1)
-```
-
-## Диагностика модели
-
-```{r}
-M1_diagn <- fortify(M1)
-ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0)
-```
-
-Мы не можем доверять результатам оценки, так как присутствуют явные признаки гетероскедастичности
-
-
-# Generalized Least Squares {.segue}
-
+---
 
 ## Обобщенный метод наименьших квадратов (Generalized Least Squares)
 
-Суть обычного метода наименьших квадратов OLS:    
-Ищем вектор $\textbf{b}$ при котором $\Sigma \textbf e^2 = min$ 
+.pull-left[
+### Обычный метод наименьших квадратов (OLS):    
+Ищем вектор $\textbf{b}$ при котором $\Sigma \textbf e^2 = min$. Т.е. все остатки равнозначны.  
+]
 
+.pull-right[
+### Обобщённый метод наименьших квадратов (GLS):   
+Ищем вектор $\textbf{b}$, при котором $\Sigma (\textbf e' \times\textbf W) = min$. Матрица $\textbf W$ --- весовая матрица.
 
-Суть GLS:   
-Ищем вектор $\textbf{b}$ при котором $\Sigma (\textbf e' \times\textbf W) = min$
+Функция `gls` из пакета `nlme`.
+]
 
-Матрица $\textbf W$ - весовая матрица 
-
+.center[
 Если $\textbf W = \textbf I$, то GLS = OLS.
+]
 
+---
 
 ## GLS модель и ее диагностика
 
 ```{r}
-library(nlme)
+library(nlme) 
 M1_gls <- gls(mod_formula, data = fruitfly)
 
-Pl_resid_M1_gls <- qplot(x = fitted(M1_gls), y = residuals(M1_gls, type = "pearson")) + geom_hline(yintercept = 0)
+Pl_resid_M1_gls <- qplot(x = fitted(M1_gls), y = residuals(M1_gls, type = "pearson")) +
+  geom_hline(yintercept = 0)
 Pl_resid_M1_gls
 ```
 
+---
 
 ## Особенности функции `gls()`
 
@@ -283,6 +394,7 @@ Pl_resid_M1_gls
 
 __Внимание!__ Модели, подобранные с помощью REML, можно сравнивать только если у них одинаковая фиксированная часть! 
 
+---
 
 ## Моделирование дисперсии
 
@@ -292,10 +404,13 @@ __Внимание!__ Модели, подобранные с помощью REM
 
 Для подбора оптимальной структуры дисперсии мы будем работать со случайной частью модели, поэтому вместо ML оценки производятся с помощью REML.  
 
+---
 
+class: middle, center, inverse
 
-# Дисперсия зависит от непрерывной ковариаты {.segue}
+# Дисперсия зависит от непрерывной ковариаты 
 
+---
 
 ##  Фиксированная структура дисперсии: varFixed()
 
@@ -315,6 +430,7 @@ M2_gls <- gls(mod_formula, data = fly, weights = varFixed( ~ thorax))
 
 Вопрос: Как выяснить, стала ли модель лучше?
 
+---
 
 ## Можем сравнить две модели при помощи AIC
 
@@ -322,10 +438,11 @@ M2_gls <- gls(mod_formula, data = fly, weights = varFixed( ~ thorax))
 AIC(M1_gls, M2_gls)
 ```
 
-\pause
+--
 
 Стало лучше! Но может есть и другие зависимости?
 
+---
 
 ## Степенная зависимость дисперсии от ковариаты: varPower()
 
@@ -344,6 +461,8 @@ $$
 ```{r}
 M3_gls <- gls(mod_formula, data = fly, weights = varPower(form = ~ thorax))
 ```
+
+---
 
 ## Что произошло в результате работы функции `varPower()`?
 
@@ -370,8 +489,9 @@ $$\varepsilon_{ij} \sim N(0, \sigma^2 \times |VC|^{2\delta})$$
 M3_gls$modelStruct
 ```
 
-## Степенная зависимость дисперсии от ковариаты для разных уровней дискретного фактора
+---
 
+## Степенная зависимость дисперсии от ковариаты для разных уровней дискретного фактора
 
 ```{r}
 M4_gls <- gls(mod_formula, data = fly, 
@@ -383,6 +503,8 @@ M4_gls <- gls(mod_formula, data = fly,
 ```{r}
 M4_gls$modelStruct
 ```
+
+---
 
 ## Экспоненциальная зависимость дисперсии от ковариаты: varExp()
 
@@ -402,6 +524,8 @@ M6_gls <- gls(mod_formula, data = fly,
               weights = varExp(form = ~ thorax|activity))
 ```
 
+---
+
 ## Подобранные параметры
 
 ```{r}
@@ -409,6 +533,7 @@ M5_gls$modelStruct
 M6_gls$modelStruct
 ```
 
+---
 
 ## Усложненная степенная зависимость дисперсии от ковариаты
 
@@ -419,8 +544,6 @@ $$
 
 При $\delta_1=0$ и $\delta_2=0$ выражение $\varepsilon_{ij} \sim N(0,\sigma^2 \times (0 + |VC|^{0})$ будет эквивалентно $\varepsilon_{ij} \sim N(0, \sigma^2)$  
 
-
-
 ```{r}
 
 M7_gls <- gls(mod_formula, data = fly, 
@@ -429,6 +552,7 @@ M8_gls <- gls(mod_formula, data = fly,
                weights = varConstPower(form = ~ thorax|activity))
 ```
 
+---
 
 ## Что произошло в результате работы функции `varConstPower()`?
 
@@ -439,10 +563,13 @@ M7_gls$modelStruct
 M8_gls$modelStruct
 ```
 
+---
 
+class: middle, center, inverse
 
-# Дисперсия зависит от дискретного фактора {.segue}
+# Дисперсия зависит от дискретного фактора 
 
+---
 
 ## Разные дисперсии для разных уровней категориальных предикторов:  varIdent() 
 
@@ -457,6 +584,8 @@ M8_gls$modelStruct
 M9_gls <- gls(mod_formula, data = fly, 
               weights = varIdent(form = ~1|activity))
 ```
+
+---
 
 ## Что произошло в результате работы функции `varIdent()`?
 
@@ -479,21 +608,23 @@ Structure: Different standard deviations per stratum
 
 Т.е. в выводе `summary()` присутствуют оценки $\sigma^2_j$
 
+---
 
-<!-- ## Сравним модели при помощи LRT -->
+## Сравним модели при помощи LRT (мб убрать?)
 
-<!-- **Важно!** Модели `M1_gls` и `M9_gls` вложенные, поэтому их можно сравнивать LRT -->
+**Важно!** Модели `M1_gls` и `M9_gls` вложенные, поэтому их можно сравнивать LRT
 
-<!-- `M1_gls:` $\sigma^2_1 = \sigma^2_2 = ... = \sigma^2_m$   -->
-<!-- `M9_gls:` $k_1\sigma^2_1 = k_2\sigma^2_2 = ... = k_m\sigma^2_m$ -->
+`M1_gls:` $\sigma^2_1 = \sigma^2_2 = ... = \sigma^2_m$
 
-<!-- ```{r} -->
-<!-- anova(M1_gls, M9_gls) -->
-<!-- ``` -->
+`M9_gls:` $k_1\sigma^2_1 = k_2\sigma^2_2 = ... = k_m\sigma^2_m$
 
-<!-- Модель `M9_gls` лучше! -->
-<!-- Если  -->
+```{r}
+anova(M1_gls, M9_gls)
+```
 
+Модель `M9_gls` лучше!
+
+---
 
 ## Комбинированная структура дисперсии: varComb()
 
@@ -515,10 +646,13 @@ M13_gls <- gls(mod_formula, data = fly,
 
 ```
 
+---
 
+class: middle, center, inverse
 
+# Моделирование гетерогенности дисперсий --- финальная модель 
 
-# Моделирование гетерогенности дисперсий - финальная модель {.segue}
+---
 
 ## Находим финальную модель
 
@@ -530,6 +664,7 @@ AICs <- AIC(M1_gls, M2_gls, M3_gls,
 AICs
 ```
 
+---
 
 ## Финальная модель
 
@@ -537,6 +672,8 @@ AICs
 AICs[AICs$AIC == min(AICs$AIC), ]
 summary(M10_gls)$call
 ```
+
+---
 
 ## Диагностика финальной модели
 
@@ -552,14 +689,17 @@ library(cowplot)
 plot_grid(Pl_resid_M1_gls, Pl_resid_M10_gls)
 ```
 
+---
 
-
+class: middle, center, inverse
 
 ## Упрощение модели
 
+---
+
 ### Задание: упростите модель
 
-\pause
+--
 
 Для упрощения финальной модели надо изменять фиксированную часть, REML не годится!
 
@@ -568,12 +708,16 @@ M10_gls_ML <- update(M10_gls, method = "ML")
 drop1(M10_gls_ML, test = "Chi")
 ```
 
+---
+
 ## Больше ничего упростить нельзя
 
 ```{r}
 M10_gls_ML2 <- update(M10_gls_ML, .~.-thorax:activity)
 drop1(M10_gls_ML2, test = "Chi" )
 ```
+
+---
 
 ## Финальная модель и подготовка визуализации 
 
@@ -593,6 +737,8 @@ new_data$SE <- sqrt(diag(X %*% vcov(M10_final) %*% t(X)))
 
 ```
 
+---
+
 ## Визуализация финальной модели
 
 ```{r}
@@ -604,26 +750,25 @@ ggplot(new_data, aes(x = thorax, y = fitted, color = activity)) +
   geom_point(data = fly, aes(x = thorax, y = longevity))
 ```
 
+---
 
+class: middle, center, inverse
 
-# Моделирование структуры дисперсии при наличии случайных факторов  {.segue}
+# Моделирование структуры дисперсии при наличии случайных факторов
+
+---
 
 ## Рост крыс при разной диете
 
-\columnsbegin
-\column{0.48\textwidth}
-
-
-
+.pull-left[
 ```{r}
 data("BodyWeight")
 bw <- as.data.frame(BodyWeight)
 head(bw, 14)
 ```
+]
 
-
-\column{0.48\textwidth}
-
+.pull-right[
 Три группы крыс, содержались при разных условиях кормления 64 дня. Каждую крысу взвешивали с определенной периодичностью. 
 
 Всего было изучено `r length(unique(bw$Rat))` особей  
@@ -634,12 +779,17 @@ head(bw, 14)
 
 Построить модель, которая дала бы ответ на вопрос, изменяется ли характер роста крыс в зависимости от типа диеты?
 
-\tiny{пример из книги Pinheiro and Bates, 2000 }
+.tiny[
+пример из книги Pinheiro and Bates, 2000 
+]
 
-\tiny{оригинальное исследование Hand and Crowder, 1996}
+.tiny[
+оригинальное исследование Hand and Crowder, 1996
+]
 
-\columnsend
+]
 
+---
 
 ## Решение: Неправильная модель
 
@@ -649,7 +799,7 @@ M1 <- gls(weight ~ Time*Diet, data = bw)
 
 Вопрос: Почему такая модель неправильная?
 
-\pause
+--
 
 **Важно!** Строить простую линейную модель в данном случае *некорректно*!
 
@@ -660,26 +810,30 @@ M1 <- gls(weight ~ Time*Diet, data = bw)
 Anova(M1)
 ```
 
+---
+
 ## Решение: Модель со случайными факторами
 
 Задание: напишите код для модели, включающей случайные факторы.
 
-\pause
+--
 
 ```{r purl=FALSE}
 M2 <- lme(weight ~ Time*Diet, data = bw, random = ~1|Rat)
 M3 <- lme(weight ~ Time*Diet, data = bw, random = ~1 + Time|Rat)
 ```
 
-\pause
+--
 
 Какую из моделей выбрать?
 
-\pause
+--
 
 ```{r purl=FALSE}
 AIC(M2, M3)
 ```
+
+---
 
 ## Решение: Пытаемся ответить на вопрос исследования
 
@@ -692,6 +846,7 @@ Anova(M3)
 
 Но! можем ли мы доверять этим результатам?
 
+---
 
 ## Диагностика модели
 
@@ -705,6 +860,7 @@ grid.arrange(Pl1, Pl2, Pl3, ncol=3)
 
 Есть некоторые признаки гетерогенности дисперсии.
 
+---
 
 ## Моделируем структуру дисперсии
 
@@ -712,7 +868,7 @@ grid.arrange(Pl1, Pl2, Pl3, ncol=3)
 M3_1 <- update(M3, weights = varIdent(form = ~ 1|Diet))
 M3_2 <- update(M3, weights = varPower(form = ~Time))
 M3_3 <- update(M3, weights = varPower(form = ~Time|Diet))
-# M3_4 <- update(M3, weights = varConstPower(form = ~Time))
+M3_4 <- update(M3, weights = varConstPower(form = ~Time), control = list(msMaxIter = 1000, msMaxEval = 1000))
 M3_5 <- update(M3, weights = varExp(form = ~Time))
 M3_6 <- update(M3, weights = varExp(form = ~Time|Diet))
 M3_7 <- update(M3, weights = varComb(varExp(form = ~Time), 
@@ -722,11 +878,15 @@ M3_8 <- update(M3, weights = varComb(varPower(form = ~Time),
 
 ```
 
+---
+
 ## Выбираем лучшую модель
 
 ```{r purl=FALSE}
 AIC(M3, M3_1, M3_2, M3_3,  M3_5, M3_6, M3_7, M3_8)
 ```
+
+---
 
 ## Диагностика модели
 
@@ -741,8 +901,7 @@ Pl6 <- ggplot(M3_6_diagn, aes(x=Diet, y=.residuals) ) + geom_boxplot()
 grid.arrange(Pl1, Pl4, nrow = 1)
 ```
 
-
-
+---
 
 ## Диагностика модели
 
@@ -751,7 +910,7 @@ grid.arrange(Pl1, Pl4, nrow = 1)
 grid.arrange(Pl5, Pl6, nrow = 1)
 ```
 
-
+---
 
 ## Отвечаем на вопрос
 
@@ -762,6 +921,7 @@ Anova(M3_6)
 
 Взаимодействие факторов осталось!
 
+---
 
 ## Смотрим на предсказания модели
 
@@ -771,21 +931,23 @@ MyData <- expand.grid(Time = unique(bw$Time), Diet = factor(1:3))
 MyData$Predicted <- predict(M3_6, newdata = MyData, level = 0)
 
 ggplot(MyData, aes(x = Time, y = Predicted,  color = Diet)) +
-  geom_line( size = 1.5) + 
+  geom_line(linewidth = 1.5) + 
   geom_point(data = bw, aes(x = Time, y = weight), 
              position = position_jitter())
 ```
 
 Углы наклона в разных группах различаются!
 
+---
 
-## Summary
+## Take-home messages
 
 При наличии признаков гетероскедастичности можно пойти тремя путями   
 1. Произвести преобразование зависимой переменной     
 2. Включить в модель элемент, описывающий связь дисперсии с ковариатой дисперсии    
 3. Если природа данных позволяет, то построить модель, основанную на распределении     Пуассона или отрицательном биномиальном распределении. 
 
+---
 
 ## Что почитать
 + Zuur, A.F. et al. 2009. Mixed effects models and extensions in ecology with R. - Statistics for biology and health. Springer, New York, NY.   

@@ -88,17 +88,13 @@ hist(b1_val) #Распределение оценок коэффициента b
 
 ############################################################
 
-
-
-
-
-
+##### Построение модели с обобщённым методом наименьших квадратов #####
 
 library(nlme)
 M1_gls <- gls(mod_formula, data = fruitfly)
 
 
-#Дагностика модели
+#Диагностика модели
 
 Pl_resid_M1_gls <- qplot(x = fitted(M1_gls), y = residuals(M1_gls, type = "pearson")) + geom_hline(yintercept = 0)
 
@@ -245,15 +241,6 @@ ggplot(new_data, aes(x = thorax, y = fitted, color = activity)) +
   geom_point(data = fly, aes(x = thorax, y = longevity))
 
 
-
-
-
-
-
-
-
-
-
 #' # Моделирование структуры дисперсии при наличии группирующих (случайных) факторов
 #' ## Пример: Рост крыс при разной диете
 #' Пример взят из книги Pinheiro & Bates, 2000 (Hand and Crowder (1996))
@@ -266,8 +253,14 @@ head(bw, 14)
 
 
 #' ## Задание
-#' Постройте модель, которая дала бы ответ на вопрос, изменяется ли характер роста крыс в зависимости от типа диеты?
+#' Постройте модель, которая дала бы ответ на вопрос, изменяется ли характер роста крыс в зависимости от типа диеты (без учёта случайного фактора)?
 
+M1 <-
+
+## Запись модели с группирующим факторов Rat
+
+M2 <- lme(weight ~ Time*Diet, data = bw, random = ~1|Rat)
+M3 <- lme(weight ~ Time*Diet, data = bw, random = ~1 + Time|Rat)
 
 
 
@@ -277,7 +270,7 @@ head(bw, 14)
 M3_1 <- update(M3, weights = varIdent(form = ~ 1|Diet))
 M3_2 <- update(M3, weights = varPower(form = ~Time))
 M3_3 <- update(M3, weights = varPower(form = ~Time|Diet))
-# M3_4 <- update(M3, weights = varConstPower(form = ~Time))
+M3_4 <- update(M3, weights = varConstPower(form = ~Time), control = list(msMaxIter = 1000, msMaxEval = 1000))
 M3_5 <- update(M3, weights = varExp(form = ~Time))
 M3_6 <- update(M3, weights = varExp(form = ~Time|Diet))
 M3_7 <- update(M3, weights = varComb(varExp(form = ~Time),
@@ -285,10 +278,13 @@ M3_7 <- update(M3, weights = varComb(varExp(form = ~Time),
 M3_8 <- update(M3, weights = varComb(varPower(form = ~Time),
                                      varIdent(form = ~1|Diet)))
 
-
-
-
 ## Диагностика модели
+
+_diagn <- data.frame(.fitted = ,
+              .residuals = ,
+              ,
+              )
+
 
 
 
@@ -299,7 +295,7 @@ MyData <- expand.grid(Time = unique(bw$Time), Diet = factor(1:3))
 MyData$Predicted <- predict(M3_6, newdata = MyData, level = 0)
 
 ggplot(MyData, aes(x = Time, y = Predicted,  color = Diet)) +
-  geom_line( size = 1.5) +
+  geom_line(linewidth = 1.5) +
   geom_point(data = bw, aes(x = Time, y = weight),
              position = position_jitter())
 

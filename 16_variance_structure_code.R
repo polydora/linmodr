@@ -106,7 +106,7 @@ Pl_resid_M1_gls
 
 ##  Фиксированная структура дисперсии: varFixed()
 
-M2_gls <- gls(mod_formula, data = fly, weights = varFixed( ~ thorax))
+M2_gls <- gls(mod_formula, data = fly, weights = varFixed(~ thorax))
 
 # Сравните две модели
 

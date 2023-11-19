@@ -7,7 +7,7 @@ output:
   xaringan::moon_reader:
     self_contained: true
     lib_dir: libs
-    css: [ninjutsu, "assets/xaringan-themer.css", "assets/xaringan.css"]
+    css: [ninjutsu, "assets/xaringan-themer.css", "assets/xaringan.css", "assets/scrollable.css"]
     df_print: default
     nature:
       highlightStyle: googlecode
@@ -58,13 +58,6 @@ options(knitr.kable.NA = '')
 source("support_linmodr.R")
 ```
 
----
-
-class: middle, center, inverse 
-
-# Моделирование дисперсии
-
----
 
 ## Вы узнаете
 
@@ -81,7 +74,7 @@ class: middle, center, inverse
 
 class: middle, center, inverse
 
-# Пример -- сексуальная активность мух 
+# Пример --- сексуальная активность мух 
 
 ---
 
@@ -364,7 +357,7 @@ class: middle, center, inverse
 ### Обобщённый метод наименьших квадратов (GLS):   
 Ищем вектор $\textbf{b}$, при котором $\Sigma (\textbf e' \times\textbf W) = min$. Матрица $\textbf W$ --- весовая матрица.
 
-Функция `gls` из пакета `nlme`.
+Функция `gls` из пакета `nlme`. Если есть случайные факторы --- `lme`.
 ]
 
 .center[
@@ -425,7 +418,7 @@ class: middle, center, inverse
 
 
 ```{r}
-M2_gls <- gls(mod_formula, data = fly, weights = varFixed( ~ thorax))
+M2_gls <- gls(mod_formula, data = fly, weights = varFixed(~ thorax))
 ```
 
 Вопрос: Как выяснить, стала ли модель лучше?
@@ -438,9 +431,24 @@ M2_gls <- gls(mod_formula, data = fly, weights = varFixed( ~ thorax))
 AIC(M1_gls, M2_gls)
 ```
 
---
 
-Стало лучше! Но может есть и другие зависимости?
+---
+
+## Что есть в summary от модели?
+
+```{r highlight.output=c(4:5, 11, 24)}
+summary(M2_gls)
+```
+
+---
+
+## Что есть в summary от модели?
+
+Помимо информационных критериев и коэффициентов модели `summary` содержит корреляционную матрицу. Из неё можно извлечь значения дисперсии для параметров модели (лежат на главной диагонали), а также коэффициенты корреляции между параметрами. Последние можно использовать для оценки мультиколлинеарности. 
+
+```{r}
+cov2cor(vcov(M2_gls)) # получаем те же значения, что в выводе summary от модели
+```
 
 ---
 
@@ -545,7 +553,6 @@ $$
 При $\delta_1=0$ и $\delta_2=0$ выражение $\varepsilon_{ij} \sim N(0,\sigma^2 \times (0 + |VC|^{0})$ будет эквивалентно $\varepsilon_{ij} \sim N(0, \sigma^2)$  
 
 ```{r}
-
 M7_gls <- gls(mod_formula, data = fly, 
                weights = varConstPower(form = ~ thorax))
 M8_gls <- gls(mod_formula, data = fly, 
@@ -607,22 +614,6 @@ Structure: Different standard deviations per stratum
  $$\varepsilon_{ij} \sim N(0, \sigma^2_j)$$
 
 Т.е. в выводе `summary()` присутствуют оценки $\sigma^2_j$
-
----
-
-## Сравним модели при помощи LRT (мб убрать?)
-
-**Важно!** Модели `M1_gls` и `M9_gls` вложенные, поэтому их можно сравнивать LRT
-
-`M1_gls:` $\sigma^2_1 = \sigma^2_2 = ... = \sigma^2_m$
-
-`M9_gls:` $k_1\sigma^2_1 = k_2\sigma^2_2 = ... = k_m\sigma^2_m$
-
-```{r}
-anova(M1_gls, M9_gls)
-```
-
-Модель `M9_gls` лучше!
 
 ---
 

@@ -30,6 +30,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/fnaufel/xaringan-smartify/smartify.min.js"></script>
     <link rel="stylesheet" href="assets/xaringan-themer.css" type="text/css" />
     <link rel="stylesheet" href="assets/xaringan.css" type="text/css" />
+    <link rel="stylesheet" href="assets/scrollable.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -57,13 +58,6 @@ class: middle, left, inverse, title-slide
 
 
 
----
-
-class: middle, center, inverse 
-
-# Моделирование дисперсии
-
----
 
 ## Вы узнаете
 
@@ -80,7 +74,7 @@ class: middle, center, inverse
 
 class: middle, center, inverse
 
-# Пример -- сексуальная активность мух 
+# Пример --- сексуальная активность мух 
 
 ---
 
@@ -418,7 +412,7 @@ class: middle, center, inverse
 ### Обобщённый метод наименьших квадратов (GLS):   
 Ищем вектор `\(\textbf{b}\)`, при котором `\(\Sigma (\textbf e' \times\textbf W) = min\)`. Матрица `\(\textbf W\)` --- весовая матрица.
 
-Функция `gls` из пакета `nlme`.
+Функция `gls` из пакета `nlme`. Если есть случайные факторы --- `lme`.
 ]
 
 .center[
@@ -483,7 +477,7 @@ class: middle, center, inverse
 
 
 ```r
-M2_gls &lt;- gls(mod_formula, data = fly, weights = varFixed( ~ thorax))
+M2_gls &lt;- gls(mod_formula, data = fly, weights = varFixed(~ thorax))
 ```
 
 Вопрос: Как выяснить, стала ли модель лучше?
@@ -503,9 +497,116 @@ M1_gls 11 892.3
 M2_gls 11 889.7
 ```
 
---
 
-Стало лучше! Но может есть и другие зависимости?
+---
+
+## Что есть в summary от модели?
+
+
+```r
+summary(M2_gls)
+```
+
+```
+Generalized least squares fit by REML
+  Model: mod_formula 
+  Data: fly 
+*    AIC   BIC logLik
+*  889.7 919.8 -433.9
+
+Variance function:
+ Structure: fixed weights
+ Formula: ~thorax 
+
+*Coefficients:
+                     Value Std.Error t-value p-value
+(Intercept)         -51.53     20.63  -2.498  0.0139
+thorax              137.67     24.81   5.549  0.0000
+activityone          10.26     31.82   0.322  0.7477
+activitylow          -9.10     32.21  -0.283  0.7780
+activitymany         -1.62     31.19  -0.052  0.9586
+activityhigh        -10.34     29.43  -0.351  0.7260
+thorax:activityone   -9.19     38.51  -0.239  0.8118
+thorax:activitylow    2.49     38.66   0.064  0.9488
+thorax:activitymany   7.19     38.10   0.189  0.8507
+thorax:activityhigh -11.93     36.20  -0.330  0.7423
+
+* Correlation: 
+                    (Intr) thorax actvtyn actvtyl actvtym actvtyh thrx:ctvtyn
+thorax              -0.995                                                   
+activityone         -0.648  0.645                                            
+activitylow         -0.640  0.637  0.415                                     
+activitymany        -0.661  0.658  0.429   0.424                             
+activityhigh        -0.701  0.697  0.455   0.449   0.464                     
+thorax:activityone   0.641 -0.644 -0.996  -0.410  -0.424  -0.449             
+thorax:activitylow   0.638 -0.642 -0.414  -0.996  -0.422  -0.447   0.413     
+thorax:activitymany  0.648 -0.651 -0.420  -0.415  -0.995  -0.454   0.420     
+thorax:activityhigh  0.682 -0.685 -0.442  -0.437  -0.451  -0.995   0.442     
+                    thrx:ctvtyl thrx:ctvtym
+thorax                                     
+activityone                                
+activitylow                                
+activitymany                               
+activityhigh                               
+thorax:activityone                         
+thorax:activitylow                         
+thorax:activitymany  0.418                 
+thorax:activityhigh  0.440       0.446     
+
+Standardized residuals:
+     Min       Q1      Med       Q3      Max 
+-2.35171 -0.62456 -0.07116  0.60697  2.83272 
+
+Residual standard error: 11.69 
+Degrees of freedom: 124 total; 114 residual
+```
+
+---
+
+## Что есть в summary от модели?
+
+Помимо информационных критериев и коэффициентов модели `summary` содержит корреляционную матрицу. Из неё можно извлечь значения дисперсии для параметров модели (лежат на главной диагонали), а также коэффициенты корреляции между параметрами. Последние можно использовать для оценки мультиколлинеарности. 
+
+
+```r
+cov2cor(vcov(M2_gls)) # получаем те же значения, что в выводе summary от модели
+```
+
+```
+                    (Intercept)  thorax activityone activitylow activitymany
+(Intercept)              1.0000 -0.9947     -0.6484     -0.6404      -0.6615
+thorax                  -0.9947  1.0000      0.6450      0.6370       0.6579
+activityone             -0.6484  0.6450      1.0000      0.4153       0.4289
+activitylow             -0.6404  0.6370      0.4153      1.0000       0.4236
+activitymany            -0.6615  0.6579      0.4289      0.4236       1.0000
+activityhigh            -0.7010  0.6973      0.4545      0.4490       0.4637
+thorax:activityone       0.6408 -0.6443     -0.9955     -0.4104      -0.4239
+thorax:activitylow       0.6384 -0.6418     -0.4139     -0.9956      -0.4222
+thorax:activitymany      0.6478 -0.6512     -0.4200     -0.4149      -0.9952
+thorax:activityhigh      0.6817 -0.6853     -0.4420     -0.4366      -0.4509
+                    activityhigh thorax:activityone thorax:activitylow
+(Intercept)              -0.7010             0.6408             0.6384
+thorax                    0.6973            -0.6443            -0.6418
+activityone               0.4545            -0.9955            -0.4139
+activitylow               0.4490            -0.4104            -0.9956
+activitymany              0.4637            -0.4239            -0.4222
+activityhigh              1.0000            -0.4492            -0.4475
+thorax:activityone       -0.4492             1.0000             0.4135
+thorax:activitylow       -0.4475             0.4135             1.0000
+thorax:activitymany      -0.4541             0.4196             0.4179
+thorax:activityhigh      -0.9946             0.4415             0.4398
+                    thorax:activitymany thorax:activityhigh
+(Intercept)                      0.6478              0.6817
+thorax                          -0.6512             -0.6853
+activityone                     -0.4200             -0.4420
+activitylow                     -0.4149             -0.4366
+activitymany                    -0.9952             -0.4509
+activityhigh                    -0.4541             -0.9946
+thorax:activityone               0.4196              0.4415
+thorax:activitylow               0.4179              0.4398
+thorax:activitymany              1.0000              0.4463
+thorax:activityhigh              0.4463              1.0000
+```
 
 ---
 
@@ -729,29 +830,6 @@ Structure: Different standard deviations per stratum
 
 ---
 
-## Сравним модели при помощи LRT (мб убрать?)
-
-**Важно!** Модели `M1_gls` и `M9_gls` вложенные, поэтому их можно сравнивать LRT
-
-`M1_gls:` `\(\sigma^2_1 = \sigma^2_2 = ... = \sigma^2_m\)`
-
-`M9_gls:` `\(k_1\sigma^2_1 = k_2\sigma^2_2 = ... = k_m\sigma^2_m\)`
-
-
-```r
-anova(M1_gls, M9_gls)
-```
-
-```
-       Model df   AIC   BIC logLik   Test L.Ratio p-value
-M1_gls     1 11 892.3 922.4 -435.1                       
-M9_gls     2 15 889.8 930.9 -429.9 1 vs 2   10.46  0.0333
-```
-
-Модель `M9_gls` лучше!
-
----
-
 ## Комбинированная структура дисперсии: varComb()
 
 
@@ -847,7 +925,7 @@ library(cowplot)
 plot_grid(Pl_resid_M1_gls, Pl_resid_M10_gls)
 ```
 
-![](16_variance_structure_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+![](16_variance_structure_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -936,7 +1014,7 @@ ggplot(new_data, aes(x = thorax, y = fitted, color = activity)) +
   geom_point(data = fly, aes(x = thorax, y = longevity))
 ```
 
-![](16_variance_structure_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+![](16_variance_structure_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1101,7 +1179,7 @@ Pl3 &lt;- ggplot(diagnostic, aes(x=Diet, y=.residuals) ) + geom_boxplot()
 grid.arrange(Pl1, Pl2, Pl3, ncol=3)
 ```
 
-![](16_variance_structure_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
+![](16_variance_structure_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
 
 Есть некоторые признаки гетерогенности дисперсии.
 
@@ -1160,7 +1238,7 @@ Pl6 &lt;- ggplot(M3_6_diagn, aes(x=Diet, y=.residuals) ) + geom_boxplot()
 grid.arrange(Pl1, Pl4, nrow = 1)
 ```
 
-![](16_variance_structure_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+![](16_variance_structure_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1172,7 +1250,7 @@ grid.arrange(Pl1, Pl4, nrow = 1)
 grid.arrange(Pl5, Pl6, nrow = 1)
 ```
 
-![](16_variance_structure_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
+![](16_variance_structure_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1214,7 +1292,7 @@ ggplot(MyData, aes(x = Time, y = Predicted,  color = Diet)) +
              position = position_jitter())
 ```
 
-![](16_variance_structure_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+![](16_variance_structure_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
 
 Углы наклона в разных группах различаются!
 

@@ -260,9 +260,9 @@ install.packages("catdata")
 install.packages(c("lme4", "pbkrtest"))
 ```
 
-<!-- - Презентация: -->
-<!--     + [15.1_GLMM_gaussian_random_intercept_slope.html](15.1_GLMM_gaussian_random_intercept_slope.html) -->
-<!--     + [15.2_GLMM_gaussian_nested.html](15.2_GLMM_gaussian_nested.html) -->
+- Презентация:
+    + [15.1_GLMM_gaussian_random_intercept_slope.html](15.1_GLMM_gaussian_random_intercept_slope.html)
+    + [15.2_GLMM_gaussian_nested.html](15.2_GLMM_gaussian_nested.html)
 
 - Код:
     + [15.1_GLMM_gaussian_random_intercept_slope_code.R](15.1_GLMM_gaussian_random_intercept_slope_code.R)
@@ -272,22 +272,23 @@ install.packages(c("lme4", "pbkrtest"))
     + Код: [15.GLMM_gaussian_choccake_practice.R](15.GLMM_gaussian_choccake_practice.R)
     + Данные: [choccake.csv](data/choccake.csv)
 
-<!--     + Решение (частичное): [15.GLMM_gaussian_choccake_solution.R](15.GLMM_gaussian_choccake_solution.R) -->
+    + Решение (частичное): [15.GLMM_gaussian_choccake_solution.R](15.GLMM_gaussian_choccake_solution.R)
 
 - Демонстрация LRT при помощи бутстрепа: [15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R](15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R)
 
 
-<!-- ### 16 Моделирование структуры дисперсии в смешанных моделях -->
+### 16 Моделирование структуры дисперсии в смешанных моделях
 
-<!-- - Презентация: [16_variance_structure.pdf](16_variance_structure.pdf) -->
-<!-- - Код: [16_variance_structure_code.R](16_variance_structure_code.R) -->
-<!-- - Код: [16_variance_structure_code_practice.R](16_variance_structure_code_practice.R) -->
-<!-- - Данные: -->
-<!--     + [mussel_juv_ad.csv](data/mussel_juv_ad.csv) -->
+```{r eval=FALSE}
+install.packages("faraway")
+```
+- Презентация: [16_variance_structure.html](16_variance_structure.html)
+- Код: [16_variance_structure_code.R](16_variance_structure_code.R)
+- Код: [16_variance_structure_code_practice.R](16_variance_structure_code_practice.R)
+- Данные:
+    + [mussel_juv_ad.csv](data/mussel_juv_ad.csv)
 
-<!-- ```{r eval=FALSE} -->
-<!-- install.packages("faraway") -->
-<!-- ``` -->
+
 
 
 

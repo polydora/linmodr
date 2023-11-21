@@ -128,7 +128,13 @@ mod2
 
 # Адекватна ли модель? Диагностика полной модели #######
 
-mod2_diag <- fortify(mod2)
+mod2_diag <- fortify.merMod(mod2) # функция из пакета lme4
+# то же самое
+mod2_diag <- data.frame(
+  choccake,
+  .fitted = predict(mod2),
+  .resid = resid(mod2, type = 'pearson'),
+  .scresid = resid(mod2, type = 'pearson', scaled = TRUE))
 head(mod2_diag)
 ggplot(mod2_diag, aes(x = .fitted, y = .scresid)) + geom_point() + geom_smooth(method = 'loess')
 # ОК
@@ -172,7 +178,13 @@ AIC(mod1, mod2)
 
 # Диагностика модели без взаимодействия ##############
 
-mod1_diag <- fortify(mod1)
+mod1_diag <- fortify.merMod(mod1) # функция из пакета lme4
+# то же самое
+mod1_diag2 <- data.frame(
+  choccake,
+  .fitted = predict(mod1),
+  .resid = resid(mod1, type = 'pearson'),
+  .scresid = resid(mod1, type = 'pearson', scaled = TRUE))
 head(mod1_diag)
 ggplot(mod1_diag, aes(x = .fitted, y = .scresid)) + geom_point() + geom_smooth(method = 'loess')
 # ОК

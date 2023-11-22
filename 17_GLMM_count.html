@@ -4,7 +4,7 @@
     <title>Смешанные линейные модели для счетных данных</title>
     <meta charset="utf-8" />
     <meta name="author" content="Марина Варфоломеева, Вадим Хайтов" />
-    <script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
+    <script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
     <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
     <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
@@ -45,7 +45,7 @@ class: middle, left, inverse, title-slide
 ### Марина Варфоломеева, Вадим Хайтов
 ]
 .date[
-### Осень 2022
+### Осень 2023
 ]
 
 ---
@@ -359,16 +359,16 @@ library(lme4)
 ```
 
 ```
-Loading required package: Matrix
+Загрузка требуемого пакета: Matrix
 ```
 
 ```
 
-Attaching package: 'Matrix'
+Присоединяю пакет: 'Matrix'
 ```
 
 ```
-The following objects are masked from 'package:tidyr':
+Следующие объекты скрыты от 'package:tidyr':
 
     expand, pack, unpack
 ```
@@ -382,7 +382,7 @@ M1 &lt;- glmer(NCalls ~ SexParent * FoodTreatment +
 
 ```
 Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, : Model
-failed to converge with max|grad| = 0.0059883 (tol = 0.002, component 1)
+failed to converge with max|grad| = 0.00598821 (tol = 0.002, component 1)
 ```
 
 ```
@@ -656,12 +656,12 @@ bind_rows(fixef(M2), fixef(M2.1))
 
 ```
 # A tibble: 2 × 6
-  `(Intercept)` SexParentMale FoodTreatmentSatiated ArrivalTime_std SexParent…¹ SexPa…²
-          &lt;dbl&gt;         &lt;dbl&gt;                 &lt;dbl&gt;           &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;
-1         0.656      -0.00996                -0.771          -0.249       0.178  0.0498
-2         0.659      -0.0130                 -0.775          -0.248       0.177  0.0484
-# … with abbreviated variable names ¹​`SexParentMale:FoodTreatmentSatiated`,
-#   ²​`SexParentMale:ArrivalTime_std`
+  `(Intercept)` SexParentMale FoodTreatmentSatiated ArrivalTime_std
+          &lt;dbl&gt;         &lt;dbl&gt;                 &lt;dbl&gt;           &lt;dbl&gt;
+1         0.656      -0.00996                -0.771          -0.249
+2         0.659      -0.0130                 -0.775          -0.248
+# ℹ 2 more variables: `SexParentMale:FoodTreatmentSatiated` &lt;dbl&gt;,
+#   `SexParentMale:ArrivalTime_std` &lt;dbl&gt;
 ```
 
 ---
@@ -835,11 +835,11 @@ Number of obs: 599, groups:  Nest, 27
 Fixed effects:
                                     Estimate Std. Error z value  Pr(&gt;|z|)    
 (Intercept)                          0.65564    0.12935    5.07 0.0000004 ***
-SexParentMale                       -0.00996    0.14211   -0.07   0.94415    
-FoodTreatmentSatiated               -0.77081    0.16143   -4.77 0.0000018 ***
+SexParentMale                       -0.00996    0.14211   -0.07   0.94411    
+FoodTreatmentSatiated               -0.77082    0.16143   -4.77 0.0000018 ***
 ArrivalTime_std                     -0.24911    0.07300   -3.41   0.00064 ***
-SexParentMale:FoodTreatmentSatiated  0.17791    0.20120    0.88   0.37655    
-SexParentMale:ArrivalTime_std        0.04979    0.09546    0.52   0.60200    
+SexParentMale:FoodTreatmentSatiated  0.17793    0.20120    0.88   0.37651    
+SexParentMale:ArrivalTime_std        0.04979    0.09546    0.52   0.60197    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -932,7 +932,7 @@ NCalls ~ SexParent + FoodTreatment + ArrivalTime_std + (1 | Nest) +
 &lt;none&gt;               3476                       
 SexParent          1 3475  0.4           0.5    
 FoodTreatment      1 3513 39.0 0.00000000043 ***
-ArrivalTime_std    1 3495 20.3 0.00000651761 ***
+ArrivalTime_std    1 3495 20.3 0.00000651759 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -959,7 +959,7 @@ NCalls ~ FoodTreatment + ArrivalTime_std + (1 | Nest) + offset(logBroodSize)
                 npar  AIC  LRT       Pr(Chi)    
 &lt;none&gt;               3475                       
 FoodTreatment      1 3513 39.9 0.00000000027 ***
-ArrivalTime_std    1 3493 20.1 0.00000746458 ***
+ArrivalTime_std    1 3493 20.1 0.00000746455 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -1179,7 +1179,216 @@ ggplot() +
 ![](17_GLMM_count_files/figure-html/owls-pred-1.png)&lt;!-- --&gt;
 
 ---
+class: middle, center, inverse
 
+# Очень краткое введение в GAM и GAMM
+
+---
+
+## Симулированный пример
+
+.pull-left[
+.small[
+
+
+```r
+set.seed(12345)
+x &lt;- seq(0, pi * 2, 0.1)
+sin_x &lt;- sin(x)
+y &lt;- sin_x + rnorm(n = length(x), mean = 0, sd = sd(sin_x / 2))
+df &lt;- data.frame(x, y)
+df$mu &lt;- sin_x
+
+Pl_init &lt;-
+ggplot(df, aes(x, y))+ 
+  geom_point() + 
+  geom_line(aes(y = mu), color = "blue")
+```
+]
+
+]
+
+.pull-rigft[
+
+```r
+Pl_init
+```
+
+![](17_GLMM_count_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+
+]
+---
+
+## Принцип аддитивных моделей
+
+GAM - это метод, в котором влияние предикторов отражается с помощью сглаживающих функций (smoother): `\(f\)`.
+
+&lt;!-- Эти сглаживающие функции  --&gt;
+
+&lt;!-- `\(b_0(x) = 1\)`, `\(b_1(x) = x^1\)`, `\(b_2(x) = x^2\)`, `\(b_3(x) = x^3\)`  --&gt;
+
+Влияние предиктора описывается *базовым* сплайном вида
+
+$$
+f(x) = b_0 + b_1x + b_2x^2 + b_3x^3
+$$ 
+
+(*At!* Есть много других видов базовых функций)
+
+Итоговый сплайн "сшивается" из локальных сплайнов, расположенных вокруг узлов (равномерно распределнные вдоль OX точки). Каждый "локальный" сплайн имеет свои собственные коэффициенты. 
+
+![](images/GAM_cubic_spline.png)
+
+---
+
+## Принцип аддитивных моделей
+
+Можно подобрать несколько "сшитых" сплайнов так, что финальная модель будет иметь следующий вид
+
+$$
+y_i = f(x_i) + \varepsilon_i 
+$$
+где
+
+$$
+f(x) = \sum{(b_j(x) \times \beta_j)}
+$$
+
+
+---
+
+## Запись аддитивной модели в R
+
+
+```r
+library(mgcv)
+library(gratia)
+
+Mod &lt;- gam(y ~ s(x, bs = "cr"), method = "REML", data = df)
+
+Pl_mod &lt;-
+draw(Mod, residuals = T)
+
+library(cowplot)
+plot_grid(Pl_init, Pl_mod)
+```
+
+![](17_GLMM_count_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+
+
+---
+
+## Принцип аддитивных моделей
+
+Итоговая сглаживающая функция - сумма нескольких подобранных сплайнов, умноженных на соответствующие коэффициенты 
+
+
+
+```r
+model_matrix &lt;- predict(Mod, type = "lpmatrix")
+predicted &lt;- model_matrix %*% coef(Mod) 
+
+plot(df$y ~ df$x) #Исходные данные
+matplot(df$x, model_matrix[, ], type = "l", lty = 2, add = T) #множество подобранных сплайнов
+
+lines(predicted ~ df$x) #Итоговая сглаживающая функция
+```
+
+![](17_GLMM_count_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+## Совы и GAMM
+
+
+```r
+Owls$FoodTreatment &lt;- factor(Owls$FoodTreatment)
+Owls$Nest &lt;- factor(Owls$Nest)
+Owls$SexParent &lt;- factor(Owls$SexParent)
+
+# Модель, когда сглаживающая функция общая для двух полов родителей
+Mod_gam_1 &lt;- gam(NCalls ~ s(ArrivalTime, bs = "cr") + SexParent * FoodTreatment + s(Nest, bs = "re"), offset(logBroodSize), method = "REML", family = "nb", data = Owls)
+
+# Модель, когда сглаживающая функция подбирается отдельно для каждого пола родителей
+Mod_gam_2 &lt;- gam(NCalls ~ s(ArrivalTime, by = SexParent, bs = "cr") + SexParent * FoodTreatment + s(Nest, bs = "re"), offset(logBroodSize), method = "REML", family = "nb", data = Owls)
+
+AIC(Mod_gam_1, Mod_gam_2)
+```
+
+```
+             df  AIC
+Mod_gam_1 33.84 4991
+Mod_gam_2 41.33 4973
+```
+
+---
+
+## Диагностика модели
+
+
+```r
+library(gratia)
+
+appraise(Mod_gam_1)
+```
+
+![](17_GLMM_count_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+
+---
+
+## Результаты
+
+
+```r
+summary(Mod_gam_1)
+```
+
+```
+
+Family: Negative Binomial(1.064) 
+Link function: log 
+
+Formula:
+NCalls ~ s(ArrivalTime, bs = "cr") + SexParent * FoodTreatment + 
+    s(Nest, bs = "re")
+
+Parametric coefficients:
+                                    Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)                           2.0324     0.1316   15.44  &lt; 2e-16 ***
+SexParentMale                        -0.0143     0.1098   -0.13     0.90    
+FoodTreatmentSatiated                -0.8657     0.1218   -7.11  1.2e-12 ***
+SexParentMale:FoodTreatmentSatiated   0.1768     0.1543    1.15     0.25    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Approximate significance of smooth terms:
+                 edf Ref.df Chi.sq p-value    
+s(ArrivalTime)  7.12   8.12   85.2  &lt;2e-16 ***
+s(Nest)        20.60  25.00  135.6  &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+R-sq.(adj) =  0.243   Deviance explained = 22.2%
+-REML = 2516.1  Scale est. = 1         n = 599
+```
+
+---
+
+## Визуализация модели
+
+
+```r
+draw(Mod_gam_1, parametric = T)
+```
+
+![](17_GLMM_count_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+
+
+
+
+---
 ## Take-home messages
 
 - В случае счетных зависимых переменных (неотрицательных целочисленных величин) применяются модели, основанные на распределении Пуассона или отрицательном биномиальном распределении.

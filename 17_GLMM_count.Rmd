@@ -806,39 +806,165 @@ ggplot() +
 ```
 
 ---
+class: middle, center, inverse
 
-# Краткое введение в GAM и GAMM
+# Очень краткое введение в GAM и GAMM
+
+---
+
+## Симулированный пример
+
+.pull-left[
+.small[
+
+```{r}
+set.seed(12345)
+x <- seq(0, pi * 2, 0.1)
+sin_x <- sin(x)
+y <- sin_x + rnorm(n = length(x), mean = 0, sd = sd(sin_x / 2))
+df <- data.frame(x, y)
+df$mu <- sin_x
+
+Pl_init <-
+ggplot(df, aes(x, y))+ 
+  geom_point() + 
+  geom_line(aes(y = mu), color = "blue")
+
+```
+]
+
+]
+
+.pull-rigft[
+```{r}
+Pl_init
+```
+
+]
+---
+
+## Принцип аддитивных моделей
+
+GAM - это метод, в котором влияние предикторов отражается с помощью сглаживающих функций (smoother): $f$.
+
+<!-- Эти сглаживающие функции  -->
+
+<!-- $b_0(x) = 1$, $b_1(x) = x^1$, $b_2(x) = x^2$, $b_3(x) = x^3$  -->
+
+Влияние предиктора описывается *базовым* сплайном вида
+
+$$
+f(x) = b_0 + b_1x + b_2x^2 + b_3x^3
+$$ 
+
+(*At!* Есть много других видов базовых функций)
+
+Итоговый сплайн "сшивается" из локальных сплайнов, расположенных вокруг узлов (равномерно распределнные вдоль OX точки). Каждый "локальный" сплайн имеет свои собственные коэффициенты. 
+
+![](images/GAM_cubic_spline.png)
 
 ---
 
 ## Принцип аддитивных моделей
 
-GAM - это аддитивный метод, в котором влияние предикторов отражается с помощью сглаживающих функций (smoother).
+Можно подобрать несколько "сшитых" сплайнов так, что финальная модель будет иметь следующий вид
 
-Принцип построения сглаживающей функции
+$$
+y_i = f(x_i) + \varepsilon_i 
+$$
+где
 
-$b_0(x) = 1$, $b_1(x) = x^1$, $b_2(x) = x^2$, $b_3(x) = x^3$ 
+$$
+f(x) = \sum{(b_j(x) \times \beta_j)}
+$$
+
+
+---
+
+## Запись аддитивной модели в R
 
 ```{r}
-library(dplyr)
-df <- data.frame(x = seq(0, 1, 0.01))
-df <- df %>% mutate(smooth = 1 + 1*x - 1*x^2 + 10*x^3)
+library(mgcv)
+library(gratia)
 
-ggplot(df, aes(x = x, y = smooth) ) + geom_line()
- 
+Mod <- gam(y ~ s(x, bs = "cr"), method = "REML", data = df)
 
-  
+Pl_mod <-
+draw(Mod, residuals = T)
+
+library(cowplot)
+plot_grid(Pl_init, Pl_mod)
+
+```
+
+
+---
+
+## Принцип аддитивных моделей
+
+Итоговая сглаживающая функция - сумма нескольких подобранных сплайнов, умноженных на соответствующие коэффициенты 
+
+
+```{r}
+
+model_matrix <- predict(Mod, type = "lpmatrix")
+predicted <- model_matrix %*% coef(Mod) 
+
+plot(df$y ~ df$x) #Исходные данные
+matplot(df$x, model_matrix[, ], type = "l", lty = 2, add = T) #множество подобранных сплайнов
+
+lines(predicted ~ df$x) #Итоговая сглаживающая функция
+
 ```
 
 
 
+---
 
+## Совы и GAMM
 
+```{r}
 
+Owls$FoodTreatment <- factor(Owls$FoodTreatment)
+Owls$Nest <- factor(Owls$Nest)
+Owls$SexParent <- factor(Owls$SexParent)
 
+# Модель, когда сглаживающая функция общая для двух полов родителей
+Mod_gam_1 <- gam(NCalls ~ s(ArrivalTime, bs = "cr") + SexParent * FoodTreatment + s(Nest, bs = "re"), offset(logBroodSize), method = "REML", family = "nb", data = Owls)
 
+# Модель, когда сглаживающая функция подбирается отдельно для каждого пола родителей
+Mod_gam_2 <- gam(NCalls ~ s(ArrivalTime, by = SexParent, bs = "cr") + SexParent * FoodTreatment + s(Nest, bs = "re"), offset(logBroodSize), method = "REML", family = "nb", data = Owls)
 
+AIC(Mod_gam_1, Mod_gam_2)
 
+```
+
+---
+
+## Диагностика модели
+
+```{r}
+library(gratia)
+
+appraise(Mod_gam_1)
+
+```
+
+---
+
+## Результаты
+
+```{r}
+summary(Mod_gam_1)
+```
+
+---
+
+## Визуализация модели
+
+```{r}
+draw(Mod_gam_1, parametric = T)
+```
 
 
 

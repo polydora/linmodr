@@ -11,9 +11,9 @@ smoother <- function (b0 = 1, b1, b2, b3){
 }
 
 
-
-
 library(shiny)
+library(ggplot2)
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(

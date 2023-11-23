@@ -311,6 +311,10 @@ install.packages("gratia")
 - Данные:
     + [Roulin_Bersier_2007_Owls.csv](data/Roulin_Bersier_2007_Owls.csv)
     + [Morris_2015_Ants.xlsx](data/Morris_2015_Ants.xlsx)
+    
+- [Ссылка на видео с хорошим объяснением GAM](https://www.youtube.com/watch?v=sgw4cu8hrZM)
+
+
 
 <!-- ### 18 GLMM для бинарных данных -->
 

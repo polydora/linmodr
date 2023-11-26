@@ -312,16 +312,16 @@ install.packages("gratia")
     + [Roulin_Bersier_2007_Owls.csv](data/Roulin_Bersier_2007_Owls.csv)
     + [Morris_2015_Ants.xlsx](data/Morris_2015_Ants.xlsx)
 
-<!-- ### 18 GLMM для бинарных данных -->
+### 18 GLMM для бинарных данных
 
-<!-- ```{r eval=FALSE} -->
-<!-- install.packages(c("MASS", "glmmML", "lme4")) -->
-<!-- install.packages("performance") -->
-<!-- install.packages("partR2") -->
-<!-- install.packages("blmeco") -->
+```{r eval=FALSE}
+install.packages(c("MASS", "glmmML", "lme4"))
+install.packages("performance")
+install.packages("partR2")
+install.packages("blmeco")
 
+```
 
-<!-- ``` -->
 
 <!-- - Презентация: [18_GLMM_binary.pdf](18_GLMM_binary.pdf) -->
 
@@ -329,9 +329,9 @@ install.packages("gratia")
 
 
 
-<!-- - Код: [18_GLMM_binary_code.R](18_GLMM_binary_code.R) -->
-<!-- - Данные: -->
-<!--     + [aster_mussel_full.csv](data/aster_mussel_full.csv) -->
-<!--     + [aster_mussel.csv](data/aster_mussel.csv) -->
-<!--     + [myt_gen_morph.csv](data/myt_gen_morph.csv) -->
-<!--     + [Yakovis2.csv](data/Yakovis2.csv) -->
+- Код: [18_GLMM_binary_code.R](18_GLMM_binary_code.R)
+- Данные:
+    + [aster_mussel_full.csv](data/aster_mussel_full.csv)
+    + [aster_mussel.csv](data/aster_mussel.csv)
+    + [myt_gen_morph.csv](data/myt_gen_morph.csv)
+    + [Yakovis2.csv](data/Yakovis2.csv)

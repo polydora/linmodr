@@ -31,25 +31,18 @@ output:
 ### 02 Основы ggplot2
 
 ```{r eval=FALSE}
-install.packages("ggplot2")
-install.packages("readxl")
-install.packages("tidyr")
-install.packages("MASS")
+install.packages(c("ggplot2", "readxl", "tidyr", "MASS", "car"))
+
 ```
 
-<!-- - Презентация: [Основы ggplot2](02_intro_ggplot.html) -->
-<!-- - Код: [02_intro_ggplot.R](02_intro_ggplot.R) -->
-<!-- - Данные: [Titanic.csv](data/Titanic.csv) -->
-<!-- - Данные: [fev.xls](data/fev.xls) -->
-<!-- - Тренировка: [02_intro_ggplot_training.html](02_intro_ggplot_training.html) -->
-
+<!-- - Презентация: [Основы ggplot2](02_intro_ggplot2.html) -->
+- Код: [02_intro_ggplot.R](02_intro_ggplot.R)
+- Данные: [Titanic.csv](data/Titanic.csv)
+- Данные: [fev.xls](data/fev.xls)
+- Тренировка: [02_intro_ggplot_training.html](02_intro_ggplot_training.html)
 
 
 ### 03 Описательная статистика
-
-```{r eval=FALSE}
-install.packages("car")
-```
 
 <!-- Часть 1 -->
 

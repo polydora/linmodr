@@ -81,6 +81,15 @@ fev$Smoker <- factor(fev$Smoker)
 #############################################################################
 #Визуализация данных (первый заход)
 
+#Базовая графика
+plot(fev$Age, fev$FEV, type = "p") #самый простой вариант
+
+#немного более украшенный график
+library(car)
+scatterplot(FEV ~ Age | Sex, data = fev)
+
+# Визуализация посредством ggplot2
+
 #Задача: построить точечную диаграмму, где по оси OX отложен Age, а по оси OY отложен FEV
 
 ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point()
@@ -153,12 +162,15 @@ Plot_2 <- Plot_1 + labs(x = "Возраст", y = "Объем легких", tit
 
 ggsave("MyPicture_2.wmf", plot = Plot_2)
 
+## Сохраняем в другие форматы
+png('MyPicture2.png', width = 1000, height = 1000,
+    units = 'px')
+Plot_1
+dev.off()
+
 
 #############################################################################
 #Визуализация данных (Aesthetics)
-# В философии ggplot эстетики - это та информация (данные), которую можно выразить графиком.
-# Минимальные эстетики - Положение на OX и положение на OY
-# Однако наши данные содержат еще и информацию о поле (переменная fev$Sex). Если эти данные для нас важны, то мы должны эту информацию выразить на графике
 
 
 #Отражаем данные о поле с помощью цвета
@@ -184,7 +196,6 @@ Plot_1 <- ggplot(data = fev, aes(x = Age, y = FEV, shape = Sex, color = Sex )) +
 
 Plot_1
 
-
 # В нашем датафрейме есть еще и данные о курении.
 # Если мы хотим выразить графиком одновременно данные по полу и по курению, то мы должны задать две разные эстетики
 
@@ -206,6 +217,67 @@ Plot_1 + facet_grid(Sex ~ Smoker)
 Plot_1 <- ggplot(data = fev, aes(x = Age, y = FEV, shape = Sex, color = Smoker, size = Height)) + geom_point() + labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + theme(plot.title = element_text(hjust = 0.5))
 
 Plot_1 + facet_grid(Sex ~ Smoker)
+
+#### Различные геомы
+
+# Гистограмма
+ggplot(fev, aes(x = FEV)) + geom_histogram()
+
+# Изменяем ширину класса
+ggplot(fev, aes(x = FEV)) + geom_histogram(binwidth = 1)
+
+
+#### Семейство функций stat_ - небольшая статистическая предобработка данных
+
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "bar") # То же, что geom_histogram
+
+# Как можно здесь поменять ширину класса?
+
+# Геом - линия
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "line", size = 1, color = "red")
+
+# Геом - закрашенная область
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "area", size = 1, color = "red")
+
+# Графики плотности
+ggplot(fev, aes(x = FEV)) + stat_density(geom = "area", size = 1, color = "red", fill = "blue")
+
+# Играем с гистограммами и фасетированием
+ggplot(fev, aes(x = FEV)) + geom_histogram() + facet_wrap( ~ Sex)
+
+ggplot(fev, aes(x = FEV)) + geom_histogram() + facet_wrap( ~ Sex, ncol = 1)
+
+# Отражаем данные по полу и курению
+ggplot(fev, aes(x = FEV, fill = Smoker)) + geom_histogram() + facet_wrap( ~ Sex, ncol = 1) # некрасиво
+
+ggplot(fev, aes(x = FEV, fill = Smoker)) + stat_density(geom = "area", size = 1, color = "red") + facet_wrap( ~ Sex, ncol = 1) # норм
+
+# Визуализация данных с использованием простейшей статистической обработки
+
+ggplot(fev, aes(x = Age, y = FEV)) +
+  stat_summary(fun.y = "mean", geom = "line", size = 2)
+
+# Добавляем данные по полу
+ggplot(fev, aes(x = Age, y = FEV, color = Sex)) +
+  stat_summary(fun.y = "mean", geom = "line", size = 2)
+
+# А по курению?..
+
+
+# Задание. Постройте столбчатые диаграммы, отражающие средний рост у представителей разного пола.
+
+
+## С помощью функций ggplot можно сразу вписать простые линейные модели и увидеть характер связей
+
+ggplot(fev, aes(x = Age, y = FEV, color = Smoker)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap( ~ Sex)
+
+## Тепловые карты
+
+ggplot(fev, aes(Age, FEV, fill = Height)) +
+  geom_tile() # неподходящий формат для визуализации, но так можно :)
 
 
 # Шуточный пример, из которого можно почерпнуть некоторые возможности ggplot

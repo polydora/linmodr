@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Визуализация данных</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Вадим Хайтов, Марина Варфоломеева, Анастасия Лянгузова" />
+    <script src="libs/header-attrs-2.26/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
+    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
+    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <!-- https://github.com/fnaufel/xaringan-smartify-->
+    <script
+    			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    			  integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+    			  crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/fnaufel/xaringan-smartify/smartify.min.js"></script>
+    <link rel="stylesheet" href="assets/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="assets/xaringan.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: middle, left, inverse, title-slide
+
+.title[
+# Визуализация данных
+]
+.author[
+### Вадим Хайтов, Марина Варфоломеева, Анастасия Лянгузова
+]
+.date[
+### Осень 2024
+]
+
+---
+
+
+
+
+
+
+## Вы сможете
+
+- Представить данные в длинном формате с правильным обозначением перменных и пропущенных значений
+- Построить простейшие статистические графики с использованием функций из пакета ggplot2
+- Настраивать параметры графиков
+
+
+---
+
+class: middle, center, inverse
+
+# Данные 
+
+---
+
+## Исходные данные часто приходится приводить в порядок
+
+На подготовку данных к анализу уходит до 80% времени.
+
+Существуют определенные правила предоставления данных.
+
+Данные, построенные в соответствии с этими требованиями, называются **tidy data**, или **опрятные данные**.
+
+---
+
+## Проблемы начинаются уже в электронных таблицах
+![:scale 65%](images/Excel_sheet.jpg)
+---
+
+## Основные ошибки
+
+- Объединенные ячейки
+- Отсутствующие заголовки столбцов, вместо них стоят какие-то числа (или ничего не стоит) или слишком длинные имена заголовков
+- В одной ячейке находится сразу несколько значений
+- Разнородные данные в пределах одного столбца
+- Нет стандартного обозначения пропущенных значений
+- Разные группы значений кодируются цветовыми выделениями
+
+---
+
+## Принятые нормы
+
+- Столбцы - переменные (variables)
+- Строки - объекты (observations)
+- В каждой переменной только один тип данных 
+- На месте пропущенных значений стоит специальный знак (в R принят `NA`)
+
+**При работе в Excel не должно быть никаких объединенных ячеек!** 
+
+---
+
+## Управление данными 
+
+В среде `R` создано несколько удобных пакетов для преобразования данных:
+
+- `reshape2`
+- `dplyr`
+- `tidyr`
+
+Мы постепенно научимся ими пользоваться
+
+---
+
+## Два формата представления данных 
+
+- Широкий формат: данные максимально структурированы, каждая строка может нести информацию о многих элементарных объектах
+
+- Длинный формат: данные минимально структурированы, каждая строка характеризует уникальный объект
+
+
+Из длинного формата легко получить широкий. 
+
+Из широкого формата получить длинный заметно сложнее.
+
+Широкий формат хорош для отчетов, представления обобщенных результатов
+
+Длинный формат хорош для анализа
+
+---
+
+## Учимся читать внешние данные
+
+
+```r
+titanic &lt;- read.table('data/Titanic.csv', 
+                      sep = ';', 
+                      header = TRUE)
+```
+
+---
+
+## В каком формате представлены данные?
+
+
+```r
+head(titanic, 8)
+```
+
+```
+  Class    Sex   Age Survived Freq
+1   1st   Male Child       No    0
+2   2nd   Male Child       No    0
+3   3rd   Male Child       No   35
+4  Crew   Male Child       No    0
+5   1st Female Child       No    0
+6   2nd Female Child       No    0
+7   3rd Female Child       No   17
+8  Crew Female Child       No    0
+```
+
+---
+
+## Длинный формат данных
+
+
+
+```r
+library(tidyr)
+long_titanic &lt;- uncount(titanic, 
+                        weights = Freq)
+head(long_titanic, 10)
+```
+
+```
+   Class  Sex   Age Survived
+1    3rd Male Child       No
+2    3rd Male Child       No
+3    3rd Male Child       No
+4    3rd Male Child       No
+5    3rd Male Child       No
+6    3rd Male Child       No
+7    3rd Male Child       No
+8    3rd Male Child       No
+9    3rd Male Child       No
+10   3rd Male Child       No
+```
+
+---
+
+## Данные для визуализации 
+
+Данные взяты из работы   
+Tager, I. B., Weiss, S. T., Rosner, B., and Speizer, F. E. (1979). Effect of parental cigarette smoking on pulmonary function in children. American Journal of Epidemiology, 110, 15-26.    
+
+Источник данных: [http://www.statsci.org/data/general/fev.html]
+ 
+Структура данных:   
+
+`Age` --- Возраст    
+`FEV` 	 ---  	Объем легких при выдохе (литры) (forced expiratory volume)    
+`Height` 	 ---  	Рост (дюймы)   
+`Sex` 	 ---  	 пол (Male or Female)    
+`Smoker` 	 ---  	некурящие (Non), курящие (Current)    
+
+---
+
+## Читаем данные
+
+
+```r
+library(readxl)
+fev &lt;- read_excel("data/fev.xls", 
+                  sheet = "tidy_data", 
+                  col_names = TRUE, 
+                  na = "NA", 
+                  skip = 1 )
+```
+
+---
+
+## Анализируем структуру данных
+
+Имена переменных
+
+```r
+names(fev)
+```
+
+```
+[1] "Age"    "FEV"    "Height" "Sex"    "Smoker"
+```
+
+---
+
+## Анализируем структуру данных
+
+Содержание переменных
+
+```r
+str(fev)
+```
+
+```
+tibble [654 × 5] (S3: tbl_df/tbl/data.frame)
+ $ Age   : num [1:654] 9 8 7 9 9 8 6 6 8 9 ...
+ $ FEV   : num [1:654] 1.71 1.72 1.72 1.56 1.9 ...
+ $ Height: num [1:654] 57 67.5 54.5 53 57 61 58 56 58.5 60 ...
+ $ Sex   : chr [1:654] "Female" "Female" "Female" "Male" ...
+ $ Smoker: chr [1:654] "Non" "Non" "Non" "Non" ...
+```
+
+---
+
+## Изменяем формат переменных
+
+Необходимо заменить формат в переменных `fev$Sex` и `fev$Smoker`
+
+
+```r
+fev$Sex &lt;- factor(fev$Sex)
+fev$Smoker &lt;- factor(fev$Smoker)
+```
+
+
+функция `factor()` превращает числовые или текстовые данные в дискретные факторы
+
+---
+
+## Пропущенные значения `NA`
+
+Если необходимо убрать объекты, у которых что-то не измерено (NA), то надо произвести "очистку данных". 
+
+НО! не увлекайтесь, иногда можно "вычистить"" важную информацию
+
+В каких строках содержится пропущенная информация?
+
+
+```r
+fev[which(!complete.cases(fev)), ] 
+```
+
+```
+# A tibble: 2 × 5
+    Age   FEV Height Sex    Smoker
+  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+1    16  4.50   72   Male   &lt;NA&gt;  
+2    NA  3.21   66.5 Female Non   
+```
+
+
+здесь используется сразу две функции: `which()`, в нее вложена `complete.cases()`    
+! - логическая операция "NOT"   
+[ , ] - оператор индексации на первом месте строка, на втором - столбец  
+
+---
+
+## Убираем из датафрейма неполные строки
+
+
+```r
+fev &lt;- fev[complete.cases(fev), ]
+```
+
+---
+
+class: middle, center, inverse
+
+# Визуализация данных
+
+---
+
+## Три системы визуализации в R
+
+- Base Graphics
+- Lattice
+- ggplot2
+
+---
+
+## Базовая графика
+
+Для какой-то простой и быстрой иллюстрации можно использовать базовую графику, не требующую загрузки каких-либо пакетов. 
+
+
+```r
+plot(fev$Age, fev$FEV, type = "p")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/base-graph-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Немного более украшенный график
+
+Существуют дополнительные функции из пакетов, которые позволяют "надстраивать" и видоизменять график. Например, точечный график, построенный на основе базовой графики, можно модифицировать с помощью функции `scatterplot` из пакета `car`.
+
+
+```r
+library(car)
+scatterplot(FEV ~ Age | Sex, data = fev)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/scatterplot-1.png" style="display: block; margin: auto;" /&gt;
+
+Мы дальше будем знакомиться постепенно с элементами базовой графики, но в целом это не так удобно и настраиваемо, как визуализация средствами пакета `ggplot2`.
+
+---
+
+## Система ggplot2
+
+Название пакета происходит от слов "Grammar", "Graphics", "Plot".
+
+В основе подхода, реализованного в пакете, лежит идея **грамматики графиков** "Semiology of Graphics" (Bertin, 1983).
+
+Более позднее обобщение “The Grammar of Graphics” (Wilkinson, Anand and Grossman, 2005).
+
+---
+
+## Визуализация данных (первый заход)
+
+Задача: построить точечную диаграмму, где по оси OX отложен Age, а по оси OY отложен FEV
+
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Убираем серый фон
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point() + theme_bw()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Убираем серый фон
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point() + theme_classic()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Убираем серый фон
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point() + theme_minimal()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Устанавливаем понравившуюся тему, как основную.
+
+
+```r
+theme_set(theme_bw()) 
+```
+
+
+далее все графики, производимые в данной сессии,  будут использовать именно эту тему
+
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Изменяем подписи осей
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point() + 
+  labs(x = "Возраст", y = "Объем легких")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Создаем верхний заголовок рисунка
+
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point() + 
+  labs(x = "Возраст", y = "Объем легких", 
+       title = "Зависимость между \n возрастом и объемом легких")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Делаем заголовок центральным
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point() + 
+  labs(x = "Возраст", y = "Объем легких", 
+       title = "Зависимость между \n возрастом и объемом легких") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняем размер точек
+
+### Крупнее
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point(size = 3) + 
+  labs(x = "Возраст", y = "Объем легких", 
+       title = "Зависимость между \n возрастом и объемом легких") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+### Мельче
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point(size = 0.1) + 
+  labs(x = "Возраст", y = "Объем легких", 
+       title = "Зависимость между \n возрастом и объемом легких") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняем цвет и форму точек
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point(color = "blue") + 
+  labs(x = "Возраст", y = "Объем легких", 
+       title = "Зависимость между \n возрастом и объемом легких") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-21-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняем цвет и форму точек
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + 
+  geom_point(shape = 22, color = "red", fill = "yellow", size = 2) + 
+  labs(x = "Возраст", y = "Объем легких", 
+       title = "Зависимость между \n возрастом и объемом легких") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-22-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Сохраняем рисунок в файл 
+
+Создаем рисунок 
+
+
+```r
+ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point(shape = 22, color = "red", fill = "yellow", size = 2) + labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Сохраняем рисунок в файл 
+
+Сохраняем текущий рисунок в файл
+
+
+```r
+ggsave("MyPicture.wmf", plot = last_plot())
+```
+
+---
+
+## Рисунок-переменная
+
+Рисунок можно, и это правильно, поместить в специальную переменную
+
+
+```r
+Plot_1 &lt;- ggplot(data = fev, aes(x = Age, y = FEV)) + geom_point(shape = 22, color = "red", fill = "yellow", size = 2)
+
+Plot_1
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Далее эту переменную можно модифицировать
+
+
+```r
+Plot_1 + labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-26-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Далее эту переменную можно модифицировать
+
+
+```r
+Plot_2 &lt;- Plot_1 + labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + theme(plot.title = element_text(hjust = 0.5))
+
+
+ggsave("MyPicture_2.wmf", plot = Plot_2)
+```
+
+---
+
+## Способы сохранить картинки бывают разные
+
+
+```r
+png('MyPicture2.png', width = 1000, height = 1000, 
+    units = 'px')
+Plot_1
+# dev.off()
+```
+
+Есть также функции, позволяющие сохранить изображения в формате TIFF, JPEG, BMP, PDF... Соответственно, `tiff()`, `jpeg()`, `bmp()` и `pdf()`
+
+---
+
+## Эстетики (Aesthetics)
+
+
+В философии ggplot2 эстетики --- это та информация (данные), которую можно выразить графиком.
+
+Минимальные эстетики --- Положение на OX и положение на OY
+
+Однако наши данные содержат еще и информацию о поле (переменная `fev$Sex`). Если эти данные для нас важны, то мы должны эту информацию выразить на графике.
+
+---
+
+## Отражаем данные о поле с помощью цвета
+
+
+
+```r
+Plot_1 &lt;- ggplot(data = fev, aes(x = Age, y = FEV, color = Sex )) + geom_point(size = 2) + labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + theme(plot.title = element_text(hjust = 0.5))
+
+Plot_1
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-29-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняеем цвет на тот, который нам нравится
+
+
+
+```r
+Plot_1 &lt;- Plot_1 + scale_color_manual(values = c("pink", "blue"))
+Plot_1
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-30-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняеем положение легенды 
+
+```r
+Plot_1  + theme(legend.position =  "bottom")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-31-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняем положение легенды 
+
+```r
+Plot_1  + theme(legend.position =  "left")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-32-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняем положение легенды 
+
+```r
+Plot_1  + theme(legend.position =  c(0.1, 0.9)) 
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-33-1.png" style="display: block; margin: auto;" /&gt;
+
+`c(0.1, 0.9)` координаты указываются в долях от сторон рисунка 
+
+---
+
+## Отражаем данные о поле с помощью формы точек
+
+
+```r
+Plot_1 &lt;- ggplot(data = fev, aes(x = Age, y = FEV, shape = Sex, color = Sex )) +
+  geom_point(size = 2) + 
+  labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+Plot_1
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-34-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## В нашем датафрейме есть еще и данные о курении
+Если мы хотим выразить графиком одновременно данные по полу и по курению, то мы должны задать две разные эстетики
+
+
+```r
+Plot_1 &lt;- ggplot(data = fev, aes(x = Age, y = FEV, shape = Sex, color = Smoker )) + geom_point(size = 2) + labs(x = "Возраст", y = "Объем легких", title = "Зависимость между \n возрастом и объемом легких") + theme(plot.title = element_text(hjust = 0.5))
+
+Plot_1 
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-35-1.png" style="display: block; margin: auto;" /&gt;
+
+
+в этом трудно разобраться
+
+---
+
+## Используем фасетирование 
+
+
+```r
+Plot_1 + facet_wrap( ~ Smoker) #уже лучше
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-36-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Используем фасетирование 
+
+
+```r
+Plot_1 + facet_grid(Sex ~ Smoker)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-37-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Геомы (Geom)
+
+Геомы --- это геометрические объекты, которые отражают данные (точки, линии, столбцы, "усы" и т. д.).
+
+
+Задание: построить гистограмму, отражающую частотное распределение объема лёгких.
+
+Для решений этой задачи не годится применение точечных диаграмм.
+
+Нам нужен другой геом.
+
+---
+
+## geom_histogram()
+
+```r
+ggplot(fev, aes(x = FEV)) + geom_histogram()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-38-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меням ширину класса 
+
+Делаем более широкие классовые интервалы
+
+
+```r
+ggplot(fev, aes(x = FEV)) + geom_histogram(binwidth = 1)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-39-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меням ширину класса 
+
+Делаем более узкие классовые интервалы
+
+
+```r
+ggplot(fev, aes(x = FEV)) + geom_histogram(binwidth = 0.1)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-40-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Семейство функций `stat` 
+
+Поскольку в основе построения гистограммы лежит статистическая процедура (определение частот), то все тоже самое можно сделать с помощью функций stat_...
+
+
+```r
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "bar") #Аналогично!
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-41-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Меняем ширину класса
+
+
+
+```r
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "bar", binwidth = 0.1)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-42-1.png" style="display: block; margin: auto;" /&gt;
+
+Аналогично применению `geom_histogram(binwidth = 0.1)`
+
+---
+
+## Используем другой геом
+
+### Частотное распределение можно выразить еще и линией
+
+
+```r
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "line", size = 1, color = "red")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-43-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Используем другой геом
+
+### А можно еще и закрашенной областью 
+
+
+```r
+ggplot(fev, aes(x = FEV)) + stat_bin(geom = "area", size = 1, color = "red")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-44-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Можно еще многими способами.... 
+
+Например, так 
+
+```r
+ggplot(fev, aes(x = FEV)) + stat_density(geom = "area", size = 1, color = "red", fill = "blue")
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-45-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Применяем фасетирование
+
+У нас есть еще и данные по полу, и мы можем отразить частотное распределение с помощью фасетирования.
+
+
+```r
+ggplot(fev, aes(x = FEV)) + geom_histogram() + facet_wrap( ~ Sex)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-46-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Так удобнее сравнивать
+
+```r
+ggplot(fev, aes(x = FEV)) + geom_histogram() + facet_wrap( ~ Sex, ncol = 1) 
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-47-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Отражаем частотное распределение с использованием данных по полу и курению
+
+```r
+ggplot(fev, aes(x = FEV, fill = Smoker)) + geom_histogram() + facet_wrap( ~ Sex, ncol = 1) 
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-48-1.png" style="display: block; margin: auto;" /&gt;
+
+Трудно читать
+
+---
+
+## Лучше так
+
+```r
+ggplot(fev, aes(x = FEV, fill = Smoker)) + stat_density(geom = "area", size = 1, color = "red") + facet_wrap( ~ Sex, ncol = 1)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-49-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle, center, inverse
+
+# Визуализация данных с использованием простейшей статистической обработки
+
+---
+
+## Задание: отразить срдний объем легких у разных возрастов
+
+```r
+ggplot(fev, aes(x = Age, y = FEV)) + 
+  stat_summary(fun.y = "mean", geom = "line", size = 2)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-50-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Добавляем данные по полу
+
+
+```r
+ggplot(fev, aes(x = Age, y = FEV, color = Sex)) + 
+  stat_summary(fun.y = "mean", geom = "line", size = 2)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-51-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Добавляем данные по курению
+
+```r
+ggplot(fev, aes(x = Age, y = FEV, color = Sex)) + 
+  stat_summary(fun.y = "mean", geom = "line", size = 2) + 
+  facet_wrap( ~ Smoker)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-52-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Задание
+
+Постройте столбчатые диаграммы, отражающие средний рост у представителей разного пола.
+
+---
+
+## Решение
+
+
+```r
+ggplot(fev, aes(x = Sex, y = Height, fill = Sex)) + 
+  stat_summary(fun.y = "mean", geom = "bar") 
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-53-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## С помощью функций ggplot можно сразу вписать простые линейные модели и увидеть характер связей
+
+
+```r
+ggplot(fev, aes(x = Age, y = FEV, color = Smoker)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") +  
+  facet_wrap( ~ Sex)
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/unnamed-chunk-54-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Тепловые карты
+
+Наши данные не совсем правильно таким образом визуализировать, но всё-таки можно.
+
+
+```r
+ggplot(fev, aes(Age, FEV, fill = Height)) + 
+  geom_tile()
+```
+
+&lt;img src="02_intro_ggplot2_files/figure-html/heatmaps-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Take home messages
+
+- Для анализа лучше подходит длинный формат
+- Данные должны быть оформлены в соответствии с определнными правилами
+- Пакет `ggplot2` позволяет построить практически любой график
+
+---
+
+## Что почитать
+
+- [Cookbook for R](http://www.cookbook-r.com/Graphs/)
+- [R for Data Science. Data visualisation](https://r4ds.had.co.nz/data-visualisation.html)
+- [Modern Data Visualization with R](https://rkabacoff.github.io/datavis/index.html)
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="assets/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "googlecode",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<!-- https://github.com/fnaufel/xaringan-smartify-->
+<script type="text/javascript">
+  smartify();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

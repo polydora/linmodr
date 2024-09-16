@@ -53,7 +53,7 @@ install.packages(c("ggplot2", "readxl", "tidyr", "MASS", "car"))
 Часть 2
 
 <!-- - Презентация [03.2_descriptive_statistics_normal_d.html](03.2_descriptive_statistics_normal_d_version_2023.html) -->
-- Объект "population" [population.RData](data/population.RData)
+<!-- - Объект "population" [population.RData](data/population.RData) -->
 - Код [03.2_descriptive_statistics_normal_d_code.R](03.2_descriptive_statistics_normal_d_code.R)
 
 
@@ -66,6 +66,7 @@ install.packages("dplyr")
 
 <!-- - Презентация [04_hypothesis_testing.html](04_hypothesis_testing_version_2023.html) -->
 <!-- - Код [04_hypothesis_testing_code.R](04_hypothesis_testing_code.R) -->
+<!-- - Объект "population" [population.RData](data/population.RData) -->
 <!-- - Данные [aml.csv](data/aml.csv) -->
 
 

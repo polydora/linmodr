@@ -94,11 +94,57 @@ gg_sample_means <- function(population, n_samples, size){
 }
 
 # График распределения выборочных средних
-gg_sample_means(population = diamonds$price, n_samples = 500, size = 2)
+gg_sample_means(population = diamonds$price, n_samples = 500, size = 3)
 
 
 
 # # Доверительный интервал ##########################################
+
+load("data/population.RData")
+
+library(dplyr)
+set.seed(14934)
+# Генеральная совокупность для симуляции
+x <- population
+
+mu <- round(mean(x), 0)
+# Функция, которая берет выборку объемом sample_size из вектора x и возвращает ее среднее значение и доверительный интервал (по t)
+sample_mean_ci <- function(x, size){
+  id <- sample(x = length(x), size)
+  my_mean <- mean(x[id])
+  ci <- my_mean + qt(p = c(0.025, 0.975), df = size - 1)
+  res <- c(my_mean, ci)
+  names(res) <- c('sample_mean', 'lower', 'upper')
+  return(res)
+}
+
+
+n_samples <- 100
+sample_size <- 20
+
+means_ci <- replicate(n = n_samples, expr = sample_mean_ci(x, size = sample_size))
+
+dfr_means <- data.frame(t(means_ci)) %>%
+  mutate(interval = 1:n_samples,
+         inside = mu >= lower & mu <= upper,
+         inside = factor(inside, levels = c(TRUE, FALSE), labels = c('Да', 'Нет')))
+
+perc <- round(mean(dfr_means$inside == 'Да') * 100, 1)
+
+gg_many_lims <- ggplot(data = dfr_means) +
+  geom_segment(aes(x = interval, y = lower, xend = interval, yend = upper, colour = inside)) +
+  geom_hline(yintercept = mean(x), colour = 'red', size = 1) +
+  scale_y_continuous('', breaks = mu, labels = expression(mu)) +
+  labs(x = 'Порядковый номер интервала в симуляции', y = 'x',
+       color = 'Включает ли\nинтервал\nистинное\nсреднее \nзначение?') +
+  coord_flip() +
+  scale_x_reverse()
+
+gg_many_lims + scale_color_manual(values = c("red", "blue"))
+
+
+
+
 
 
 # ## Расчет и изображение доверительного интервала в R ##############
@@ -110,7 +156,7 @@ good <- diamonds$price[diamonds$cut == "Good"]
 .n <- length(good)                   # объем выборки
 SE <- sd(good)/ sqrt(.n)             # стандартная ошибка
 t_crit <- qt(p = 0.975, df = .n - 1) # критич. зн. t для данного n и p = 0.95
-err <- t_crit * SE                   # предел погрешности
+err <- t_crit * SE                   # предел для границ доверительного интервала
 err
 # Границы доверительного интервала
 .mean - err
@@ -200,6 +246,7 @@ p <-
 #
 # Различается ли секреция тетрагидрокортизона при аденома и двусторонней гиперплазии надпочечников?
 library(MASS)
+library(car)
 data("Cushings")
 
 head(Cushings)
@@ -225,12 +272,89 @@ tt <- t.test(formula =  ~ , data = Cushings,
              subset = Cushings$Type  c('a', 'b'))
 tt
 
+
+
 # Задание 4------------------------------------------------------------------
 # Посмотрите структуру результатов (`tt`) при помощи
 # функции `str()` и извлеките из них:
 # - степени свободы
 # - уровень значимости
 # - значение t-критерия
+
+
+
+
+
+#############################################
+# Пермутационные оценки значимости различий #
+#############################################
+
+a = Cushings$Tetrahydrocortisone[Cushings$Type == 'a']
+b = Cushings$Tetrahydrocortisone[Cushings$Type == 'b']
+
+mean_a <- mean(a)
+sd_a <- sd(a)
+n_a <- length(a)
+se_a <- sd_a/sqrt(n_a)
+
+mean_b <- mean(b)
+sd_b <- sd(b)
+n_b <- length(b)
+se_b <- sd_b/sqrt(n_b)
+
+t_emp <- abs(mean_a - mean_b)/sqrt(se_a^2 + se_b^2)
+
+
+# Пермутируем векторы
+
+  all_data <- sample(c(a, b))
+  a_perm <- all_data[1:n_a]
+  b_perm <- all_data[(n_a +1):length(all_data)]
+
+  mean_a <- mean(a_perm)
+  sd_a <- sd(a_perm)
+  n_a <- length(a_perm)
+  se_a <- sd_a/sqrt(n_a)
+
+  mean_b <- mean(b_perm)
+  sd_b <- sd(b_perm)
+  n_b <- length(b_perm)
+  se_b <- sd_b/sqrt(n_b)
+
+  t_perm <- abs(mean_a - mean_b)/sqrt(se_a^2 + se_b^2)
+
+  # Повторим пермутации многократно
+
+  t_perm_vector <- rep(NA, 1000)
+
+  for(i in 1:999){
+    all_data <- sample(c(a, b))
+    a_perm <- all_data[1:n_a]
+    b_perm <- all_data[(n_a +1):length(all_data)]
+
+    mean_a <- mean(a_perm)
+    sd_a <- sd(a_perm)
+    n_a <- length(a_perm)
+    se_a <- sd_a/sqrt(n_a)
+
+    mean_b <- mean(b_perm)
+    sd_b <- sd(b_perm)
+    n_b <- length(b_perm)
+    se_b <- sd_b/sqrt(n_b)
+
+    t_perm <- abs(mean_a - mean_b)/sqrt(se_a^2 + se_b^2)
+
+    t_perm_vector[i] <-  t_perm
+  }
+
+
+  t_perm_vector[1000] <- t_emp
+
+
+  mean(t_perm_vector >= t_emp) #Доля пермутационных статистик которые больше или равны выборочной статистике
+
+tt #Результаты парамтерического теста
+
 
 
 

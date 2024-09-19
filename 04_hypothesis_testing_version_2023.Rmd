@@ -633,42 +633,42 @@ $df = n - 1$
 .pull-left[
 
 ```{r gg-many-lims, echo=FALSE, purl=FALSE, opts.label='fig.medium.tall'}
-library(dplyr)
-set.seed(14934)
-# Генеральная совокупность для симуляции
-x <- population 
-x <-  rnorm(10000, mean = 170, sd = 5)
-mu <- round(mean(x), 0)
-# Функция, которая берет выборку объемом sample_size из вектора x и возвращает ее среднее значение и доверительный интервал (по t)
-sample_mean_ci <- function(x, size){
-  id <- sample(x = length(x), size)
-  my_mean <- mean(x[id])
-  ci <- my_mean + qt(p = c(0.025, 0.975), df = size - 1)
-  res <- c(my_mean, ci)
-  names(res) <- c('sample_mean', 'lower', 'upper')
-  return(res)
-}
-
-
-n_samples <- 100
-sample_size <- 20
-means_ci <- replicate(n = n_samples, expr = sample_mean_ci(x, size = sample_size))
-dfr_means <- data.frame(t(means_ci)) %>%
-  mutate(interval = 1:n_samples,
-         inside = mu >= lower & mu <= upper,
-         inside = factor(inside, levels = c(TRUE, FALSE), labels = c('Да', 'Нет')))
-perc <- round(mean(dfr_means$inside == 'Да') * 100, 1)
-
-gg_many_lims <- ggplot(data = dfr_means) +
-  geom_segment(aes(x = interval, y = lower, xend = interval, yend = upper, colour = inside)) +
-  geom_hline(yintercept = mean(x), colour = 'red', size = 1) +
-  scale_y_continuous('', breaks = mu, labels = expression(mu)) +
-  labs(x = 'Порядковый номер интервала в симуляции', y = 'x',
-       color = 'Включает ли\nинтервал\nистинное\nсреднее \nзначение?') +
-  coord_flip() +
-    scale_x_reverse()
-
-gg_many_lims + scale_color_manual(values = c("red", "blue"))
+  library(dplyr)
+  set.seed(14934)
+  # Генеральная совокупность для симуляции
+  x <- population 
+  x <-  rnorm(10000, mean = 170, sd = 5)
+  mu <- round(mean(x), 0)
+  # Функция, которая берет выборку объемом sample_size из вектора x и возвращает ее среднее значение и доверительный интервал (по t)
+  sample_mean_ci <- function(x, size){
+    id <- sample(x = length(x), size)
+    my_mean <- mean(x[id])
+    ci <- my_mean + qt(p = c(0.025, 0.975), df = size - 1)
+    res <- c(my_mean, ci)
+    names(res) <- c('sample_mean', 'lower', 'upper')
+    return(res)
+  }
+  
+  
+  n_samples <- 100
+  sample_size <- 20
+  means_ci <- replicate(n = n_samples, expr = sample_mean_ci(x, size = sample_size))
+  dfr_means <- data.frame(t(means_ci)) %>%
+    mutate(interval = 1:n_samples,
+           inside = mu >= lower & mu <= upper,
+           inside = factor(inside, levels = c(TRUE, FALSE), labels = c('Да', 'Нет')))
+  perc <- round(mean(dfr_means$inside == 'Да') * 100, 1)
+  
+  gg_many_lims <- ggplot(data = dfr_means) +
+    geom_segment(aes(x = interval, y = lower, xend = interval, yend = upper, colour = inside)) +
+    geom_hline(yintercept = mean(x), colour = 'red', size = 1) +
+    scale_y_continuous('', breaks = mu, labels = expression(mu)) +
+    labs(x = 'Порядковый номер интервала в симуляции', y = 'x',
+         color = 'Включает ли\nинтервал\nистинное\nсреднее \nзначение?') +
+    coord_flip() +
+      scale_x_reverse()
+  
+  gg_many_lims + scale_color_manual(values = c("red", "blue"))
 ```
 
 

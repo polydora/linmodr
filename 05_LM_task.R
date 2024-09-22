@@ -32,17 +32,19 @@ head(baby)
 
 # Строим модель
 
-baby_M1 <- lm(bwt ~ bpd, data = baby)
+baby_M1 <-
 
 # Результаты
 
-summary(baby_M1)
+summary()
 
 
 
 # Визуализация модели без использования geom_smooth()
 
-Pl_baby <- ggplot(data = baby, aes(x = bpd, y = bwt)) + geom_point()
+Pl_baby <-
+  ggplot(data = baby, aes(x = , y = )) +
+  geom_()
 
 
 # Создаем искусственный датафрейм, в котором будут все возможные (не только измеренные) значения предиктора
@@ -52,27 +54,33 @@ MyData <- data.frame(bpd = seq(min(baby$bpd), max(baby$bpd), by = 0.1) )
 
 # Вычисляем для всех возможных значений предиктора величину зависимой переменной, в соответствии с моделью
 
-MyData$Predicted <- predict(baby_M1, newdata = MyData, se.fit = TRUE )$fit
+MyData$Predicted <- predict( , newdata =  , se.fit =  )$fit
 
 # Вычисляем значения стандартной ошибки для каждой точки
-MyData$SE <- predict(baby_M1, newdata = MyData, se.fit = TRUE)$se.fit
+MyData$SE <- predict( , newdata =  , se.fit =  )$se.fit
 
 head(MyData)
 # Рисуем линию, предсказанную моделью
 
-Pl_predicted <- ggplot(MyData, aes(x = bpd, y = Predicted)) + geom_line(size = 2, color = "blue")
+Pl_predicted <-
+  ggplot(MyData, aes(x = bpd, y = Predicted)) +
+  geom_line(size = 2, color = "blue")
 
 Pl_predicted
 
 # Наносим на рисунок линии, соотвествующие доверительному интервалу
 
-Pl_predicted_2 <- Pl_predicted + geom_line(aes(y = Predicted - 1.96*SE), linetype = 2, color = "red") + geom_line(aes(y = Predicted + 1.96*SE), linetype = 2, color = "red")
+Pl_predicted_2 <-
+  Pl_predicted +
+  geom_line(aes(y = Predicted - *SE), linetype = 2, color = "red") +
+  geom_line(aes(y = Predicted + *SE), linetype = 2, color = "red")
 
 Pl_predicted_2
 
 # Вписываем в рисунок исходные данные
 
-Pl_predicted_2 + geom_point(data = baby, aes(x = bpd, y = bwt))
+Pl_predicted_2 +
+  geom_point(data = baby, aes(x = bpd, y = bwt))
 
 
 

@@ -3,24 +3,24 @@
   <head>
     <title>Описание, проверка значимости и валидности линейных моделей</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов" />
-    <script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
-    <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
-    <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
-    <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
-    <script src="site_libs/fabric-4.3.1/fabric.min.js"></script>
-    <link href="site_libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
-    <script src="site_libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
+    <script src="libs/header-attrs-2.27/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
-    <script src="site_libs/mark.js-8.11.1/mark.min.js"></script>
-    <link href="site_libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
-    <script src="site_libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
     <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
-    <script src="site_libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
-    <script src="site_libs/freezeframe-5.0.2/freezeframe.min.js"></script>
-    <script src="site_libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
     <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
-    <link href="site_libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
     <!-- https://github.com/fnaufel/xaringan-smartify-->
     <script
     			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -42,10 +42,10 @@ class: middle, left, inverse, title-slide
 ## Линейные модели…
 ]
 .author[
-### Марина Варфоломеева, Вадим Хайтов
+### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
 ]
 .date[
-### Осень 2023
+### Осень 2024
 ]
 
 ---
@@ -207,7 +207,7 @@ class: middle, center, inverse
 `$$PIQ_i = 1.744 + 0.0001202 \cdot MRINACount_i$$`
 
 
-```r
+``` r
 summary(brain_model)
 ```
 
@@ -407,7 +407,7 @@ $$ R^2_{adj} = 1- (1-R^2)\frac{n-1}{n-p}$$
 ## Еще раз смотрим на результаты регрессионного анализа зависимости IQ от размеров мозга
 
 
-```r
+``` r
 summary(brain_model)
 ```
 
@@ -469,16 +469,16 @@ class: middle, center, inverse
 # Зачем нужна диагностика &lt;br/&gt;линейных моделей
 
 ---
-## Если стохастическая модель адекватна, то что мы можем сказть про остатки?
+## Если стохастическая модель адекватна, то что мы можем сказать про остатки?
 
 ![](07_model_description_and_validation_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
 
 
 --
 
-- Остатки - это просто шум. Обычно считается, что `\(\varepsilon_i \in N(0, \sigma)\)`
+- Остатки --- это просто шум. Обычно считается, что `\(\varepsilon_i \in N(0, \sigma)\)`.
 
-- В остатках не должно быть никаких закономерностей (паттернов)
+- В остатках не должно быть никаких закономерностей (паттернов).
 
 
 ---
@@ -488,7 +488,7 @@ class: middle, center, inverse
 
 
 
-```r
+``` r
 dat &lt;- read.table('data/orly_owl_Lin_4p_5_flat.txt')
 fit &lt;- lm(V1 ~ V2 + V3 + V4 + V5, data = dat)
 summary(fit)
@@ -529,7 +529,7 @@ F-statistic: 30.2 on 4 and 2293 DF,  p-value: &lt;2e-16
 Постройте график зависимости остатков от предсказанных значений при помощи этого кода
 
 
-```r
+``` r
 library(car)
 residualPlot(fit, pch = ".")
 ```
@@ -539,7 +539,7 @@ residualPlot(fit, pch = ".")
 ## Oh, really?
 
 
-```r
+``` r
 library(car)
 residualPlot(fit, pch = ".")
 ```
@@ -556,13 +556,14 @@ residualPlot(fit, pch = ".")
 
 ## Анализ остатков линейных моделей
 
-Этот анализ дает возможность
+Этот анализ дает возможность:
 
-1) Проверить данные на наличие влиятельных наблюдений и выявить их
+1) Проверить данные на наличие влиятельных наблюдений и выявить их;
 
-2) Проверить соответствует ли построенная модель условиям применимости линейных моделей
+2) Проверить соответствует ли построенная модель условиям применимости линейных моделей.
 
 ---
+
 ## Условия применимости линейных моделей
 
 1. Линейная связь
@@ -743,7 +744,7 @@ __Осторожно!__ Только очевидные ошибки в набл
 ## Данные для анализа остатков
 
 
-```r
+``` r
 library(ggplot2)
 brain_diag &lt;- fortify(brain_model)
 head(brain_diag, 2)
@@ -771,7 +772,7 @@ head(brain_diag, 2)
 
 
 
-```r
+``` r
 # График расстояния Кука
 ggplot(brain_diag, aes(x = 1:nrow(brain_diag), y = .cooksd)) + 
   geom_bar(stat = "identity")
@@ -790,7 +791,7 @@ ggplot(brain_diag, aes(x = 1:nrow(brain_diag), y = .cooksd)) +
 Большую часть того, что нужно знать про остатки вы увидите на этом графике. А сейчас давайте научимся читать такой график.
 
 
-```r
+``` r
 gg_resid &lt;- ggplot(data = brain_diag, aes(x = .fitted, y = .stdresid)) + 
   geom_point() + 
   geom_hline(yintercept = 0)
@@ -820,11 +821,11 @@ __Проверка на линейность связи__
 
 ## Что делать, если связь нелинейна?  
 
-- Добавить неучтенные переменные или взаимодействия
-- Применить линеаризующее преобразование (Осторожно!)
-- Применить обобщенную линейную модель с другой функцией связи (GLM)
-- Построить аддитивную модель (GAM), если достаточно наблюдений по `\(x\)`
-- Построить нелинейную модель, если известна форма зависимости
+- Добавить неучтенные переменные или взаимодействия;
+- Применить линеаризующее преобразование (Осторожно!);
+- Применить обобщенную линейную модель с другой функцией связи (GLM);
+- Построить аддитивную модель (GAM), если достаточно наблюдений по `\(x\)`;
+- Построить нелинейную модель, если известна форма зависимости.
 
 ---
 
@@ -914,10 +915,10 @@ class: middle, center, inverse
 
 ---
 
-## Чем опасна автокоррляция (и любая другая зависимость наблюдений друг от друга)
+## Чем опасна автокорреляция (и любая другая зависимость наблюдений друг от друга)
 
 
-```r
+``` r
 set.seed(123)
 population &lt;- rnorm(1000)
 population_correlated &lt;- arima.sim(list(order = c(1,0,0), ar = 0.5), n = 1000, sd=1)
@@ -935,7 +936,7 @@ population_correlated &lt;- arima.sim(list(order = c(1,0,0), ar = 0.5), n = 1000
 
 ---
 
-## Чем опасна автокоррляция (и любая другая зависимость наблюдений друг от друга)
+## Чем опасна автокорреляция (и любая другая зависимость наблюдений друг от друга)
 
 
 .pull-left-60[
@@ -943,7 +944,7 @@ population_correlated &lt;- arima.sim(list(order = c(1,0,0), ar = 0.5), n = 1000
 Построим 1000 моделей на случайных выборках по 10 последовательных наблюдений 
 
 
-```r
+``` r
 p_values &lt;- data.frame(p_no_cor = rep(NA, 1000), p_cor = NA)
 
 for(i in 1:1000){
@@ -961,27 +962,27 @@ for(i in 1:1000){
 
 ]
 
-.pull-right-40[
-
 --
+
+.pull-right-40[
 
 Для простого "шума", когда нет автокорреляций и нет связи между `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет 
 
 
-```r
+``` r
 mean(p_values$p_no_cor &lt; 0.05)
 ```
 
 ```
 [1] 0.048
 ```
-
+]
 --
-
+.pull-right-40[
 Для автокоррелированных данных, при отсутствии связи между  `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет 
 
 
-```r
+``` r
 mean(p_values$p_cor &lt; 0.05)
 ```
 
@@ -994,7 +995,7 @@ mean(p_values$p_cor &lt; 0.05)
 
 ## Проверка на автокорреляцию
 
-Проверка на автокорреляцию нужна если данные это временной ряд, или если известны координаты или время сбора проб. Способы проверки временной автокорреляции (годятся, если наблюдения в ряду расположены через равные интервалы):
+Проверка на автокорреляцию нужна, если данные --- это временной ряд, или если известны координаты или время сбора проб. Способы проверки временной автокорреляции (годятся, если наблюдения в ряду расположены через равные интервалы):
 
 - График автокорреляционной функции остатков (ACF-plot) покажет корреляции с разными лагами.
 
@@ -1030,7 +1031,7 @@ mean(p_values$p_cor &lt; 0.05)
 
 ### Графики зависимости остатков от предикторов в модели
 
-```r
+``` r
 # Полный код
 ggplot(data = brain_diag, aes(x = MRINACount, y = .stdresid)) + 
   geom_point() + 
@@ -1040,7 +1041,7 @@ ggplot(data = brain_diag, aes(x = MRINACount, y = .stdresid)) +
 ![](07_model_description_and_validation_files/figure-html/resid-predict-1.png)&lt;!-- --&gt;
 
 
-```r
+``` r
 # То же самое с использованием ранее созданного gg_resid
 gg_resid + aes(x =  MRINACount)
 ```
@@ -1128,7 +1129,7 @@ class: middle, center, inverse
 Cтьюдентизированные остатки — t-распределению
 
 
-```r
+``` r
 # library(car)
 qqPlot(brain_model, id = FALSE) # из пакета car
 ```
@@ -1199,13 +1200,14 @@ class: middle, center, inverse
 
 
 ---
+
 ## Чем опасна гетероскедастичность
 
 .pull-left-60[
 Возьмем 1000 выборок из этих совокупностей по 10 наблюдений и построим много линейных моделей
 
 
-```r
+``` r
 p_values &lt;- data.frame(p_no_heter = rep(NA, 1000), p_heter = NA)
 
 for(i in 1:1000){
@@ -1218,27 +1220,27 @@ for(i in 1:1000){
 ```
 ]
 
-.pull-right-40[
-
 --
+
+.pull-right-40[
 
 - Нет гетероскедастичности и нет связи между `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет 
 
 
-```r
+``` r
 mean(p_values$p_no_heter &lt; 0.05)
 ```
 
 ```
 [1] 0.039
 ```
-
---
+]
+.pull-right-40[
 
 - Для совокупности с гетероскедастичностью, при отсутствии связи между  `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет 
 
 
-```r
+``` r
 mean(p_values$p_heter &lt; 0.05)
 ```
 
@@ -1255,7 +1257,7 @@ mean(p_values$p_heter &lt; 0.05)
 Этот график у нас уже есть
 
 
-```r
+``` r
 gg_resid
 ```
 
@@ -1340,7 +1342,7 @@ class: middle, center, inverse
 ## Задание 3, блок 1
 
 
-```r
+``` r
 set.seed(90829)
 x1 &lt;- seq(1, 100, 1)
 y1 &lt;-  diffinv(rnorm(99))  + rnorm(100, 0.2, 4)
@@ -1369,7 +1371,7 @@ ggplot(dat1, aes(x = x1, y =  y1)) + geom_point()+
 ## Решение, блок 1
 
 
-```r
+``` r
 mod1 &lt;- lm(y1 ~ x1, data = dat1)
 
 # Данные для графиков остатков
@@ -1396,7 +1398,7 @@ qqPlot(mod1, id = FALSE)
 ## Задание 3, блок 2
 
 
-```r
+``` r
   set.seed(7657674)
   x2 &lt;- runif(1000, 1, 100)
   b_0 &lt;- 100;  b_1 &lt;- -20
@@ -1428,7 +1430,7 @@ qqPlot(mod1, id = FALSE)
 ## Решение, блок 2
 
 
-```r
+``` r
 mod2 &lt;- lm(y2 ~ x2, data = dat2)
 
 # Данные для графиков остатков
@@ -1455,7 +1457,7 @@ qqPlot(mod2, id = FALSE)
 ## Задание 3, блок 3
 
 
-```r
+``` r
 set.seed(9283)
 x3 &lt;- rnorm(25, 50, 10)
 b_0 &lt;- 20; b_1 &lt;- 20; eps &lt;- rnorm(50, 0, 100)
@@ -1484,7 +1486,7 @@ ggplot(dat3, aes(x=x3, y=y3)) + geom_point() + geom_smooth(method="lm")
 ## Решение, блок 3
 
 
-```r
+``` r
 mod3 &lt;- lm(y3 ~ x3, data = dat3)
 
 # Данные для графиков остатков

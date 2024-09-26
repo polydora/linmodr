@@ -92,7 +92,7 @@ install.packages("cowplot")
 
 ### 06 Описание, проверка значимости и валидности линейной модели
 
-<!-- - Презентация: [07_model_description_and_validation.html](07_model_description_and_validation.html) -->
+- Презентация: [06_model_description_and_validation.html](07_model_description_and_validation.html)
 
 - Код:
     + [06_model_description_and_validation_code.R](07_model_description_and_validation_code.R)

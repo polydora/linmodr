@@ -106,7 +106,7 @@ install.packages("cowplot")
 
 ### 07 Основы линейной алгебры
 
-<!-- - Презентация: [07_Introduction_to_linear_algebra.html](06_intro_to_linear_algebra.html) -->
+- Презентация: [07_Introduction_to_linear_algebra.html](06_intro_to_linear_algebra.html)
 - Код: [07_Introduction_to_linear_algebra_code.R](06_intro_to_linear_algebra_code.R)
 
 ### 08 Множественная линейная регрессия. Выбор оптимальной модели

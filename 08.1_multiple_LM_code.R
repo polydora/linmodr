@@ -57,13 +57,24 @@ pairs(bird[, c("ABUND", "logAREA", "YRISOL", "logDIST", "logLDIST", "GRAZE", "AL
 
 library(ggplot2)
 
+
+# диаграмма Кливленда
+
+ggplot(bird, aes(y = 1:nrow(bird), x = ABUND  )) + geom_point() +
+  labs(y = 'Порядковый номер \nв датасете', x = 'Значения переменной')
+
+
+
+
+# Продемонстрируем как работает диаграмма Кливленда
+
 bird2 <- bird
 
-bird2[,nrow(bird2)+1] <- bird2[, nrow(bird2)]+10
+
+bird2$ABUND[4] <- 250 # Например, ошибка в набивке данных
 
 
-bird2$ABUND[4] <- 150
-
+## Диаграмма Кливленда для всех переменных
 
 ggplot(bird2, aes(y = 1:nrow(bird), x = ABUND  )) + geom_point() +
   labs(y = 'Порядковый номер \nв датасете', x = 'Значения переменной')
@@ -185,14 +196,9 @@ summary(mod2_scaled)
 
 coef(summary(mod2_scaled))
 
-X <- model.matrix(mod2)
-
-betas <- coef(mod2)
 
 
-fit <- X %*% betas
 
-resid <- bird$ABUND - fit
 
 
 
@@ -209,9 +215,11 @@ MyData <- data.frame(
   logDIST = mean(bird$logDIST),
   logLDIST = mean(bird$logLDIST),
   ALT = mean(bird$ALT))
+
 # Предсказанные значения
 Predictions <- predict(mod2, newdata = MyData,  interval = 'confidence')
 MyData <- data.frame(MyData, Predictions)
+
 # График предсказаний модели
 Pl_predict <- ggplot(MyData, aes(x = logAREA, y = fit)) +
   geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr)) +
@@ -219,12 +227,41 @@ Pl_predict <- ggplot(MyData, aes(x = logAREA, y = fit)) +
 Pl_predict
 
 
-## Задание
-# Получите предсказания модели, стандартные ошибки
+## Получим предсказания модели, стандартные ошибки
 # и границы доверительной зоны при помощи операций
 # с матрицами
 
+MyData2 <- data.frame(Intercept = 1,
+                       logAREA = seq(min(bird$logAREA), max(bird$logAREA), length.out = 100),
+                       YRISOL = mean(bird$YRISOL),
+                       logDIST = mean(bird$logDIST),
+                       logLDIST = mean(bird$logLDIST),
+                       ALT = mean(bird$ALT))
 
+X_mydata <- as.matrix(MyData2) #Создаем модельную матрицу для визуализации
+
+betas <- coef(mod2) #Берем коэффициенты из модели
+
+
+fit_mydata <- as.numeric(X_mydata %*% betas) # Вычисляем предсказанные значения для произвольно взятой "линейки" предиктора
+
+VC_matrix <- vcov(mod2) #Вариационно-ковариационная матрица из модели, несет информацию о варьировании
+
+SE_mydata <- sqrt(diag(X_mydata %*% VC_matrix %*% t(X_mydata))) # Вычисляем стандартные ошибки для произвольно взятой "линейки" предиктора
+
+t_crit <- qt(0.975, df = nrow(bird) - length(coef(mod2))) #множитель для 95% доверительного интервала
+
+MyData2$fit <- fit_mydata
+MyData2$lwr <- MyData2$fit - t_crit*SE_mydata
+MyData2$upr <- MyData2$fit + t_crit*SE_mydata
+
+head(MyData2)
+head(Predictions)
+
+
+ggplot(MyData2, aes(x = logAREA, y = fit)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.2)
 
 
 

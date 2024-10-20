@@ -1,24 +1,24 @@
 ---
 title: "Множественная регрессия"
-author: Марина Варфоломеева, Вадим Хайтов
+author: Вадим Хайтов, Марина Варфоломеева
 output:
   ioslides_presentation:
     widescreen: true
     css: assets/my_styles.css
     logo: assets/Linmod_logo.png
-  beamer_presentation:
-    colortheme: beaver
-    highlight: tango
-    includes:
-      in_header: ./includes/header.tex
-    pandoc_args:
-    - --latex-engine=xelatex
-    - -V fontsize=10pt
-    - -V lang=russian
-    slide_level: 2
-    theme: default
-    toc: no
-editor_options: 
+#   beamer_presentation:
+#     colortheme: beaver
+#     highlight: tango
+#     includes:
+#       in_header: ./includes/header.tex
+#     pandoc_args:
+#     - --latex-engine=xelatex
+#     - -V fontsize=10pt
+#     - -V lang=russian
+#     slide_level: 2
+#     theme: default
+#     toc: no
+editor_options:
   chunk_output_type: console
 ---
 
@@ -27,7 +27,7 @@ editor_options:
 options(width = 70, scipen = 6, digits = 3)
 library(knitr)
 # chunk default options
-opts_chunk$set(fig.align='center', tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE)
+opts_chunk$set(fig.align='center', tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE, message = FALSE)
 ```
 
 ## Множественная регрессия
@@ -107,7 +107,7 @@ $b_2$, $b_3$, ...., $b_{p - 1}$ --- аналогично
 
 ## Геометрическая интерпретация множественной линейной модели 
 
-### Для случая с одним предиктором $y_i = b_0 + b_1x_{1i} + e_i$ --- линия регрессии
+### Для случая с одним предиктором $y_i = b_0 + b_1x_{1i} + \varepsilon_i$ --- линия регрессии
 
 ```{r, echo=FALSE, purl=FALSE}
 library(ggplot2)
@@ -118,7 +118,7 @@ ggplot(data = dfr, aes(x = x1, y = y1)) + geom_point() + geom_smooth(method = "l
 
 ## Геометрическая интерпретация множественной линейной модели
 
-### Для случая с двумя предикторами $y_i = b_0 + b_1x_{1i} + b_2x_{2i} + e_i$ --- плоскость в трехмерном пространстве
+### Для случая с двумя предикторами $y_i = b_0 + b_1x_{1i} + b_2x_{2i} + \varepsilon_i$ --- плоскость в трехмерном пространстве
 
 ```{r, echo=FALSE, fig.height=5, fig.width=5, purl=FALSE}
 library(plot3D)
@@ -155,7 +155,7 @@ scatter3D(x = dfr$x1, y = dfr$x2, z = dfr$y2,
 
 ### Для случая с большим количеством предикторов 
 
-$$y_i = b_0 + b_1x_{1i} + b_2x_{2i} + b_3x_{3i} + ... + b_{p - 1}x_{p - 1\;i} + e_i$$
+$$y_i = b_0 + b_1x_{1i} + b_2x_{2i} + b_3x_{3i} + ... + b_{p - 1}x_{p - 1\;i} + \varepsilon_i$$
 
 Плоскость в n-мерном пространстве, оси которого образованы значениями предикторов
 
@@ -274,12 +274,14 @@ bird$logLDIST <- log(bird$LDIST)
 
 __Отскоки (выбросы, outliers)__ - наблюдения, которые имеют более высокие (или низкие) значения относительно большинства других наблюдений.
 
-## Ищем отскоки: точечные диаграммы Кливленда {.columns-2 }
+## Ищем отскоки: точечные диаграммы Кливленда {.columns-2 .smaller}
 
 
-```{r fig.width=6}
-ggplot(bird, aes(y = 1:nrow(bird), x = ABUND)) + geom_point() + 
-  labs(y = 'Порядковый номер \nв датасете', x = 'Значения переменной')
+```{r fig.width=5}
+ggplot(bird, aes(y = 1:nrow(bird), x = ABUND)) + 
+  geom_point() + 
+  labs(y = 'Порядковый номер \nв датасете', 
+       x = 'Значения переменной')
 ```
 
 
@@ -343,7 +345,7 @@ pairs(bird[, c("ABUND", "logAREA", "YRISOL", "logDIST", "logLDIST", "GRAZE", "AL
 ## Модель, которую мы хотим подобрать
 
 $$\begin{aligned}{ABUND}_i &= b_0 + b_1 \cdot logAREA_i + b_2 \cdot YRISOL_i + \\
-&+ b_3 \cdot logDIST_i + b_4 \cdot logLDIST_i + b_5 \cdot GRAZE_i + b_6 \cdot ALT_i + e_i\\
+&+ b_3 \cdot logDIST_i + b_4 \cdot logLDIST_i + b_5 \cdot GRAZE_i + b_6 \cdot ALT_i + \varepsilon_i\\
 \end{aligned}$$
 
 Возможно, что эту модель придется изменить.
@@ -377,7 +379,7 @@ $$\begin{aligned}{ABUND}_i &= b_0 + b_1 \cdot logAREA_i + b_2 \cdot YRISOL_i + \
 
 ## Как рассчитывается VIF
 
-Пусть наша модель $y_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + \ldots + b_{p - 1} x_{p - 1\;i} + e_i$.
+Пусть наша модель $y_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + \ldots + b_{p - 1} x_{p - 1\;i} + \varepsilon_i$.
 
 Нужно оценить какую долю изменчивости конкретного предиктора могут объяснить другие предикторы (т.е. насколько предикторы независимы).
 
@@ -414,7 +416,7 @@ $$VIF = \frac{1}{1-R^2}$$
 - Постройте множественную линейную регрессию для зависимости обилия птиц (`ABUND`) от других переменных (`logAREA`, `YRISOL`, `logDIST`, `logLDIST`, `GRAZE`, `ALT`)
 
 $$\begin{aligned}{ABUND}_i &= b_0 + b_1 \cdot logAREA_i + b_2 \cdot YRISOL_i + \\
-&+ b_3 \cdot logDIST_i + b_4 \cdot logLDIST_i + b_5 \cdot GRAZE_i + b_6 \cdot ALT_i + e_i\\
+&+ b_3 \cdot logDIST_i + b_4 \cdot logLDIST_i + b_5 \cdot GRAZE_i + b_6 \cdot ALT_i + \varepsilon_i\\
 \end{aligned}$$
 
 - Используйте функцию `vif()`, чтобы проверить, коллинеарны ли предикторы.
@@ -470,6 +472,7 @@ $$\begin{aligned}{ABUND}_i &= -226.00 + 3.69 \cdot logAREA_i + 0.12 \cdot YRISOL
 &-0.10 \cdot logDIST_i -0.33 \cdot logLDIST_i + 0.03 \cdot ALT_i + e_i\\
 \end{aligned}$$
 
+>- Дайте трактовку этим коэффициентам
 
 ## Множественная регрессия в матричном виде
 
@@ -618,7 +621,7 @@ coef(summary(mod2))
 
 Для стандартизации используем функцию `scale()`
 
-```{r, tidy=TRUE}
+```{r}
 mod2_scaled <- lm(ABUND ~ scale(logAREA) + scale(YRISOL) + scale(logDIST) + 
                           scale(logLDIST) + scale(ALT), data = bird)
 ```

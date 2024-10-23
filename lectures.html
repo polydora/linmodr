@@ -13,7 +13,7 @@
 
 <title>Презентации и данные</title>
 
-<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -55,7 +55,7 @@
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -66,7 +66,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -593,24 +593,41 @@ class="section level3">
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;readxl&quot;</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;cowplot&quot;</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;dplyr&quot;</span>)</span></code></pre></div>
-<!-- Часть 1. Модели с разными значениями свобобного члена (intercept) для групп -->
+<p>Часть 1. Модели с разными значениями свобобного члена (intercept) для
+групп</p>
 <!-- - Презентация: [09.1_LM_with_continuous_and_discrete_predictors_2.html](09.1_LM_with_continuous_and_discrete_predictors_2.html) -->
 <!-- - Код: [09.1_LM_with_continuous_and_discrete_predictors_code.R](09.1_LM_with_continuous_and_discrete_predictors_code_2.R) -->
-<!-- - Код: [09.1_LM_with_continuous_and_discrete_predictors_code_ANCOVA.R](09.1_LM_with_continuous_and_discrete_predictors_code_ANCOVA.R) -->
-<!-- - Данные: -->
-<!--     + [goats.xlsx](data/goats.xlsx) -->
-<!--     + [tlc.csv](data/tlc.csv) -->
-<!--     + [Puromycin.xlsx](data/Puromycin.xlsx) -->
-<!--     + [birthwt.csv](data/birthwt.csv) -->
-<!-- Часть 2. Модели с разными значениями углового коэффициента для групп -->
+<ul>
+<li>Код: <a
+href="09.1_LM_with_continuous_and_discrete_predictors_code_ANCOVA.R">09.1_LM_with_continuous_and_discrete_predictors_code_ANCOVA.R</a></li>
+<li>Данные:
+<ul>
+<li><a href="data/goats.xlsx">goats.xlsx</a></li>
+<li><a href="data/tlc.csv">tlc.csv</a></li>
+<li><a href="data/Puromycin.xlsx">Puromycin.xlsx</a></li>
+<li><a href="data/birthwt.csv">birthwt.csv</a></li>
+</ul></li>
+</ul>
+<p>Часть 2. Модели с разными значениями углового коэффициента для
+групп</p>
 <!-- - Презентация: [09.2_LM_with_continuous_and_discrete_predictors_interactions.html](09.2_LM_with_continuous_and_discrete_predictors_interactions.html) -->
-<!-- - Код: -->
-<!--     + [09.2_LM_with_continuous_and_discrete_predictors_interactions.R](09.2_LM_with_continuous_and_discrete_predictors_interactions.R) -->
-<!--     + [09.2_LM_with_continuous_and_discrete_predictors_Practicum_without_solution.R](09.2_LM_with_continuous_and_discrete_predictors_Practicum_without_solution.R) -->
+<ul>
+<li>Код:
+<ul>
+<li><a
+href="09.2_LM_with_continuous_and_discrete_predictors_interactions.R">09.2_LM_with_continuous_and_discrete_predictors_interactions.R</a></li>
+<li><a
+href="09.2_LM_with_continuous_and_discrete_predictors_Practicum_without_solution.R">09.2_LM_with_continuous_and_discrete_predictors_Practicum_without_solution.R</a></li>
+</ul></li>
+</ul>
 <!-- + [09.2_LM_with_continuous_and_discrete_predictors_Practicum_solution.R](09.2_LM_with_continuous_and_discrete_predictors_Practicum.R) -->
-<!-- - Данные: -->
-<!--     + [loyn.csv](data/loyn.csv) -->
-<!--     + [birthwt.csv](data/birthwt.csv) -->
+<ul>
+<li>Данные:
+<ul>
+<li><a href="data/loyn.csv">loyn.csv</a></li>
+<li><a href="data/birthwt.csv">birthwt.csv</a></li>
+</ul></li>
+</ul>
 </div>
 <div id="однофакторный-дисперсионный-анализ" class="section level3">
 <h3>10 Однофакторный дисперсионный анализ</h3>

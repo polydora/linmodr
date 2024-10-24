@@ -10,19 +10,22 @@ X <- model.matrix(~ x1 * x2, data = dat5)
 dat5$y <- X %*% c(b_0, b_1, b_2, b_12) + rnorm(100, 0, 1)
 ######################
 
+library(ggplot2)
 ggplot(dat5, aes(x=x1, y=y)) + geom_point() + geom_smooth(method="lm")
 
 ggplot(dat5, aes(x=x2, y=y)) + geom_point() + geom_smooth(method="lm")
 
 
-mod5 <- lm(y ~ x1 + x2, data = dat5)
+mod5 <- lm(y ~ x1 * x2, data = dat5)
 
-vif(mod5)
+library(car)
+car::vif(mod5)
 
 summary(mod5) #Можно ли доверять этим резултатам?
 
 # Данные для графиков остатков
 mod5_diag <- fortify(mod5)
+
 # 1) График расстояния Кука
 ggplot(mod5_diag, aes(x = 1:nrow(mod5_diag), y = .cooksd)) +
   geom_bar(stat = "identity")
@@ -96,6 +99,20 @@ MG <- lm(Wt ~ Init + Treatment, data = goat)
 #'
 ##Проверяем условия применимости #####
 
+Mod_goat_full <- lm(Wt ~ Init + Treatment + Init:Treatment, data = goat)
+
+Mod_goat_full <- lm(Wt ~ Init * Treatment, data = goat)
+
+Mod_goat_reduced <- lm(Wt ~ Init + Treatment, data = goat)
+
+
+anova(Mod_goat_full, Mod_goat_reduced)
+
+drop1(Mod_goat_full, test = "F")
+
+
+MG <- lm(Wt ~ Init + Treatment, data = goat)
+
 #' ## Нет ли колинеарности между начальным весом и тритментом
 library(car)
 vif(MG)
@@ -105,7 +122,7 @@ ggplot(goat, aes(x = Treatment, y = Init)) + geom_boxplot()
 
 # Создаем диагностические графики (дополниет недописанные части кода)
 
-MG_diag <-
+MG_diag <- fortify(MG)
 
 
 library(gridExtra)

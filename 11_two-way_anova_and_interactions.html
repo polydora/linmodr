@@ -4,7 +4,7 @@
     <title>Дисперсионный анализ, часть 2</title>
     <meta charset="utf-8" />
     <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
-    <script src="libs/header-attrs-2.23/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.27/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
@@ -45,7 +45,7 @@ class: middle, left, inverse, title-slide
 ### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
 ]
 .date[
-### Осень 2023
+### Осень 2024
 ]
 
 ---
@@ -60,15 +60,15 @@ class: middle, left, inverse, title-slide
 
 ## Многофакторный дисперсионный анализ
 
-- Модель многофакторного дисперсионного анализа
-- Взаимодействие факторов
-- Несбалансированные данные, типы сумм квадратов
-- Многофакторный дисперсионный анализ в R
-- Дисперсионный анализ в матричном виде
+- Модель многофакторного дисперсионного анализа;
+- Взаимодействие факторов;
+- Несбалансированные данные, типы сумм квадратов;
+- Многофакторный дисперсионный анализ в R;
+- Дисперсионный анализ в матричном виде.
 
 ### Вы сможете
 
-- Проводить многофакторный дисперсионный анализ и интерпретировать его результаты с учетом взаимодействия факторов
+- Проводить многофакторный дисперсионный анализ и интерпретировать его результаты с учётом взаимодействия факторов.
 
 ---
 
@@ -87,12 +87,12 @@ class: middle, center, inverse
 
 Зависимая переменная:
 
-- `body_mass_g` --- вес в граммах
+- `body_mass_g` --- вес в граммах.
 
 Факторы:
 
-- `species` --- вид пингвина
-- `sex` --- пол пингвина]
+- `species` --- вид пингвина;
+- `sex` --- пол пингвина.]
 
 .pull-right[
 ![](images/penguin.jpg)
@@ -106,7 +106,7 @@ class: middle, center, inverse
 ## Знакомимся с данными
 
 
-```r
+``` r
 # Открываем данные
 library(palmerpenguins)
 peng &lt;- as.data.frame(penguins[, c(1, 6, 7)]) 
@@ -120,7 +120,7 @@ str(peng)
  $ sex        : Factor w/ 2 levels "female","male": 2 1 1 NA 1 2 1 2 NA NA ...
 ```
 
-```r
+``` r
 # Переименовываем столбцы
 colnames(peng) &lt;- c('sp', 'mass', 'sex')
 ```
@@ -130,7 +130,7 @@ colnames(peng) &lt;- c('sp', 'mass', 'sex')
 ## Пропущенные значения
 
 
-```r
+``` r
 colSums(is.na(peng))
 ```
 
@@ -142,7 +142,7 @@ colSums(is.na(peng))
 Удаляем пропущенные значения (каких-то пингвинов не измерили :()
 
 
-```r
+``` r
 pengs &lt;- peng[complete.cases(peng), ]
 colSums(is.na(pengs))
 ```
@@ -157,7 +157,7 @@ colSums(is.na(pengs))
 ## Объемы выборок в группах
 
 
-```r
+``` r
 table(pengs$sp, pengs$sex)
 ```
 
@@ -178,7 +178,7 @@ table(pengs$sp, pengs$sex)
 ##   Посмотрим на график
 
 
-```r
+``` r
 library(ggplot2)
 theme_set(theme_bw(base_size = 14))
 gg_mass &lt;- ggplot(data = pengs, aes(x = sp, y = mass, colour = sex)) + 
@@ -202,6 +202,8 @@ class: middle, center, inverse
 
 Дизайн такого рода анализа может быть разным. 
 
+--
+
 .pull-left[
 ### Вложенные (иерархичные) модели
 
@@ -209,6 +211,8 @@ class: middle, center, inverse
 
 **Пример:** измерения обилия беспозвоночных животных на литорали в разные годы и месяцы. 
 ]
+
+--
 
 .pull-right[
 ### Факторные модели
@@ -344,7 +348,7 @@ class: middle, center, inverse
 
 - `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
 
-```r
+``` r
 contr.treatment(levels(pengs$sex))
 ```
 
@@ -357,7 +361,7 @@ male      1
 -  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
 
 
-```r
+``` r
 contr.treatment(levels(pengs$sp))
 ```
 
@@ -392,20 +396,20 @@ male  |  Gentoo   | 1 | 0 | 1 | 0 | 1
 `$$y _{i} = b _0 + b _1 x _{1i} + b _2 x _{2i} + b _3 x _{3i} + b _4 x _{4i} + b _5 x _{5i}+ e _{i}$$`
 
 
-- `\(b_0\)` --- значение отклика для самок вида Adelie (на базовом уровне обоих факторов)
+- `\(b_0\)` --- значение отклика для самок вида Adelie (на базовом уровне обоих факторов).
 
 Отклонения относительно базового уровня обоих факторов:
 
-- `\(b_1\)` --- для самцов
-- `\(b_2\)` и `\(b_3\)` --- для самок Chinstrap и Gentoo, соответственно
-- `\(b_4\)` и `\(b_5\)` --- для самцов Chinstrap и Gentoo, соответственно
+- `\(b_1\)` --- для самцов Adelie;
+- `\(b_2\)` и `\(b_3\)` --- для самок Chinstrap и Gentoo, соответственно;
+- `\(b_4\)` и `\(b_5\)` --- для самцов Chinstrap и Gentoo, соответственно.
 
 ---
 
 ## Подбираем линейную модель &lt;br/&gt; в параметризации индикаторов (contr.treatment)
 
 
-```r
+``` r
 mod_treat_pengs &lt;- lm(mass ~ sex * sp, data = pengs) 
 mod_treat_pengs
 ```
@@ -441,7 +445,7 @@ class: middle, center, inverse
 - `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
 
 
-```r
+``` r
 contr.sum(levels(pengs$sex))
 ```
 
@@ -454,7 +458,7 @@ male     -1
 -  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
 
 
-```r
+``` r
 contr.sum(levels(pengs$sp))
 ```
 
@@ -488,20 +492,20 @@ male  |  Gentoo   | -1 | -1 | -1 |  -1 |  -1
 
 `$$y _{i} = b _0 + b _1 x _{1i} + b _2 x _{2i} + b _3 x _{3i} + b _4 x _{4i} + b _5 x _{5i}+ e _{i}$$`
 
-- `\(b_0\)` --- среднее значение отклика по всем данным
+- `\(b_0\)` --- среднее значение отклика по всем данным.
 
 Отклонения от общего среднего значений отклика:
 
-- `\(b_1\)` --- в зависимости от пола (фактор `sex`)
-- `\(b_2\)` и `\(b_3\)` --- в зависимости от вида (фактор `sp`)
-- `\(b_4\)` и `\(b_5\)` --- для пола в зависимости от вида  (взаимодействие)
+- `\(b_1\)` --- в зависимости от пола (фактор `sex`);
+- `\(b_2\)` и `\(b_3\)` --- в зависимости от вида (фактор `sp`);
+- `\(b_4\)` и `\(b_5\)` --- для пола в зависимости от вида  (взаимодействие).
 
 ---
 
 ## Подбираем линейную модель &lt;br/&gt; в параметризации эффектов (contr.sum)
 
 
-```r
+``` r
 mod_sum_pengs &lt;- lm(mass ~ sex * sp, data = pengs, 
                     contrasts = list(sp = 'contr.sum', sex = 'contr.sum')) 
 coef(mod_sum_pengs)
@@ -531,7 +535,7 @@ class: middle, center, inverse
 Данные для анализа остатков
 
 
-```r
+``` r
 mod_treat_peng_diag &lt;- fortify(mod_treat_pengs) # функция из пакета ggplot2
 head(mod_treat_peng_diag, 2)
 ```
@@ -550,7 +554,7 @@ head(mod_treat_peng_diag, 2)
 ## График расстояния Кука
 
 
-```r
+``` r
 ggplot(mod_treat_peng_diag, aes(x = 1:nrow(mod_treat_peng_diag), y = .cooksd)) +
   geom_bar(stat = 'identity')
 ```
@@ -567,7 +571,7 @@ ggplot(mod_treat_peng_diag, aes(x = 1:nrow(mod_treat_peng_diag), y = .cooksd)) +
 
 
 
-```r
+``` r
 gg_resid &lt;- ggplot(data = mod_treat_peng_diag, aes(x = .fitted, y = .stdresid)) +
   geom_point() + geom_hline(yintercept = 0)
 gg_resid
@@ -587,7 +591,7 @@ gg_resid
 
 
 
-```r
+``` r
 ggplot(data = mod_treat_peng_diag, aes(x = sex, y = .stdresid, colour = sp)) +
   geom_boxplot() + geom_hline(yintercept = 0)
 ```
@@ -604,7 +608,7 @@ ggplot(data = mod_treat_peng_diag, aes(x = sex, y = .stdresid, colour = sp)) +
 ## Квантильный график остатков
 
 
-```r
+``` r
 library(car)
 qqPlot(mod_treat_pengs, id = FALSE) # функция из пакета car
 ```
@@ -664,8 +668,8 @@ class: middle, center, inverse
 --
 
 Старайтесь _планировать_ группы равной численности!
-Но если не получилось - не страшно:
-- Для фикс. эффектов неравные размеры - проблема при нарушении условий применимости только, если значения доверительной вероятности _p_ близки к выбранному критическому уровню значимости `\(\alpha\)`.
+Но если не получилось --- не страшно:
+- Для фиксированных эффектов неравные размеры --- проблема при нарушении условий применимости только, если значения доверительной вероятности _p_ близки к выбранному критическому уровню значимости `\(\alpha\)`.
 
 ---
 
@@ -744,7 +748,7 @@ class: middle, center, inverse
 При таком способе, сначала тестируется взаимодействие, затем отдельные факторы в модели без взаимодействия.
 
 
-```r
+``` r
 mod_treat_pengs &lt;- lm(mass ~ sp * sex, data = pengs) 
 library(car)
 Anova(mod_treat_pengs, type = "II")
@@ -767,13 +771,12 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ## Дисперсионный анализ c III типом сумм квадратов
 
-.small[
+
 
 Опишем процедуру на тот случай, если вдруг вам понадобится воспроизвести в R дисперсионный анализ с III типом сумм квадратов.
 
 При этом способе вначале тестируют взаимодействие, когда все другие факторы есть в модели. Затем тестируют факторы, когда все другие факторы и взаимодействие есть в модели.
 
-]
 
 --
 
@@ -783,7 +786,7 @@ __Внимание: при использовании III типа сумм кв
 --
 
 
-```r
+``` r
 mod_sum_pengs &lt;- lm(mass ~ sp * sex, data = pengs, 
                     contrasts = list(sp = 'contr.sum', sex = 'contr.sum')) 
 Anova(mod_sum_pengs, type = "III")
@@ -814,7 +817,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 __В параметризации индикаторных переменных предикторы и взаимодействие коллинеарны__, т.е. суммы квадратов III типа будут рассчитаны неправильно.
 
 
-```r
+``` r
 vif(mod_treat_pengs)
 ```
 
@@ -830,7 +833,7 @@ sp:sex 6.688  2           1.608
 __В параметризации эффектов переменных предикторы и взаимодействие независимы__, значит получатся верные суммы квадратов III типа.
 
 
-```r
+``` r
 vif(mod_sum_pengs)
 ```
 
@@ -859,11 +862,11 @@ class: middle, center, inverse
 
 ## Пост хок тест для взаимодействия факторов
 
-Пост хок тест для взаимодействия факторов делается легче всего "обходным путем" 
+Пост хок тест для взаимодействия факторов делается легче всего "обходным путём":
 
-1. Создаем переменную-взаимодействие 
-2. Подбираем модель без свободного члена
-3. Делаем пост хок тест для этой модели
+1. Создаем переменную-взаимодействие; 
+2. Подбираем модель без свободного члена;
+3. Делаем пост хок тест для этой модели.
 
 ---
 
@@ -873,7 +876,7 @@ class: middle, center, inverse
 
 
 
-```r
+``` r
 # Создаем переменную-взаимодействие
 pengs$sp_sex &lt;- interaction(pengs$sex, pengs$sp)
 # Подбираем линейную модель без свободного члена
@@ -889,7 +892,7 @@ summary(dat_tukey)
 ## Решение
 
 
-```r
+``` r
 # Создаем переменную-взаимодействие
 pengs$sex_sp &lt;- interaction(pengs$sex, pengs$sp)
 # Подбираем линейную модель без свободного члена
@@ -943,7 +946,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 У нас два дискретных фактора, поэтому вначале используем `expand.grid()`
 
 
-```r
+``` r
 MyData_pengs &lt;- expand.grid(sex = levels(pengs$sex),
                             sp = levels(pengs$sp))
 MyData_pengs &lt;- data.frame(
@@ -975,7 +978,7 @@ MyData_pengs
 - верхнюю и нижнюю границы доверительных интервалов
 
 
-```r
+``` r
 MyData_pengs &lt;- expand.grid(sex = levels(pengs$sex),
                             sp = levels(pengs$sp))
 X_pengs &lt;- model.matrix(~ , data = )
@@ -1004,7 +1007,7 @@ MyData_pengs
 ## Решение:
 
 
-```r
+``` r
 MyData_pengs &lt;- expand.grid(sex = levels(pengs$sex),
                             sp = levels(pengs$sp))
 X_pengs &lt;- model.matrix(~ sp * sex, data = MyData_pengs)
@@ -1034,7 +1037,7 @@ MyData_pengs
 
 
 
-```r
+``` r
 pos &lt;- position_dodge(width = 0.2)
 gg_linep &lt;- ggplot(data = , aes()) + 
   geom_  (position = pos) +
@@ -1050,7 +1053,7 @@ gg_linep
 ## График результатов: Линии с точками
 
 
-```r
+``` r
 pos &lt;- position_dodge(width = 0.2)
 gg_linep &lt;- ggplot(data = MyData_pengs, aes(x = sp, y = fit, 
                                       ymin = lwr,  ymax = upr, colour = sex)) + 
@@ -1067,7 +1070,7 @@ gg_linep
 ## Приводим график в приличный вид
 
 
-```r
+``` r
 gg_final &lt;- gg_linep + labs(x = 'Вид', y = 'Масса тела, г') + 
   scale_colour_manual(name = '', labels = c('Самки', 'Самцы'),
                       values = c('#FF0091', '#0077FF'))

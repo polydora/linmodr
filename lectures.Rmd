@@ -178,7 +178,7 @@ install.packages("dplyr")
 install.packages(c("DAAG", "multcomp"))
 ```
 
-<!-- - Презентация: [10_anova.html](10_anova.html) -->
+- Презентация: [10_anova.html](10_anova.html)
 - Код:
     + [10_anova_code.R](10_anova_code.R)
     + [10_anova_practice_chicks.R](10_anova_practice_chicks.R)
@@ -194,13 +194,13 @@ install.packages("palmerpenguins")
 ```
 
 <!-- - Презентация: [11_two-way_anova_and_interactions.html](11_two-way_anova_and_interactions.html) -->
-<!-- - Код: -->
-<!--     + [11_two-way_anova_and_interactions_code.R](11_two-way_anova_and_interactions_code.R) -->
-<!--     + [11_two-way_anova_practice_ants.R](11_two-way_anova_practice_ants.R) -->
-<!--     + [11_two-way_anova_practice_rice.R](11_two-way_anova_practice_rice.R) -->
-<!-- - Данные: -->
-<!--     + [rice.csv](data/rice.csv) -->
-<!--     + [SandwichAnts.csv](data/SandwichAnts.csv) -->
+- Код:
+    + [11_two-way_anova_and_interactions_code.R](11_two-way_anova_and_interactions_code.R)
+    + [11_two-way_anova_practice_ants.R](11_two-way_anova_practice_ants.R)
+    + [11_two-way_anova_practice_rice.R](11_two-way_anova_practice_rice.R)
+- Данные:
+    + [rice.csv](data/rice.csv)
+    + [SandwichAnts.csv](data/SandwichAnts.csv)
 
 
 ## Обобщенные линейные модели (GLM)

@@ -13,7 +13,7 @@
 
 <title>Презентации и данные</title>
 
-<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -55,7 +55,7 @@
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -66,7 +66,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -737,10 +737,14 @@ href="14_GLM_binary_training.R">14_GLM_binary_training.R</a></p></li>
 class="section level3">
 <h3>15 GLMM для нормально-распределенных данных</h3>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;lme4&quot;</span>, <span class="st">&quot;pbkrtest&quot;</span>))</span></code></pre></div>
-<!-- - Презентация: -->
-<!--     + [15.1_GLMM_gaussian_random_intercept_slope.html](15.1_GLMM_gaussian_random_intercept_slope.html) -->
-<!--     + [15.2_GLMM_gaussian_nested.html](15.2_GLMM_gaussian_nested.html) -->
 <ul>
+<li>Презентация:
+<ul>
+<li><a
+href="15.1_GLMM_gaussian_random_intercept_slope.html">15.1_GLMM_gaussian_random_intercept_slope.html</a></li>
+<li><a
+href="15.2_GLMM_gaussian_nested.html">15.2_GLMM_gaussian_nested.html</a></li>
+</ul></li>
 <li>Код:
 <ul>
 <li><a
@@ -752,13 +756,12 @@ href="15.2_GLMM_gaussian_nested_code.R">15.2_GLMM_gaussian_nested_code.R</a></li
 href="data/Grazing_native_plants_Gennet_et_al._2017_S1.xlsx">Grazing_native_plants_Gennet_et_al._2017_S1.xlsx</a></li>
 <li>Задание:
 <ul>
-<li>Код: <a
-href="15.GLMM_gaussian_choccake_practice.R">15.GLMM_gaussian_choccake_practice.R</a></li>
-<li>Данные: <a href="data/choccake.csv">choccake.csv</a></li>
+<li><p>Код: <a
+href="15.GLMM_gaussian_choccake_practice.R">15.GLMM_gaussian_choccake_practice.R</a></p></li>
+<li><p>Данные: <a href="data/choccake.csv">choccake.csv</a></p></li>
+<li><p>Решение (частичное): <a
+href="15.GLMM_gaussian_choccake_solution.R">15.GLMM_gaussian_choccake_solution.R</a></p></li>
 </ul></li>
-</ul>
-<!--     + Решение (частичное): [15.GLMM_gaussian_choccake_solution.R](15.GLMM_gaussian_choccake_solution.R) -->
-<ul>
 <li>Демонстрация LRT при помощи бутстрепа: <a
 href="15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R">15.1_GLMM_gaussian_bootstrap_demo_sleepstudy.R</a></li>
 </ul>

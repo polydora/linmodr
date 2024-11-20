@@ -4,7 +4,7 @@
     <title>Моделирование структуры дисперсии в смешанных моделях</title>
     <meta charset="utf-8" />
     <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
-    <script src="libs/header-attrs-2.25/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.27/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
@@ -46,7 +46,7 @@ class: middle, left, inverse, title-slide
 ### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
 ]
 .date[
-### Осень 2023
+### Осень 2024
 ]
 
 ---
@@ -61,14 +61,14 @@ class: middle, left, inverse, title-slide
 
 ## Вы узнаете
 
-- как бороться с гетерогенностью дисперсии
-- что такое обобщённый метод наименьших квадратов 
+- как бороться с гетерогенностью дисперсии;
+- что такое обобщённый метод наименьших квадратов.
 
 ### Вы сможете
 
-- применять обобщённые линейные модели, включающие ковариату дисперсии 
-- подобрать функцию, которая свяжет величину дисперсии с ковариатой дисперсии так, чтобы правдоподобие (likelihood) было бы максимальным 
-- смоделировать структуру дисперсии для модели, включающей дискретные предикторы и случайные факторы
+- применять обобщённые линейные модели, включающие ковариату дисперсии;
+- подобрать функцию, которая свяжет величину дисперсии с ковариатой дисперсии так, чтобы правдоподобие (likelihood) было бы максимальным; 
+- смоделировать структуру дисперсии для модели, включающей дискретные предикторы и случайные факторы.
 
 ---
 
@@ -119,7 +119,7 @@ __Предикторы:__
 ## Читаем данные
 
 
-```r
+``` r
 library(faraway)
 data(fruitfly)
 fly &lt;- fruitfly # Переименуем датасет для краткости
@@ -138,7 +138,7 @@ str(fly)
 ## Проверяем данные 
 
 
-```r
+``` r
 # Есть ли пропущенные значения?
 colSums(is.na(fly))
 ```
@@ -148,7 +148,7 @@ colSums(is.na(fly))
         0         0         0 
 ```
 
-```r
+``` r
 # Сколько измерений по каждой из градаций?
 table(fly$activity)
 ```
@@ -164,7 +164,7 @@ isolated      one      low     many     high
 ## Нет ли выбросов: пишем код
 
 
-```r
+``` r
 library(ggplot2)
 theme_set(theme_bw())
 
@@ -179,33 +179,33 @@ Pl2 &lt;- gg_dot + aes(x = thorax)
 ## Нет ли выбросов: строим диаграммы Кливленда
 
 
-```r
+``` r
 library(cowplot)
 plot_grid(Pl1, Pl2)
 ```
 
 ![](16_variance_structure_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
 
-Выбросов нет
+Выбросов нет.
 
 ---
 
 ## Нет ли коллинеарности
 
 
-```r
+``` r
 ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
 ```
 
 ![](16_variance_structure_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
 
-Коллинеарности предикторов нет
+Коллинеарности предикторов нет.
 
 ---
 
 ## Гипотеза и модель 
 
-Гипотеза: Продолжительность жизни зависит от половой активности
+Гипотеза: Продолжительность жизни зависит от половой активности.
 
 Модель:
 
@@ -218,7 +218,7 @@ ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
 ## Код для подгонки модели 
 
 
-```r
+``` r
 mod_formula &lt;- longevity ~ thorax*activity
 M1 &lt;- lm(mod_formula, data = fruitfly)
 
@@ -244,7 +244,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## Диагностика модели
 
 
-```r
+``` r
 M1_diagn &lt;- fortify(M1)
 ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0)
 ```
@@ -261,7 +261,7 @@ ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yi
 Возьмем 1000 выборок из этих совокупностей по 10 наблюдений и построим много линейных моделей
 
 
-```r
+``` r
 N &lt;- 1000; b_0 &lt;- 0; b_1 &lt;- 0
 
 # нет гетероскедастичности
@@ -292,7 +292,7 @@ for(i in 1:1000){
 - Нет гетероскедастичности и нет связи между `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет. 
 
 
-```r
+``` r
 mean(p_values$p_no_heter &lt; 0.05)
 ```
 
@@ -300,10 +300,10 @@ mean(p_values$p_no_heter &lt; 0.05)
 [1] 0.039
 ```
 
-- Для совокупности с гетероскедастичностью, при отсутствии связи между  `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет 
+- Для совокупности с гетероскедастичностью, при отсутствии связи между `\(y\)` и `\(x\)` (справедлива `\(H_0\)`) частота ошибок составляет.
 
 
-```r
+``` r
 mean(p_values$p_heter &lt; 0.05)
 ```
 
@@ -344,7 +344,7 @@ $$
 
 ## Смешанные модели на языке матриц
 
-Смешанная линейная модель с группирующими факторами
+Смешанная линейная модель с группирующими факторами:
 
 
 $$
@@ -424,7 +424,7 @@ class: middle, center, inverse
 ## GLS модель и ее диагностика
 
 
-```r
+``` r
 library(nlme) 
 M1_gls &lt;- gls(mod_formula, data = fruitfly)
 
@@ -476,7 +476,7 @@ class: middle, center, inverse
 
 
 
-```r
+``` r
 M2_gls &lt;- gls(mod_formula, data = fly, weights = varFixed(~ thorax))
 ```
 
@@ -487,7 +487,7 @@ M2_gls &lt;- gls(mod_formula, data = fly, weights = varFixed(~ thorax))
 ## Можем сравнить две модели при помощи AIC
 
 
-```r
+``` r
 AIC(M1_gls, M2_gls)
 ```
 
@@ -503,7 +503,7 @@ M2_gls 11 889.7
 ## Что есть в summary от модели?
 
 
-```r
+``` r
 summary(M2_gls)
 ```
 
@@ -568,7 +568,7 @@ Degrees of freedom: 124 total; 114 residual
 Помимо информационных критериев и коэффициентов модели `summary` содержит корреляционную матрицу. Из неё можно извлечь значения дисперсии для параметров модели (лежат на главной диагонали), а также коэффициенты корреляции между параметрами. Последние можно использовать для оценки мультиколлинеарности. 
 
 
-```r
+``` r
 cov2cor(vcov(M2_gls)) # получаем те же значения, что в выводе summary от модели
 ```
 
@@ -617,15 +617,15 @@ $$
 \varepsilon_{ij} \sim N(0, \sigma^2 \times |VC|^{2\delta})
 $$
 
-Параметр `\(\delta\)` неизвестен и требует оценки
+Параметр `\(\delta\)` неизвестен и требует оценки.
 
-Если `\(\delta = 0\)`, то структура дисперсии будет аналогична структуре дисперсии в "обычной" регрессионной модели, где `\(\varepsilon \sim N(0, \sigma^2)\)`
+Если `\(\delta = 0\)`, то структура дисперсии будет аналогична структуре дисперсии в "обычной" регрессионной модели, где `\(\varepsilon \sim N(0, \sigma^2)\)`.
 
 **Важно!**  Если значения ковариаты дисперсии могут принимать значение равное нулю, то такая форма структуры дисперсии не определена и использоваться не может.
 
 
 
-```r
+``` r
 M3_gls &lt;- gls(mod_formula, data = fly, weights = varPower(form = ~ thorax))
 ```
 
@@ -634,11 +634,11 @@ M3_gls &lt;- gls(mod_formula, data = fly, weights = varPower(form = ~ thorax))
 ## Что произошло в результате работы функции `varPower()`?
 
 
-```r
+``` r
 summary(M3_gls)
 ```
 
-Часть вывода `summary(M3_gls)`
+Часть вывода `summary(M3_gls)`:
 
 ```
 Variance function:
@@ -654,7 +654,7 @@ Structure: Power of variance covariate
 Оценка параметра `\(\delta\)`
 
 
-```r
+``` r
 M3_gls$modelStruct
 ```
 
@@ -669,7 +669,7 @@ power
 ## Степенная зависимость дисперсии от ковариаты для разных уровней дискретного фактора
 
 
-```r
+``` r
 M4_gls &lt;- gls(mod_formula, data = fly, 
               weights = varPower(form = ~ thorax|activity))
 ```
@@ -677,7 +677,7 @@ M4_gls &lt;- gls(mod_formula, data = fly,
 Подобранные параметры
 
 
-```r
+``` r
 M4_gls$modelStruct
 ```
 
@@ -695,13 +695,13 @@ $$
 \varepsilon_{ij} \sim N(0, \sigma^2 \times e^{2\delta \times VC_i})
 $$
 
-Эта форма структуры дисперсии может применяться для случаев, когда `\(VC = 0\)`
+Эта форма структуры дисперсии может применяться для случаев, когда `\(VC = 0\)`.
 
-Если `\(\delta = 0\)`, то структура дисперсии будет аналогична структуре дисперсии в "обычной" регрессионной модели, то есть `\(\varepsilon_{ij} \sim N(0, \sigma^2)\)`
+Если `\(\delta = 0\)`, то структура дисперсии будет аналогична структуре дисперсии в "обычной" регрессионной модели, то есть `\(\varepsilon_{ij} \sim N(0, \sigma^2)\)`.
    
 
 
-```r
+``` r
 M5_gls &lt;- gls(mod_formula, data = fly, 
               weights = varExp(form = ~ thorax))
 M6_gls &lt;- gls(mod_formula, data = fly, 
@@ -713,7 +713,7 @@ M6_gls &lt;- gls(mod_formula, data = fly,
 ## Подобранные параметры
 
 
-```r
+``` r
 M5_gls$modelStruct
 ```
 
@@ -723,7 +723,7 @@ expon
 2.443 
 ```
 
-```r
+``` r
 M6_gls$modelStruct
 ```
 
@@ -740,12 +740,12 @@ varStruct  parameters:
 $$
 \varepsilon_{ij} \sim N(0, \sigma^2 \times (\delta_1 + |VC|^{2\delta_2})^2)
 $$
-То есть подбирается не только показатель степени `\(\delta_2\)`, но еще и константа `\(\delta_1\)`
+То есть подбирается не только показатель степени `\(\delta_2\)`, но еще и константа `\(\delta_1\)`.
 
-При `\(\delta_1=0\)` и `\(\delta_2=0\)` выражение `\(\varepsilon_{ij} \sim N(0,\sigma^2 \times (0 + |VC|^{0})\)` будет эквивалентно `\(\varepsilon_{ij} \sim N(0, \sigma^2)\)`  
+При `\(\delta_1=0\)` и `\(\delta_2=0\)` выражение `\(\varepsilon_{ij} \sim N(0,\sigma^2 \times (0 + |VC|^{0})\)` будет эквивалентно `\(\varepsilon_{ij} \sim N(0, \sigma^2)\)`.  
 
 
-```r
+``` r
 M7_gls &lt;- gls(mod_formula, data = fly, 
                weights = varConstPower(form = ~ thorax))
 M8_gls &lt;- gls(mod_formula, data = fly, 
@@ -759,7 +759,7 @@ M8_gls &lt;- gls(mod_formula, data = fly,
 `$$\varepsilon_{ij} \sim N(0, \sigma^2 \times (\delta_1 + |VC|^{2\delta_2})^2)$$`
 
 
-```r
+``` r
 M7_gls$modelStruct
 ```
 
@@ -769,14 +769,14 @@ varStruct  parameters:
 -15.867   1.987 
 ```
 
-```r
+``` r
 M8_gls$modelStruct
 ```
 
 ```
 varStruct  parameters:
     const.many const.isolated      const.one      const.low     const.high 
-     -17.24165       -0.03472        0.04990        0.16843       -0.96133 
+     -17.24327       -0.03472        0.04990        0.16843       -0.96133 
     power.many power.isolated      power.one      power.low     power.high 
       -0.56206        3.89001        2.70688        8.26979        3.08716 
 ```
@@ -799,7 +799,7 @@ class: middle, center, inverse
 При построении моделей с такой структурой дисперсии подбирается `\(k - 1\)` новых параметров, где `\(k\)` --- количество уровней категориального предиктора.   
 
 
-```r
+``` r
 M9_gls &lt;- gls(mod_formula, data = fly, 
               weights = varIdent(form = ~1|activity))
 ```
@@ -809,11 +809,11 @@ M9_gls &lt;- gls(mod_formula, data = fly,
 ## Что произошло в результате работы функции `varIdent()`?
 
 
-```r
+``` r
 summary(M9_gls)
 ```
 
-Часть вывода `summary(M9_gls)`
+Часть вывода `summary(M9_gls)`:
 
 ```
 Variance function:`
@@ -833,7 +833,7 @@ Structure: Different standard deviations per stratum
 ## Комбинированная структура дисперсии: varComb()
 
 
-```r
+``` r
 M10_gls &lt;- gls(mod_formula, data = fly, 
                weights = varComb(varIdent(form = ~ 1|activity), 
                                  varFixed(~ thorax)))
@@ -861,7 +861,7 @@ class: middle, center, inverse
 ## Находим финальную модель
 
 
-```r
+``` r
 AICs &lt;- AIC(M1_gls, M2_gls, M3_gls, 
             M4_gls, M5_gls, M6_gls, 
             M7_gls, M8_gls, M9_gls, 
@@ -890,7 +890,7 @@ M13_gls 17 890.7
 ## Финальная модель
 
 
-```r
+``` r
 AICs[AICs$AIC == min(AICs$AIC), ]
 ```
 
@@ -899,7 +899,7 @@ AICs[AICs$AIC == min(AICs$AIC), ]
 M10_gls 15 888.2
 ```
 
-```r
+``` r
 summary(M10_gls)$call
 ```
 
@@ -913,7 +913,7 @@ gls(model = mod_formula, data = fly, weights = varComb(varIdent(form = ~1 |
 ## Диагностика финальной модели
 
 
-```r
+``` r
 Pl_resid_M1_gls &lt;- Pl_resid_M1_gls  + ggtitle("Было") + 
   labs(x = ".fitted", y = "Pearson resid.")
 Pl_resid_M10_gls &lt;-  qplot(x = fitted(M10_gls), 
@@ -942,7 +942,7 @@ class: middle, center, inverse
 Для упрощения финальной модели надо изменять фиксированную часть, REML не годится!
 
 
-```r
+``` r
 M10_gls_ML &lt;- update(M10_gls, method = "ML")
 drop1(M10_gls_ML, test = "Chi")
 ```
@@ -962,7 +962,7 @@ thorax:activity  4 939 0.543     0.97
 ## Больше ничего упростить нельзя
 
 
-```r
+``` r
 M10_gls_ML2 &lt;- update(M10_gls_ML, .~.-thorax:activity)
 drop1(M10_gls_ML2, test = "Chi" )
 ```
@@ -985,7 +985,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## Финальная модель и подготовка визуализации 
 
 
-```r
+``` r
 M10_final &lt;- update(M10_gls_ML2, method = "REML")
 
 library(dplyr)
@@ -1005,7 +1005,7 @@ new_data$SE &lt;- sqrt(diag(X %*% vcov(M10_final) %*% t(X)))
 ## Визуализация финальной модели
 
 
-```r
+``` r
 ggplot(new_data, aes(x = thorax, y = fitted, color = activity)) + 
   geom_line() + 
   geom_ribbon(aes(ymin = fitted - 2 * SE, 
@@ -1028,7 +1028,7 @@ class: middle, center, inverse
 
 .pull-left[
 
-```r
+``` r
 data("BodyWeight")
 bw &lt;- as.data.frame(BodyWeight)
 head(bw, 14)
@@ -1056,7 +1056,7 @@ head(bw, 14)
 .pull-right[
 Три группы крыс, содержались при разных условиях кормления 64 дня. Каждую крысу взвешивали с определенной периодичностью. 
 
-Всего было изучено 16 особей  
+Всего было изучено 16 особей.  
 
 
 Задача:    
@@ -1079,7 +1079,7 @@ head(bw, 14)
 ## Решение: Неправильная модель
 
 
-```r
+``` r
 M1 &lt;- gls(weight ~ Time*Diet, data = bw) 
 ```
 
@@ -1090,10 +1090,10 @@ M1 &lt;- gls(weight ~ Time*Diet, data = bw)
 **Важно!** Строить простую линейную модель в данном случае *некорректно*!
 
 - Дизайн эксперимента изначально включает случайный фактор `Rat`. Здесь мы имеем дело с повторными наблюдениями одного и того же объекта.    
-- Однако мы рассмотрим `M1`  для демонстрации того, что происходит, если не учитывать этой особенности экспериментального дизайна.   
+- Однако мы рассмотрим `M1` для демонстрации того, что происходит, если не учитывать этой особенности экспериментального дизайна.   
 
 
-```r
+``` r
 Anova(M1)
 ```
 
@@ -1118,7 +1118,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 --
 
 
-```r
+``` r
 M2 &lt;- lme(weight ~ Time*Diet, data = bw, random = ~1|Rat)
 M3 &lt;- lme(weight ~ Time*Diet, data = bw, random = ~1 + Time|Rat)
 ```
@@ -1130,7 +1130,7 @@ M3 &lt;- lme(weight ~ Time*Diet, data = bw, random = ~1 + Time|Rat)
 --
 
 
-```r
+``` r
 AIC(M2, M3)
 ```
 
@@ -1145,7 +1145,7 @@ M3 10 1172
 ## Решение: Пытаемся ответить на вопрос исследования
 
 
-```r
+``` r
 Anova(M3)
 ```
 
@@ -1171,7 +1171,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## Диагностика модели
 
 
-```r
+``` r
 diagnostic &lt;- data.frame(.fitted = fitted(M3), .residuals = residuals(M3, type = "pearson"), Diet = bw$Diet, Time = bw$Time)
 Pl1 &lt;- ggplot(diagnostic, aes(x=.fitted, y=.residuals) ) + geom_point()
 Pl2 &lt;- ggplot(diagnostic, aes(x=Time, y=.residuals) ) + geom_point()
@@ -1188,7 +1188,7 @@ grid.arrange(Pl1, Pl2, Pl3, ncol=3)
 ## Моделируем структуру дисперсии
 
 
-```r
+``` r
 M3_1 &lt;- update(M3, weights = varIdent(form = ~ 1|Diet))
 M3_2 &lt;- update(M3, weights = varPower(form = ~Time))
 M3_3 &lt;- update(M3, weights = varPower(form = ~Time|Diet))
@@ -1206,7 +1206,7 @@ M3_8 &lt;- update(M3, weights = varComb(varPower(form = ~Time),
 ## Выбираем лучшую модель
 
 
-```r
+``` r
 AIC(M3, M3_1, M3_2, M3_3,  M3_5, M3_6, M3_7, M3_8)
 ```
 
@@ -1227,7 +1227,7 @@ M3_8 13 1162
 ## Диагностика модели
 
 
-```r
+``` r
 M3_6_diagn &lt;- data.frame(.fitted = fitted(M3_6), 
                          .residuals = residuals(M3_6, type = "pearson"), 
                          Diet = bw$Diet, 
@@ -1246,7 +1246,7 @@ grid.arrange(Pl1, Pl4, nrow = 1)
 
 
 
-```r
+``` r
 grid.arrange(Pl5, Pl6, nrow = 1)
 ```
 
@@ -1257,7 +1257,7 @@ grid.arrange(Pl5, Pl6, nrow = 1)
 ## Отвечаем на вопрос
 
 
-```r
+``` r
 Anova(M3_6)
 ```
 
@@ -1281,7 +1281,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## Смотрим на предсказания модели
 
 
-```r
+``` r
 MyData &lt;- expand.grid(Time = unique(bw$Time), Diet = factor(1:3))
 
 MyData$Predicted &lt;- predict(M3_6, newdata = MyData, level = 0)
@@ -1300,10 +1300,10 @@ ggplot(MyData, aes(x = Time, y = Predicted,  color = Diet)) +
 
 ## Take-home messages
 
-При наличии признаков гетероскедастичности можно пойти тремя путями   
-1. Произвести преобразование зависимой переменной     
-2. Включить в модель элемент, описывающий связь дисперсии с ковариатой дисперсии    
-3. Если природа данных позволяет, то построить модель, основанную на распределении     Пуассона или отрицательном биномиальном распределении. 
+При наличии признаков гетероскедастичности можно пойти тремя путями:   
+1. Произвести преобразование зависимой переменной;     
+2. Включить в модель элемент, описывающий связь дисперсии с ковариатой дисперсии;    
+3. Если природа данных позволяет, то построить модель, основанную на распределении Пуассона или отрицательном биномиальном распределении. 
 
 ---
 

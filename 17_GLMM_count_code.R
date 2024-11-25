@@ -43,9 +43,27 @@ sum(!complete.cases(Owls))
 # ## Есть ли выбросы?
 library(ggplot2);
 
+Pl_NCalls <-
+ggplot(Owls, aes(x = NCalls, y = 1:nrow(Owls))) +
+  geom_point()
+
+names(Owls)
+
+Pl_ArrivalTime <-
+  ggplot(Owls, aes(x = ArrivalTime, y = 1:nrow(Owls))) +
+  geom_point()
+
+
+Pl_BroodSize <-
+  ggplot(Owls, aes(x = BroodSize, y = 1:nrow(Owls))) +
+  geom_point()
+
+
 library(cowplot);
 
 theme_set(theme_bw())
+
+plot_grid(Pl_NCalls, Pl_ArrivalTime, Pl_BroodSize)
 
 gg_dot <- ggplot(Owls, aes(y = 1:nrow(Owls))) +
   geom_point(colour = "steelblue")
@@ -70,6 +88,7 @@ ggplot(Owls, aes(x = NCalls)) +
   geom_histogram(binwidth = 1, fill = "steelblue", colour = "black")
 
 mean(Owls$NCalls == 0) # доля нулей
+
 
 
 # ## Какого размера выводки в гнездах?
@@ -115,6 +134,8 @@ M1 <- glmer(NCalls ~ SexParent * FoodTreatment +
               offset(logBroodSize) + (1 | Nest),
             family = "poisson", data = Owls)
 
+summary(M1)
+
 # Смешанная модель с распределением Пуассона не
 # сходится. Один из возможных вариантов выхода -
 # стандартизация предикторов
@@ -126,6 +147,8 @@ M1 <- glmer(NCalls ~ SexParent * FoodTreatment +
               SexParent * ArrivalTime_std +
               offset(logBroodSize) + (1 | Nest),
             family = "poisson", data = Owls)
+
+
 
 
 
@@ -167,6 +190,7 @@ overdisp_fun <- function(model) {
 overdisp_fun(M1)
 
 
+# glmmTMB
 
 # ## График остатков
 M1_diag <- data.frame(Owls,
@@ -273,7 +297,7 @@ M4 <- update(M3, .~.-SexParent:FoodTreatment)
 drop1(M4, test = "Chi")
 
 M5 <- update(M4, .~.-SexParent)
-drop1(M5)
+drop1(M5, test = "Chi")
 
 
 # ## Модель изменилась. Нужно повторить диагностику
@@ -299,7 +323,10 @@ gg_resid <- ggplot(M5_diag, aes(x = .fitted, y = .pears_resid,
                                 colour = FoodTreatment)) +
   geom_point() +
   facet_grid(SexParent ~ FoodTreatment)
-gg_resid
+
+gg_resid +
+  geom_smooth() +
+  geom_hline(yintercept = 0)
 
 
 # ## Есть ли еще какие-то паттерны в остатках?
@@ -322,7 +349,9 @@ summary(M5)
 # ## Готовим данные для графика модели
 library(dplyr)
 
-NewData <- Owls %>% group_by(FoodTreatment) %>%
+NewData <-
+  Owls %>%
+  group_by(FoodTreatment) %>%
   do(data.frame(ArrivalTime_std = seq(min(.$ArrivalTime_std),
                                        max(.$ArrivalTime_std),
                                        length = 100)))

@@ -43,34 +43,20 @@ ggplot(astr2, aes(y = 1:nrow(astr2))) + geom_point(aes(x = L) )
 
 library(lme4)
 
-model1_ri <- glmer(Out ~ L*Sp*Year + (1|Experiment/Box) , data = astr2, family = binomial(link = "logit"))
-
+model1_ri <-
 
 
 astr2$L_scaled <- scale(astr2$L)
 
 qplot(astr2$L, astr2$L_scaled)
 
-model1_ri <- glmer(Out ~ L_scaled*Sp*Year +
-                     (1|Experiment/Box) , data = astr2,
-                   family = binomial(link = "logit"))
-
-
-# model1_rsi_1<- glmer(Out ~ L_scaled * Sp * Year + (1 + Sp|Experiment/Box), data = astr2, family = binomial(link = "logit"))
-
-model1_rsi_2 <- glmer(Out ~ L_scaled * Sp * Year + (1 + L_scaled |Experiment/Box) ,
-                      data = astr2, family = binomial(link = "logit"))
+model1_ri <-
 
 
 
 
+model1_rsi_1<-
 
-
-
-
-model1_rsi_1<- glmer(Out ~ L_scaled * Sp * Year + (1 + L_scaled |Experiment/Box) ,
-                      data = astr2, family = binomial(link = "logit"),
-                      control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))
 
 
 ## Сравниваем три модели
@@ -86,7 +72,9 @@ library(ggplot2)
 model1_diagn <- fortify.merMod(model1_ri)
 
 
-ggplot(model1_diagn, aes(x = .fitted, y = .scresid)) + geom_point() + geom_smooth()
+ggplot(model1_diagn, aes(x =  , y = )) +
+  geom_point() +
+  geom_()
 
 
 
@@ -103,11 +91,6 @@ check_overdispersion(model1_ri)
 
 summary(model1_ri)
 ## Задание: Проведите упрощение модели в соответствии с протоколом backward selection
-
-model1_ri_6 <- glmer(Out ~ L_scaled + Sp +
-                     (1|Experiment/Box) , data = astr2,
-                   family = binomial(link = "logit"))
-
 
 
 
@@ -134,10 +117,6 @@ library(partR2)
 partR2(model1_ri_6)
 
 
-
-summary(model1_ri_6)
-
-exp(fixef(model1_ri_6)[3])
 
 
 ## Подготовка к визуализации в виде логистических кривых
@@ -167,27 +146,6 @@ Pl_log
 
 
 # Задание: Визуализируйте модель в виде столбчатой диаграммы
-
-new_data <- data.frame(Sp = levels(astr2$Sp), L_scaled = 0)
-
-
-X <- model.matrix(~  L_scaled + Sp, data = new_data)
-b <- fixef(model1_ri_6)
-
-new_data$fit_eta <- as.numeric(X %*% b)
-new_data$se_eta <- sqrt(diag(X %*% vcov(model1_ri_6) %*% t(X)))
-
-new_data$fit_pi <- logit_back(new_data$fit_eta)
-new_data$lwr <- logit_back(new_data$fit_eta - 2 * new_data$se_eta)
-new_data$upr <- logit_back(new_data$fit_eta + 2 * new_data$se_eta)
-
-
-ggplot(new_data, aes(x = Sp, y = fit_pi)) +
-  geom_col(aes(fill = Sp)) +
-  geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.2) +
-  guides(fill = "none") +
-  labs(x = "Species", y = "Probability of being eaten") +
-  scale_fill_manual(values = c("red", "blue"))
 
 
 
@@ -222,17 +180,12 @@ model6_unscaled <- glmer(Out ~ L + Sp +
 
 # Задание: Сделайте предсказания для новых данных
 
-astr_test$Predicted <- predict(model6_unscaled, newdata = astr_test, re.form = NA)
-
-astr_test$Predicted_pi <- logit_back(astr_test$Predicted)
 
 
 
 
 # Задание: Предложите способ визуализировать соотношение предсказанных и наблюдаемых значений.
 
-ggplot(astr_test, aes(x = Outcome, y = Predicted_pi, fill = Sp)) +
-  geom_boxplot(notch = T)
 
 
 
@@ -259,15 +212,7 @@ vif(Mod_gh)
 library(performance)
 check_overdispersion(Mod_gh)
 
-
-
-Mod_gh_diagn <- fortify.merMod(Mod_gh)
-
-ggplot(Mod_gh_diagn, aes(x = .fitted, y = .scresid)) + geom_point() + geom_smooth() + geom_hline(yintercept = 0)
-
-ggplot(Mod_gh_diagn, aes(x = Sex, y = .scresid)) + geom_point() + geom_boxplot()
-
-ggplot(Mod_gh_diagn, aes(x = Bio18, y = .scresid)) + geom_point() + geom_smooth() + geom_hline(yintercept = 0)
+# Задание: проведите диагностику модели
 
 
 # summary(Mod_gh)
@@ -362,15 +307,11 @@ pl + aes(x= Age)
 table(bal2$Position)
 table(bal2$Site)
 
+# Постройте модель
 library(lme4)
-M1_glm <- glm(Drill ~ Position + ALength + Age +  BorN + Site, data = bal2, family = "binomial")
 
 vif(M1_glm)
 
-M2_glm <- glm(Drill ~ Position + ALength +  BorN + Site, data = bal2, family = "binomial")
-vif(M2_glm)
-
-M_glmer <- glmer(Drill ~ Position * scale(ALength) * scale(BorN) + Site + (1|Sample/Substrate_ID), data = bal2, family = "binomial", control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))
 
 M_glmer_diag <- fortify.merMod(M_glmer)
 ggplot(M_glmer_diag, aes (x = .fitted, y = .scresid)) + geom_point() + geom_smooth()
@@ -384,7 +325,6 @@ ggplot(M_glmer_diag, aes (x = Position, y = .scresid)) + geom_boxplot()
 ggplot(M_glmer_diag, aes (x = Position, y = .scresid)) + geom_boxplot()
 
 summary(M_glmer)
-model.matrix(M_glmer)
 
 
 ###################################################

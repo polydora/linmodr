@@ -18,6 +18,7 @@ astr2$Year <- factor(astr2$Year)
 astr2$Box <- factor(astr2$Box)
 astr2$Sp <- factor(astr2$Sp)
 astr2$Experiment <- factor(astr2$Experiment)
+
 astr2$Out <- ifelse(test = astr2$Outcome == 'eaten', yes = 1,  no = 0)
 
 ## Знакомимся с данными
@@ -30,9 +31,13 @@ table(astr2$Box)
 
 ## Нет ли коллинеарности
 
-library(cowplot); library(ggplot2); theme_set(theme_bw())
+library(cowplot);
+library(ggplot2);
+theme_set(theme_bw())
 
-Pl_Sp <- ggplot(astr2, aes(x = Sp, y = L)) + geom_boxplot()
+(Pl_Sp <- ggplot(astr2, aes(x = Sp, y = L)) + geom_boxplot())
+
+
 Pl_exp <- ggplot(astr2, aes(x = Experiment, y = L)) + geom_boxplot()
 Pl_year <- ggplot(astr2, aes(x = Year, y = L)) + geom_boxplot()
 plot_grid(Pl_Sp, Pl_exp, Pl_year, ncol = 3)
@@ -43,20 +48,23 @@ ggplot(astr2, aes(y = 1:nrow(astr2))) + geom_point(aes(x = L) )
 
 library(lme4)
 
-model1_ri <-
+model1_ri <- glmer(Out ~ L * Sp * Year + (1|Experiment/Box), family = binomial(link = "logit"), data = astr2)
 
 
 astr2$L_scaled <- scale(astr2$L)
 
-qplot(astr2$L, astr2$L_scaled)
-
-model1_ri <-
 
 
+plot(astr2$L, astr2$L_scaled)
+
+model1_ri <-  glmer(Out ~ L_scaled * Sp * Year + (1|Experiment/Box), family = binomial(link = "logit"), data = astr2)
 
 
-model1_rsi_1<-
 
+
+
+# model1_rsi_1 <- glmer(Out ~ L_scaled * Sp * Year + (1 +  L_scaled |Experiment/Box), family = binomial(link = "logit"), data = astr2, control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+#
 
 
 ## Сравниваем три модели
@@ -78,28 +86,72 @@ ggplot(model1_diagn, aes(x =  , y = )) +
 
 
 
-
-
-
-
-
-
 ## Диагностика модели: избыточность дисперсии
 
 library(performance)
 check_overdispersion(model1_ri)
 
+
+
+
+overdisp_fun <- function(model) {
+  rdf <- df.residual(model)
+  rp <- residuals(model,type="pearson")
+  Pearson.chisq <- sum(rp^2)
+  prat <- Pearson.chisq/rdf
+  pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+  c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+df.residual(model1_ri)
+
+rdf <- nrow(astr2) - length(fixef(model1_ri)) - 1 - 1
+
+rp <- residuals(model1_ri,type="pearson")
+
+Pearson.chisq <- sum(rp^2)
+
+
+overdisp_fun(model1_ri)
+
+prat <- Pearson.chisq/rdf
+
+pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+
+
+
+
 summary(model1_ri)
+
 ## Задание: Проведите упрощение модели в соответствии с протоколом backward selection
 
+drop1(model1_ri)
 
+model1_ri_2 <- update(model1_ri, .~.-L_scaled:Sp:Year)
 
+drop1(model1_ri_2)
 
+model1_ri_3 <- update(model1_ri_2, . ~. - L_scaled:Year )
+
+drop1(model1_ri_3)
+
+model1_ri_4 <- update(model1_ri_3, . ~. - Sp:Year )
+
+drop1(model1_ri_4)
+
+model1_ri_5 <- update(model1_ri_4, . ~. - L_scaled:Sp )
+
+drop1(model1_ri_5)
+
+model1_ri_6 <- update(model1_ri_5, . ~. - Year)
+
+drop1(model1_ri_6)
 
 
 
 ## Диагностика финальной модели: линейность связи
 model6_diagn <- fortify.merMod(model1_ri_6)
+
 ggplot(model6_diagn, aes(x = .fitted, y = .scresid)) + geom_point() + geom_smooth()
 
 
@@ -107,6 +159,11 @@ ggplot(model6_diagn, aes(x = .fitted, y = .scresid)) + geom_point() + geom_smoot
 ## Диагностика финальной модели: избыточность дисперсии
 
 check_overdispersion(model1_ri_6)
+
+overdisp_fun(model1_ri_6)
+
+
+summary(model1_ri_6)
 
 
 #Случайные эффекты
@@ -116,17 +173,17 @@ icc(model1_ri_6)
 library(partR2)
 partR2(model1_ri_6)
 
+exp(1.05869)
 
-
+exp(-0.44467)
 
 ## Подготовка к визуализации в виде логистических кривых
 
 logit_back <- function(x) exp(x)/(1 + exp(x)) # обратная логит-трансформация
 
 library(dplyr)
-new_data <- astr2 %>% group_by(Sp) %>% do(data.frame(L_scaled = seq(min(.$L_scaled),
-                                                                    max(.$L_scaled),
-                                                                    length.out = 100)))
+
+new_data <- astr2 %>% group_by(Sp) %>% do(data.frame(L_scaled = seq(min(.$L_scaled),max(.$L_scaled),length.out = 100)))
 
 X <- model.matrix(~  L_scaled + Sp, data = new_data)
 b <- fixef(model1_ri_6)

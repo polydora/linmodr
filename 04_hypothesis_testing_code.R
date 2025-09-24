@@ -289,8 +289,8 @@ tt
 # Пермутационные оценки значимости различий #
 #############################################
 
-a = Cushings$Tetrahydrocortisone[Cushings$Type == 'a']
-b = Cushings$Tetrahydrocortisone[Cushings$Type == 'b']
+a <- Cushings$Tetrahydrocortisone[Cushings$Type == 'a']
+b <- Cushings$Tetrahydrocortisone[Cushings$Type == 'b']
 
 mean_a <- mean(a)
 sd_a <- sd(a)
@@ -351,9 +351,9 @@ t_emp <- abs(mean_a - mean_b)/sqrt(se_a^2 + se_b^2)
   t_perm_vector[1000] <- t_emp
 
 
-  mean(t_perm_vector >= t_emp) #Доля пермутационных статистик которые больше или равны выборочной статистике
+  mean(t_perm_vector >= t_emp) # Доля пермутационных статистик которые больше или равны выборочной статистике
 
-tt #Результаты парамтерического теста
+tt #Результаты параметрического теста
 
 
 
@@ -376,3 +376,21 @@ str(rem)
 
 
 
+# ## Парный t-test
+# Разведочный анализ
+data(sleep)
+head(sleep)
+# Объём выборки
+table(sleep$group)
+# Проверка на нормальность распределения
+qqPlot(sleep$extra[sleep$group == 1])
+qqPlot(sleep$extra[sleep$group == 2])
+
+
+t.test(sleep$extra[sleep$group == 1], sleep$extra[sleep$group == 2], paired = TRUE)
+
+tt <- t.test(sleep$extra[sleep$group == 1], sleep$extra[sleep$group == 2], paired = TRUE)
+tt
+
+# Если не учесть зависимость между группами, приходим к неверному выводу
+t.test(formula = extra ~ group, data = sleep)

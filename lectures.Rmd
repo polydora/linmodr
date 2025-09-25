@@ -66,7 +66,7 @@ install.packages("dplyr")
 ```
 
 
-<!-- - Презентация [04_hypothesis_testing.html](04_hypothesis_testing.html) -->
+- Презентация [04_hypothesis_testing.html](04_hypothesis_testing.html)
 - Код [04_hypothesis_testing_code.R](04_hypothesis_testing_code.R)
 - Объект "population" [population.RData](data/population.RData)
 - Данные [aml.csv](data/aml.csv)

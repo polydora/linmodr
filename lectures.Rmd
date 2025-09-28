@@ -83,33 +83,35 @@ install.packages("cowplot")
 
 <!-- - Презентация: [05_LM.html](05_LM.html) -->
 
+- Код:
+    + [05_LM_code.R](05_LM_code.R)
+    + [05_LM_task.R](05_LM_task.R)
+    + [05_Correlation_permutation_test.R](05_Correlation_permutation_test.R)
+
+- Данные:
+    + [IQ_brain.csv](data/IQ_brain.csv)
+    + [secher.xls](data/secher.xls)
+
+### 06 Основы линейной алгебры
+
+<!-- - Презентация: [06_Introduction_to_linear_algebra.html](06_intro_to_linear_algebra.html) -->
+<!-- - Код: [06_Introduction_to_linear_algebra_code.R](06_intro_to_linear_algebra_code.R) -->
+
+
+### 07 Описание, проверка значимости и валидности линейной модели
+
+<!-- - Презентация: [07_model_description_and_validation.html](07_model_description_and_validation.html) -->
+
 <!-- - Код: -->
-<!--     + [05_LM_code.R](05_LM_code.R) -->
-<!--     + [05_LM_task.R](05_LM_task.R) -->
-<!--     + [05_Correlation_permutation_test.R](05_Correlation_permutation_test.R) -->
-
-<!-- - Данные: -->
-<!--     + [IQ_brain.csv](data/IQ_brain.csv) -->
-<!--     + [secher.xls](data/secher.xls) -->
-
-### 06 Описание, проверка значимости и валидности линейной модели
-
-<!-- - Презентация: [06_model_description_and_validation.html](07_model_description_and_validation.html) -->
-
-<!-- - Код: -->
-<!--     + [06_model_description_and_validation_code.R](07_model_description_and_validation_code.R) -->
-<!--     + [06_task_assumptions_catsM.R](07_task_assumptions_catsM.R) -->
-<!--     + [06_task_assumptions_GAG.R](07_task_assumptions_GAG.R) -->
+<!--     + [07_model_description_and_validation_code.R](07_model_description_and_validation_code.R) -->
+<!--     + [07_task_assumptions_catsM.R](07_task_assumptions_catsM.R) -->
+<!--     + [07_task_assumptions_GAG.R](07_task_assumptions_GAG.R) -->
 <!-- - Данные: -->
 <!--     + [IQ_brain.csv](data/IQ_brain.csv) -->
 <!--     + [catsM.xlsx](data/catsM.xlsx) -->
 <!--     + [GAGurine.xlsx](data/GAGurine.xlsx) -->
 <!--     + [orly_owl_Lin_4p_5_flat.txt](data/orly_owl_Lin_4p_5_flat.txt) -->
 
-### 07 Основы линейной алгебры
-
-<!-- - Презентация: [07_Introduction_to_linear_algebra.html](06_intro_to_linear_algebra.html) -->
-<!-- - Код: [07_Introduction_to_linear_algebra_code.R](06_intro_to_linear_algebra_code.R) -->
 
 ### 08 Множественная линейная регрессия. Выбор оптимальной модели
 

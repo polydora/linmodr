@@ -4,7 +4,7 @@
     <title>Линейная регрессия</title>
     <meta charset="utf-8" />
     <meta name="author" content="Марина Варфоломеева, Юта Тамберг, Вадим Хайтов, Анастасия Лянгузова" />
-    <script src="libs/header-attrs-2.23/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.29/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
@@ -45,7 +45,7 @@ class: middle, left, inverse, title-slide
 ### Марина Варфоломеева, Юта Тамберг, Вадим Хайтов, Анастасия Лянгузова
 ]
 .date[
-### Осень 2023
+### Осень 2025
 ]
 
 ---
@@ -66,7 +66,7 @@ class: middle, left, inverse, title-slide
 ### Вы сможете
 
 + Оценить взаимосвязь между измеренными величинами
-+ Объяснить что такое линейная модель
++ Объяснить, что такое линейная модель
 + Формализовать запись модели в виде уравнения
 + Подобрать модель линейной регрессии
 + Протестировать гипотезы о наличии зависимости при помощи t-критерия или F-критерия
@@ -90,14 +90,14 @@ class: middle, center, inverse
 ]
 
 .pull-right[
-Было исследовано 20 девушек и 20 молодых людей
+Было исследовано 40 человек: 20 женского и 20 мужского пола.
 
 У каждого индивида измеряли:
 
 - вес, 
 - рост, 
-- размер головного мозга (количество пикселей на изображении ЯМР сканера)
-- Уровень интеллекта измеряли с помощью IQ тестов
+- размер головного мозга (количество пикселей на изображении ЯМР сканера),
+- уровень интеллекта (с помощью IQ тестов). 
 
 Пример взят из работы: Willerman, L., Schultz, R., Rutledge, J. N., and Bigler, E. (1991), "In Vivo Brain Size and Intelligence," Intelligence, 15, 223-228.  
 Данные представлены в библиотеке *"The Data and Story Library"* 
@@ -111,7 +111,7 @@ http://lib.stat.cmu.edu/DASL/
 Посмотрим на датасет:
 
 
-```r
+``` r
 brain &lt;- read.csv("data/IQ_brain.csv", header = TRUE)
 head(brain)
 ```
@@ -129,7 +129,7 @@ head(brain)
 Есть ли пропущенные значения?
 
 
-```r
+``` r
 sum(!complete.cases(brain))
 ```
 
@@ -144,7 +144,7 @@ sum(!complete.cases(brain))
 Где именно?
 
 
-```r
+``` r
 sapply(brain, function(x) sum(is.na(x)))
 ```
 
@@ -156,7 +156,7 @@ sapply(brain, function(x) sum(is.na(x)))
 Что это за случаи?
 
 
-```r
+``` r
 brain[!complete.cases(brain), ]
 ```
 
@@ -169,7 +169,7 @@ brain[!complete.cases(brain), ]
 Каков объём выборки?
 
 
-```r
+``` r
 nrow(brain) ## Это без учета пропущенных значений
 ```
 
@@ -183,7 +183,7 @@ class: center, middle, inverse
 
 # Корреляционный анализ
 
-.pull-right[*Цель практически любого исследования* --- поиск взаимосвязи величин и создание базы для предсказания неизвестного на основе имеющихся данных]
+.pull-right[*Цель практически любого исследования* --- поиск взаимосвязи величин и создание базы для предсказания неизвестного на основе имеющихся данных.]
 
 ---
 
@@ -268,7 +268,7 @@ class: center, middle, inverse
 ## Решение
 
 
-```r
+``` r
 pl_brain &lt;- ggplot(brain, 
                aes(x = MRINACount, y = PIQ)) + 
   geom_point() + 
@@ -284,7 +284,7 @@ pl_brain
 
 ## Решение
 
-```r
+``` r
 cor.test(brain$PIQ, brain$MRINACount, method = "pearson", alternative = "two.sided")
 ```
 
@@ -307,7 +307,7 @@ sample estimates:
 ## Решение 
 
 
-```r
+``` r
 cor(brain[, 2:6], use = "pairwise.complete.obs")
 ```
 
@@ -335,7 +335,7 @@ Height -0.08600 -0.07107 -0.076723  0.699614  1.00000
 Простейший пример: 
 
 - Между путем, пройденным автомобилем, и временем, проведенным в движении, несомненно есть связь. Хватает ли нам этого знания?   
-- Для расчета величины пути в зависимости от времени необходимо построить модель: `\(S=Vt\)`, где `\(S\)` - зависимая величина, `\(t\)` - независимая переменная, `\(V\)` - параметр модели.
+- Для расчета величины пути в зависимости от времени необходимо построить модель: `\(S=Vt\)`, где `\(S\)` --- зависимая величина, `\(t\)` --- независимая переменная, `\(V\)` --- параметр модели.
 - Зная параметр модели (скорость) и значение независимой переменной (время), мы можем рассчитать (*cмоделировать*) величину пройденного пути.
 
 ---
@@ -371,42 +371,38 @@ class: middle, center, inverse
 .pull-left[
 ![](05_LM_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
 
-Модель: `\(у_i = 2 + 5x_i\)`    
-Два параметра: угловой коэффициент (slope) `\(b_1=5\)`; свободный член (intercept) `\(b_0=2\)`   
+Модель: `\(у_i = 2 + 5x_i\)`  
+
+Два параметра: 
+
+угловой коэффициент (slope) `\(b_1=5\)`; 
+
+свободный член (intercept) `\(b_0=2\)`.
+
 Чему равен `\(y\)` при `\(x=10\)`?
 ]
 
 .pull-right[
 ![](05_LM_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
 
-Модель: `\(у_i = 2 + 5x_i + \varepsilon_i\)`    
-Появляется дополнительный член `\(\varepsilon_i\)` 
+Модель: `\(у_i = 2 + 5x_i + \varepsilon_i\)`  
+
+Появляется дополнительный член `\(\varepsilon_i\)`.
 Он вводит в модель влияние неучтенных моделью факторов. 
-Обычно считают, что `\(\epsilon \in N(0, \sigma^2)\)` 
+
+Обычно считают, что `\(\epsilon \in N(0, \sigma^2)\)`. 
 ]
 
 ---
 
 ## Случайная и фиксированая часть модели
+
 В стохастические модели выделяется две части:
 
 **Фиксированная часть:** `\(у_i = 2 + 5x_i\)`   
 **Случайная часть:** `\(\varepsilon_i\)` 
 
 Бывают модели, в которых случайная часть выглядит существенно сложнее (модели со смешанными эффектами). В таких моделях необходимо смоделировать еще и поведение случайной части.
-
----
-
-## Модели с дискретными предикторами
-
-![](05_LM_files/figure-html/discrete-1.png)&lt;!-- --&gt;
-
-Модель для данного примера имеет такой вид  
-&lt;br&gt;
-&lt;br&gt;
-`\(response = 4.6 + 5.3I_{Level2} + 9.9 I_{Level3}\)`
-
-`\(I_{i}\)` - dummy variable   
 
 ---
 
@@ -445,18 +441,19 @@ but some are useful"
 stature of their Parents" (цит. по `Legendre &amp; Legendre, 1998`)
 
 
-Рост _регрессирует_ (возвращается) к популяционной средней     
-Угловой коэффициент в зависимости роста потомков от роста родителей- _коэффициент регрессии_
+Рост _регрессирует_ (возвращается) к популяционной средней.
+
+Угловой коэффициент в зависимости роста потомков от роста родителей --- _коэффициент регрессии_.
 ]
 
 ---
 
 ## Подбор линии регрессии проводится с помощью двух методов 
 
-&gt;- С помощью метода наименьших квадратов (Ordinary Least Squares) - используется для простых линейных моделей
+&gt;- С помощью метода наименьших квадратов (Ordinary Least Squares) --- используется для простых линейных моделей.
 &lt;br&gt;
 
-&gt;- Через подбор функции максимального правдоподобия (Maximum Likelihood) - используется для подгонки сложных линейных и нелинейных моделей.
+&gt;- Через подбор функции максимального правдоподобия (Maximum Likelihood) --- используется для подгонки сложных линейных и нелинейных моделей.
 
 ---
 
@@ -475,7 +472,7 @@ stature of their Parents" (цит. по `Legendre &amp; Legendre, 1998`)
 Остатки (Residuals):            
 `$$\varepsilon_i = y_i - \hat{y_i}$$`
 
-Линия регрессии (подобранная модель) - это та линия, у которой `\(\sum{\varepsilon_i}^2\)` минимальна.
+Линия регрессии (подобранная модель) --- это та линия, у которой `\(\sum{\varepsilon_i}^2\)` минимальна.
 ]
 
 ---
@@ -483,7 +480,7 @@ stature of their Parents" (цит. по `Legendre &amp; Legendre, 1998`)
 ## Подбор модели методом наименьших квадратов с помощью функци `lm()`  
 `fit &lt;- lm(formula, data)`
 
-Модель записывается в виде формулы  
+Модель записывается в виде формулы:  
 
 | Модель        | Формула   |
 |-------------|-------------|  
@@ -510,7 +507,7 @@ stature of their Parents" (цит. по `Legendre &amp; Legendre, 1998`)
 ## Подберем модель, наилучшим образом описывающую зависимость результатов IQ-теста от размера головного мозга
 
 
-```r
+``` r
 brain_model &lt;- lm(PIQ ~ MRINACount, data = brain)
 brain_model
 ```
@@ -535,11 +532,11 @@ Coefficients:
 
 ## Как трактовать значения параметров регрессионной модели?
 
-&gt;- Угловой коэффициент (_slope_) показывает *на сколько* _единиц_ изменяется предсказанное значение `\(\hat{y}\)` при изменении на _одну единицу_ значения предиктора `\((x)\)`.
+&gt;- __Угловой коэффициент__ (_slope_) показывает *на сколько* _единиц_ изменяется предсказанное значение `\(\hat{y}\)` при изменении на _одну единицу_ значения предиктора `\((x)\)`.
 
-&gt;- Свободный член (_intercept_) --- величина во многих случаях не имеющая "смысла", просто поправочный коэффициент, без которого нельзя вычислить `\(\hat{y}\)`. &lt;br&gt; _NB!_ В некоторых линейных моделях он имеет смысл, например, значения `\(\hat{y}\)` при `\(x = 0\)`. 
+&gt;- __Свободный член__ (_intercept_) --- величина во многих случаях не имеющая "смысла", просто поправочный коэффициент, без которого нельзя вычислить `\(\hat{y}\)`. &lt;br&gt; _NB!_ В некоторых линейных моделях он имеет смысл, например, значения `\(\hat{y}\)` при `\(x = 0\)`. 
 
-&gt;- Остатки (_residuals_) - характеризуют влияние неучтенных моделью факторов.
+&gt;- __Остатки__ (_residuals_)  характеризуют влияние неучтенных моделью факторов.
 
 ---
 
@@ -556,7 +553,7 @@ Coefficients:
 
 Угловой коэффициент:
 
-```r
+``` r
 coefficients(brain_model) [1]
 ```
 
@@ -567,7 +564,7 @@ coefficients(brain_model) [1]
 
 Свободный член:
 
-```r
+``` r
 coefficients(brain_model) [2]
 ```
 
@@ -583,7 +580,7 @@ MRINACount
 Какое значение IQ-теста предсказывает модель для человека с объемом  мозга равным 900000?  
 
 
-```r
+``` r
 as.numeric(coefficients(brain_model) [1] + coefficients(brain_model) [2] * 900000)
 ```
 
@@ -598,7 +595,7 @@ as.numeric(coefficients(brain_model) [1] + coefficients(brain_model) [2] * 90000
 3. Чему равно значение остатка от модели для человека с порядковым номером 10?    
 
 
-```r
+``` r
 brain$PIQ[10] - fitted(brain_model)[10]
 ```
 
@@ -607,7 +604,7 @@ brain$PIQ[10] - fitted(brain_model)[10]
 30.36 
 ```
 
-```r
+``` r
 residuals(brain_model)[10]
 ```
 
@@ -621,7 +618,7 @@ residuals(brain_model)[10]
 ## Углубляемся в анализ модели: функция `summary()`
 
 
-```r
+``` r
 summary(brain_model)
 ```
 
@@ -665,6 +662,8 @@ F-statistic: 6.69 on 1 and 38 DF,  p-value: 0.0137
 | `\(\beta_0\)` &lt;br&gt; Intercept | `\(b_0 = \bar y - b_1 \bar{x}\)`  | `\(SE _{b _0} = \sqrt{MS _e [\frac{1}{n} + \frac{\bar x}{\sum _{i=1}^{n} {(x _i - \bar x)^2}}]}\)` |
 | `\(\epsilon _i\)` | `\(e_i = y_i - \hat {y_i}\)` | `\(\approx \sqrt{MS_e}\)`   
 
+Где `\(MS_e\)` --- Mean Sum of Squares --- `\(\frac{SS_e}{df_e}\)`. 
+
 ---
 
 ## Для чего нужны стандартные ошибки?
@@ -679,7 +678,7 @@ F-statistic: 6.69 on 1 and 38 DF,  p-value: 0.0137
 
 .pull-left[
 
-```r
+``` r
 pl_brain + geom_smooth(method="lm") 
 ```
 
@@ -705,15 +704,15 @@ y_i = 10 + 10x_i + \varepsilon_i \\
 $$
 
 
-```r
+``` r
 pop_x &lt;- rnorm(1000, 10, 3)
-pop_y &lt;- 10 + 10*pop_x + rnorm(1000, 0, 20)
+pop_y &lt;- 10 + 10 * pop_x + rnorm(1000, 0, 20)
 population &lt;- data.frame(x = pop_x, y = pop_y)
 
 pop_plot &lt;- ggplot(population, aes(x = x, y = y)) + 
   geom_point(alpha = 0.3, color = "red") + 
   geom_abline(aes(intercept = 10, slope = 10), 
-              color="blue", size = 2) +
+              color = "blue", size = 2) +
   theme(text = element_text(size = 15))
 pop_plot
 ```
@@ -741,7 +740,7 @@ pop_plot
 ## Доверительные интервалы для коэффициентов уравнения регрессии
 
 
-```r
+``` r
 coef(brain_model)
 ```
 
@@ -750,7 +749,7 @@ coef(brain_model)
   1.7437570   0.0001203 
 ```
 
-```r
+``` r
 confint(brain_model)
 ```
 
@@ -777,7 +776,7 @@ MRINACount    0.00002611  0.0002144
 ## Какое значение IQ можно ожидать у человека с размером головного мозга 900000?
 
 
-```r
+``` r
 newdata &lt;- data.frame(MRINACount = 900000)
 
 predict(brain_model, newdata, interval = "prediction", level = 0.95, se = TRUE)$fit
@@ -799,7 +798,7 @@ predict(brain_model, newdata, interval = "prediction", level = 0.95, se = TRUE)$
 Подготавливаем данные:
 
 
-```r
+``` r
 brain_predicted &lt;- predict(brain_model, interval="prediction")
 brain_predicted &lt;- data.frame(brain, brain_predicted)
 head(brain_predicted)
@@ -827,7 +826,7 @@ head(brain_predicted)
 
 
 
-```r
+``` r
 pl_brain + 
 
 # 1) Линия регрессии и ее дов. интервал
@@ -896,9 +895,9 @@ geom_ribbon(data = brain_predicted,  aes(ymin = lwr, ymax = upr, fill = "Conf. a
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="assets/cols_macro.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "googlecode",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "highlightStyle": "googlecode",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

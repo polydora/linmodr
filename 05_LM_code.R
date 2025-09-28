@@ -56,19 +56,19 @@ grid.arrange(pl_alpha1, pl_alpha2, pl_alpha3, ncol=3)
 ## Зависимость в генеральной совокупности
 
 pop_x <- rnorm(1000, 10, 3)
-pop_y <- 10 + 10*pop_x + rnorm(1000, 0, 20)
+pop_y <- 10 + 10 * pop_x + rnorm(1000, 0, 20)
 population <- data.frame(x = pop_x, y = pop_y)
 
 pop_plot <- ggplot(population, aes(x = x, y = y)) +
   geom_point(alpha = 0.3, color = "red") +
   geom_abline(aes(intercept = 10, slope = 10),
-              color="blue", size = 2) +
+              color = "blue", size = 2) +
   theme(text = element_text(size = 15))
 pop_plot
 
 ## Доверительный интервал
 
-samp_coef <- data.frame(b0 = rep(NA, 100), b1=rep(NA, 100))
+samp_coef <- data.frame(b0 = rep(NA, 100), b1 = rep(NA, 100))
 
 for(i in 1:100) {
   samp_num <- sample(1:1000, 20)
@@ -82,7 +82,7 @@ for(i in 1:100) {
 ggplot(population, aes(x = x, y = y)) +
   geom_point(alpha = 0.3, color = "red") +
   geom_abline(aes(intercept = b0, slope = b1), data = samp_coef) +
-  geom_abline(aes(intercept = 10, slope = 10), color="blue", size = 2) +
+  geom_abline(aes(intercept = 10, slope = 10), color = "blue", size = 2) +
   theme(text = element_text(size = 18))
 
 

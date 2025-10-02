@@ -268,7 +268,7 @@ XYZ <- solve() %*%
 
 1*XYZ[1] + 2*XYZ[2] + 3*XYZ[3]
 
-## Решение системы двух линейных уравнений с двцмя неизвестными
+## Решение системы двух линейных уравнений с двумя неизвестными
 
 
 
@@ -355,7 +355,8 @@ X2 <- as.matrix(X2)
 My_data$Predict <- X2 %*% betas
 
 Pl <- ggplot(My_data, aes(x = MRINACount, y =  Predict)) +
-   geom_line(color = "blue", size = 1) + geom_point(data = brain, aes(y = PIQ))
+  geom_line(color = "blue", size = 1) +
+  geom_point(data = brain, aes(y = PIQ))
 
 
 

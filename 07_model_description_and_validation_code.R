@@ -116,6 +116,9 @@ qqPlot(brain_model) # из пакета car
 gg_resid
 
 
+
+
+
 # Тренинг по анализу остатков --------------------
 
 # Задание 3 ----------------------------------------
@@ -176,5 +179,294 @@ ggplot(dat3, aes(x = x3, y = y3)) + geom_point() +
 # Выполните последнее задание в одном из этих файлов:
 # - 07_task_assumptions_catsM.R
 # - 07_task_assumptions_GAG.R
+
+
+####################### Своих врагов надо знать! ###############################
+
+
+#################################################################
+# Зоопарк нарушений условий применимости регрессионного анализа #
+#################################################################
+
+# Загон №1 (Curva nonlinearis)
+
+#### Генерируем данные #########
+set.seed(90829)
+x1 <- rnorm(100, 5, 1)
+y1 <- 10 + x1  - x1^2  + rnorm(100, 0, 2)
+dat1 = data.frame(x1, y1)
+################################
+
+ggplot(dat1, aes(x = x1, y =  y1)) + geom_point()+
+  geom_smooth(method="lm", alpha = 0.7)
+
+
+mod1 <- lm(y1 ~ x1, data = dat1)
+
+summary(mod1) #Можно ли доверять этим резултатам?
+
+
+
+# Данные для графиков остатков
+mod1_diag <- fortify(mod1)
+
+# 1) График расстояния Кука
+ggplot(mod1_diag, aes(x = 1:nrow(mod1_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <-
+  ggplot(data = mod1_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() +
+  geom_hline(yintercept = 0)
+
+gg_resid
+
+# 3) Графики остатков от предикторов в модели (желательно, включить и график зависимости остатков от тех предикторов, которые не включены в модель)
+gg_resid + aes(x = x1)
+
+# 4) Квантильный график остатков
+library(car)
+qqPlot(mod1, id = FALSE)
+
+# В чем проблема?
+gg_resid + geom_smooth()
+
+
+
+
+
+# --------------------------------------------------------
+
+# Загон № 2 (Heteroscedastica horribilis)
+
+#######################
+set.seed(7657674)
+x2 <- runif(1000, 1, 100)
+b_0 <- 100;  b_1 <- 20
+h <- function(x) x^0.9
+eps <- rnorm(1000, 0, h(x2^1.1))
+y2 <- b_0 + b_1 * x2 + eps
+dat2 <- data.frame(x2, y2)
+######################
+
+ggplot(dat2, aes(x = x2, y = y2)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+mod2 <- lm(y2 ~ x2, data = dat2)
+
+summary(mod2) #Можно ли доверять этим резултатам?
+
+# Данные для графиков остатков
+mod2_diag <- fortify(mod2)
+# 1) График расстояния Кука
+ggplot(mod2_diag, aes(x = 1:nrow(mod2_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod2_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x2)
+
+# 4) Квантильный график остатков
+qqPlot(mod2, id = FALSE)
+
+# В чем проблема?
+
+# --------------------------------------------------------
+
+# Загон №3 (Mensurae atypica)
+
+#################
+set.seed(9283)
+x3 <- rnorm(25, 50, 10)
+b_0 <- 20; b_1 <- 20; eps <- rnorm(50, 0, 100)
+y3 <- b_0 + b_1*x3 + eps
+y3[100] <- 1000; x3[100] <- 95; y3[99] <- 1300; x3[99] <- 90; y3[98] <- 1500; x3[98] <- 80
+dat3 <- data.frame(x3, y3)
+#################
+
+ggplot(dat3, aes(x=x3, y=y3)) + geom_point() + geom_smooth(method="lm")
+
+
+mod3 <- lm(y3 ~ x3, data = dat3)
+
+summary(mod3) #Можно ли доверять этим резултатам?
+
+
+# Данные для графиков остатков
+mod3_diag <- fortify(mod3)
+# 1) График расстояния Кука
+ggplot(mod3_diag, aes(x = 1:nrow(mod3_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod3_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x3)
+
+# 4) Квантильный график остатков
+qqPlot(mod3, id = FALSE)
+
+
+# В чем проблема?
+
+# --------------------------------------------------------
+
+# Загон № 4 (Anima amissa)
+
+#######################
+set.seed(7657674)
+x1 <- runif(30, 1, 100)
+x2 <- runif(30, 1, 100)
+x3 <- runif(30, 1, 100)
+b_0 <- 100;  b_1 <- -20; b_2 <- 20; b_3 <- 0
+eps <- rnorm(30, 0, 1)
+y <- b_0 + b_1 * x1 + b_2*x2 + b_3*x3 + eps
+dat4 <- data.frame(x1, x2, x3, y)
+######################
+
+ggplot(dat4, aes(x=x1, y=y)) + geom_point() + geom_smooth(method="lm")
+
+
+mod4 <- lm(y ~ x1, data = dat4)
+
+summary(mod4) #Можно ли доверять этим результатам?
+
+
+# Данные для графиков остатков
+mod4_diag <- fortify(mod4)
+# 1) График расстояния Кука
+ggplot(mod4_diag, aes(x = 1:nrow(mod4_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod4_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid +
+  geom_smooth(method = "lm")
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x1)
+
+gg_resid + aes(x = x2)
+
+gg_resid + aes(x = x3)
+
+# 4) Квантильный график остатков
+qqPlot(mod4, id = FALSE)
+
+
+# В чем проблема?
+
+# --------------------------------------------------------
+
+# Загон № 5 (Perdidit commercium)
+
+#######################
+set.seed(7657674)
+x1 <- rnorm(100, 10, 1)
+x2 <- rnorm(100, 100, 1)
+b_0 <- 100;  b_1 <- -1; b_2 <- 2; b_12 <- 10
+dat5 <- data.frame(x1, x2)
+X <- model.matrix(~ x1 * x2, data = dat5)
+dat5$y <- X %*% c(b_0, b_1, b_2, b_12) + rnorm(100, 0, 1)
+######################
+
+ggplot(dat5, aes(x=x1, y=y)) + geom_point() + geom_smooth(method="lm")
+
+ggplot(dat5, aes(x=x2, y=y)) + geom_point() + geom_smooth(method="lm")
+
+
+mod5 <- lm(y ~ x1 + x2, data = dat5)
+
+vif(mod5)
+
+summary(mod5) #Можно ли доверять этим резултатам?
+
+# Данные для графиков остатков
+mod5_diag <- fortify(mod5)
+# 1) График расстояния Кука
+ggplot(mod5_diag, aes(x = 1:nrow(mod5_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod5_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x1)
+
+gg_resid + aes(x = x2)
+
+
+# 4) Квантильный график остатков
+qqPlot(mod5, id = FALSE)
+
+# В чем проблема?
+
+# --------------------------------------------------------
+
+# Загон № 6 (Data longitudinalis)
+
+#######################
+set.seed(657674)
+ts_AR1 <- as.numeric(arima.sim(n = 30, list(ar = 0.999)))
+ts_AR2 <- as.numeric(arima.sim(n = 30, list(ar = 0.999)))
+dat6 <- data.frame(Year = 1:30, V1 = ts_AR1, V2 = ts_AR2)
+######################
+
+ggplot(dat6, aes(x=V2, y=V1)) + geom_point() + geom_smooth(method="lm")
+
+
+
+mod6 <- lm(V1 ~ V2, data = dat6)
+
+summary(mod6) #Можно ли доверять этим результатам?
+
+# Данные для графиков остатков
+mod6_diag <- fortify(mod6)
+# 1) График расстояния Кука
+ggplot(mod6_diag, aes(x = 1:nrow(mod6_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod6_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = V2)
+
+gg_resid + aes(x = dat6$Year)
+
+# 4) Квантильный график остатков
+qqPlot(mod6, id = FALSE)
+
+# В чем проблема?
+
+# Autocorrelation function
+acf(residuals(mod6))
+
+# Durbin-Watson Test
+lmtest::dwtest(residuals(mod6) ~ dat6$Year)
+
+
+#########################################################
+
+
+
+
+
 
 

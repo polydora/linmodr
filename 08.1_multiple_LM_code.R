@@ -119,7 +119,7 @@ Mod <-
 # Дополните код:
 names(bird)
 
-mod1 <- lm(formula = ABUND ~ logAREA + YRISOL + logDIST + logLDIST + GRAZE + ALT, data = bird)
+mod1 <- lm(formula = , data = )
 
 
 
@@ -144,8 +144,10 @@ vif(mod2)
 # ## Задание 2 ------------------------------------------------------------
 # Проверьте, выполняются ли условия применимости
 # для модели `mod2`. Дополните код:
+
 library()
-mod2_diag <- data.frame(fortify(mod2), bird$GRAZE)
+mod2_diag <- data.frame(fortify(), bird$GRAZE)
+
 # 1) График расстояния Кука
 
 
@@ -156,10 +158,12 @@ ggplot(data = mod2_diag, aes(x = 1:nrow(mod2_diag), y = .cooksd)) + geom_col()
 
 
 # 2) График остатков от предсказанных значений
-gg_resid <- ggplot(data = mod2_diag, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0) + geom_smooth(method = "loess")
+gg_resid <- ggplot(data = mod2_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(method = "loess")
 gg_resid
 
-names(bird)
 
 # 3) Графики остатков от предикторов в модели и нет
 res_1 <- gg_resid + aes(x = logAREA)
@@ -168,7 +172,12 @@ res_2 <- gg_resid + aes(x = YRISOL)
 res_3 <- gg_resid + aes(x = logDIST)
 res_4 <- gg_resid + aes(x = logLDIST)
 res_5 <- gg_resid + aes(x = ALT)
-res_6 <- ggplot(data = mod2_diag, aes(x = bird.GRAZE, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0) + geom_smooth(method = "loess")
+
+res_6 <-
+  ggplot(data = mod2_diag, aes(x = bird.GRAZE, y = .stdresid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(method = "loess")
 
 # все графики вместе
 library(gridExtra)
@@ -176,8 +185,8 @@ grid.arrange(res_1, res_2, res_3, res_4, res_5, res_6, nrow = 2)
 
 
 # 4) Квантильный график остатков
-library(car)
-qqPlot(mod2)
+library()
+qqPlot()
 
 
 
@@ -189,6 +198,7 @@ summary(mod2)
 coef(summary(mod2))
 
 # ## Какой из предикторов оказывает наиболее сильное влияние?
+
 mod2_scaled <- lm(ABUND ~ scale(logAREA) + scale(YRISOL) + scale(logDIST) +
                           scale(logLDIST) + scale(ALT), data = bird)
 
@@ -221,7 +231,8 @@ Predictions <- predict(mod2, newdata = MyData,  interval = 'confidence')
 MyData <- data.frame(MyData, Predictions)
 
 # График предсказаний модели
-Pl_predict <- ggplot(MyData, aes(x = logAREA, y = fit)) +
+Pl_predict <-
+  ggplot(MyData, aes(x = logAREA, y = fit)) +
   geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr)) +
   geom_line()
 Pl_predict

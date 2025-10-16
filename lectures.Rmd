@@ -122,17 +122,17 @@ install.packages("gridExtra")
 install.packages("ISwR")
 ```
 
-<!-- - Презентация: [08.1_multiple_LM.html](08.1_multiple_LM.html) -->
+- Презентация: [08.1_multiple_LM.html](08.1_multiple_LM.html)
 
 - Код: [08.1_multiple_LM_code.R](08.1_multiple_LM_code.R)
 - Данные: [loyn.csv](data/loyn.csv)
 
 Часть 2. Выбор оптимальной модели
 
-<!-- - Презентация: [08.2_model_selection.html](08.2_model_selection.html) -->
+- Презентация: [08.2_model_selection.html](08.2_model_selection.html)
 
 
-<!-- - Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_model_selection_theory.html](08.3_model_selection_theory.html) -->
+- Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_model_selection_theory.html](08.3_model_selection_theory.html)
 
 - Код: [08.2_model_selection_code.R](08.2_model_selection_code.R)
 - Данные: [loyn.csv](data/loyn.csv)

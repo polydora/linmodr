@@ -147,7 +147,7 @@ install.packages("cowplot")
 install.packages("dplyr")
 ```
 
-Часть 1. Модели с разными значениями свобобного члена (intercept) для групп
+Часть 1. Модели с разными значениями свободного члена (intercept) для групп
 
 <!-- - Презентация: [09.1_LM_with_continuous_and_discrete_predictors_2.html](09.1_LM_with_continuous_and_discrete_predictors_2.html) -->
 
@@ -174,6 +174,9 @@ install.packages("dplyr")
 - Данные:
     + [loyn.csv](data/loyn.csv)
     + [birthwt.csv](data/birthwt.csv)
+
+**Для желающих**. Вот очень хороший [**ресурс**](https://lindeloev.github.io/tests-as-linear/), где показано, что большинство классических статистических тестов - это все линейные модели. 
+
 
 
 ### 10 Однофакторный дисперсионный анализ

@@ -44,71 +44,79 @@ wt$ftv <- factor(wt$ftv)
 # - Постройте график предсказаний модели
 #
 
-gg_dot <- ggplot(wt, aes(y = 1:) + geom_point()
-gg_dot + aes( = age)
-gg_dot + aes(x = )
+colSums(is.na(wt))
 
 
-wt_mod_1 <- lm(bwt ~ , data = wt)
+gg_dot <- ggplot(wt, aes(y = 1:nrow(wt))) + geom_point()
+gg_dot + aes(x = age)
+gg_dot + aes(x = smoke)
+
+
+wt_mod_1 <- lm(bwt~age*smoke, data=wt)
 
 library(car)
-(wt_mod_1)
+drop1(wt_mod_1, test = "F")
 
 
 ## Проверка на гомогенность углов наклона
 
-wt_mod_2 <- lm(bwt ~ , data = wt)
+wt_mod_2 <- lm(bwt ~ age*smoke, data = wt)
 drop1(wt_mod_2, test = "F")
 
+
+
 # Данные для графиков остатков
-wt_mod_2_diag <- (wt_mod_2)
+wt_mod_2_diag <- fortify(wt_mod_2)
+
 wt_mod_2_diag <- data.frame(
   wt_mod_2_diag,
   wt[, c("lwt", "race", "smoke", "ptl", "ht", "ui", "ftv")])
 
 ### График расстояния Кука
 
-ggplot(wt_mod_2_diag, aes(x = 1:, y = )) +
+ggplot(wt_mod_2_diag, aes(x = 1:nrow(wt), y = .cooksd)) +
   geom_bar(stat = "identity")
 
 ### График остатков от предсказанных значений
 
-gg_resid <- ggplot(data = wt_mod_2_diag, aes(x = , y = )) +
-  geom_point() + geom_hline(yintercept = ) + geom_smooth()
+gg_resid <- ggplot(data = wt_mod_2_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0) + geom_smooth(method = "lm")
 gg_resid
 
 ### Графики остатков от предикторов в модели и не в модели
 
-library(gridExtra)
-grid.arrange(gg_resid + aes(x = age),
+library(cowplot)
+plot_grid(gg_resid + aes(x = age),
              gg_resid + aes(x = lwt),
              nrow = 1)
 
 gg_box <- ggplot(data = wt_mod_2_diag, aes(x = smoke, y = .stdresid)) +
   geom_boxplot() + geom_hline(yintercept = 0)
 
-grid.arrange(gg_box + aes(x = ),
-             gg_box + aes(x = ),
-             gg_box + aes(x = ),
-             gg_box + aes(x = ),
-             gg_box + aes(x = ),
+names(wt_mod_2_diag)
+
+plot_grid(gg_box + aes(x = race),
+             gg_box + aes(x = ptl),
+             gg_box + aes(x = ht),
+             gg_box + aes(x = ui),
+             gg_box + aes(x = ftv),
              nrow = 2)
 
 ### Квантильный график остатков
 
-qqPlot()
+qqPlot(wt_mod_2)
 
 summary(wt_mod_2)
 
 
 ## Таблица дисперсионного анализа {.smaller}
-Anova(, type = 3)
+Anova(wt_mod_2, type = 3)
 
 
 
   ## Модельная матрица при наличии взаимодействий дискретного и непрерывного предиктора
 
-X <- model.matrix()
+X <- model.matrix(wt_mod_2)
 
 
 ## Вектор коэффициентов

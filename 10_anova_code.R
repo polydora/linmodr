@@ -60,32 +60,6 @@ levels(eggs$sp)
 
 
 
-# # Линейные модели с дискретными предикторами #######################
-
-# ## Для кодирования дискретных факторов в R используются две параметризации
-
-# # Параметризация индикаторов
-mod_treatment <- lm(len ~ sp, data = eggs)
-round(coef(mod_treatment), 1)
-
-
-# # Параметризация эффектов
-mod_sum <- lm(len ~ sp, data = eggs, contrasts = list(sp = contr.sum))
-round(coef(mod_sum), 1)
-
-
-
-# ## t-тесты значимости коэффициентов ##############################
-
-coef(summary(mod_treatment))
-coef(summary(mod_sum))
-
-# # Дисперсионный анализ ############################################
-library(car)
-eggs_anova <- Anova(mod_treatment)
-eggs_anova
-
-
 # # Условия применимости дисперсионного анализа ###################
 
 # Данные для графиков остатков
@@ -152,8 +126,8 @@ gg_bars
 
 # Значимо различающиеся группы обозначим разными буквами
 gg_bars_coded <- gg_bars +
-  geom_text(aes(y = 1.6,  label = c("A", "B", "BC", "BC", "C", "C")),
-            colour = "white", size = 7)
+  geom_text(aes(y = 25,  label = c("A", "B", "BC", "BC", "C", "C")),
+            colour = "black", size = 7)
 gg_bars_coded
 
 # # Пост хок тесты ##################################################
@@ -164,23 +138,6 @@ eggs_posthoc <- glht(mod_treatment, linfct = mcp(sp = "Tukey"))
 
 summary(eggs_posthoc)
 
-
-# Линейные контрасты (проверка избранного подмножества гипотез) ------
-
-# 1 способ. Описываем текстом (обратите внимание на знаки).
-eggs_contrtext <- glht(mod_treatment,
-                    linfct = mcp(sp = c("БелТряс - ЛугКон = 0",
-                                        "ЛесЗав - ЛугКон = 0")))
-summary(eggs_contrtext)
-
-
-
-# 2 способ. Запись матрицы контрастов.
-contr <- rbind("БелТряс - ЛугКон" = c(0, -1, 0, 1, 0, 0),
-               "ЛесЗав - ЛугКон" = c(0, -1, 0, 0, 0, 1))
-contr
-eggs_contrmat <- glht(mod_treatment, linfct = contr)
-summary(eggs_contrmat)
 
 
 

@@ -4,23 +4,23 @@
     <title>Дисперсионный анализ, часть 2</title>
     <meta charset="utf-8" />
     <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
-    <script src="libs/header-attrs-2.27/header-attrs.js"></script>
-    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
-    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
-    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
-    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
-    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+    <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="site_libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="site_libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="site_libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
-    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
-    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script src="site_libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="site_libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="site_libs/xaringanExtra-search-0.0.1/search.js"></script>
     <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
-    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
-    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
-    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script src="site_libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="site_libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="site_libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
     <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
-    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <link href="site_libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
     <!-- https://github.com/fnaufel/xaringan-smartify-->
     <script
     			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -45,7 +45,7 @@ class: middle, left, inverse, title-slide
 ### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
 ]
 .date[
-### Осень 2024
+### Осень 2025
 ]
 
 ---
@@ -70,11 +70,534 @@ class: middle, left, inverse, title-slide
 
 - Проводить многофакторный дисперсионный анализ и интерпретировать его результаты с учётом взаимодействия факторов.
 
+
 ---
 
 class: middle, center, inverse
 
-# Данные
+# One Way ANOVA Update: параметризация модели и контрасты
+
+---
+
+## Открываем данные
+
+
+``` r
+library(DAAG)
+data("cuckoos")
+# Положим данные в переменную с коротким названием, чтобы меньше печатать
+eggs &lt;- cuckoos
+head(eggs, 3)
+```
+
+```
+  length breadth      species id
+1   21.7    16.1 meadow.pipit 21
+2   22.6    17.0 meadow.pipit 22
+3   20.9    16.2 meadow.pipit 23
+```
+
+``` r
+# Сократим названия переменных
+colnames(eggs) &lt;- c('len', 'br', 'sp', 'id')
+```
+
+---
+
+## Изменим названия уровней фактора, чтобы было легче понять о каких птицах речь
+
+
+``` r
+levels(eggs$sp)
+```
+
+```
+[1] "hedge.sparrow" "meadow.pipit"  "pied.wagtail"  "robin"         "tree.pipit"   
+[6] "wren"         
+```
+
+``` r
+levels(eggs$sp) &lt;- c("ЛесЗав", "ЛугКон", "БелТряс", 
+                        "Малин", "ЛесКон", "Крапив")
+```
+
+
+
+
+
+
+---
+
+## Для кодирования дискретных факторов в R используются две параметризации
+
+.pull-left[
+
+__Параметризация индикаторных переменных__
+
+Так же известна как
+
+- dummy coding
+- treatment parametrisation
+- reference cell model
+
+&lt;br/&gt;
+
+- В R обозначается __contr.treatment__.
+
+С ней вы уже знакомы. 
+
+Используется по умолчанию в R.
+
+]
+
+--
+
+.pull-right[
+
+__Параметризация эффектов__ &lt;br/&gt;&lt;br/&gt;
+
+Так же известна как
+
+- effects coding
+- sum-to-zero parameterisation
+
+- В R обозначается __contr.sum__.
+
+"Классическая" параметризация для дисперсионного анализа. 
+
+Нужна, если изначально предполагается, что факторы взаимодействуют и взаимодействия мы удалять не собираемся. В этой ситуации придется использовать III тип сумм квадратов.
+
+
+- SS(A | B, AB) для фактора A. 
+
+- SS(B | A, AB) для фактора B
+
+
+]
+
+---
+
+class: middle, center, inverse
+
+# Параметризация индикаторных переменных
+
+---
+
+## Переменные-индикаторы
+
+Фрагмент модельной матрицы:
+
+sp | spЛугКон &lt;br/&gt; `\(x_1\)` | spМалин &lt;br/&gt; `\(x_2\)` | spБелТряс &lt;br/&gt; `\(x_3\)` | spЛесКон &lt;br/&gt; `\(x_4\)` | spЛесЗав &lt;br/&gt; `\(x_5\)`
+---- | ---- | ---- | ---- | ---- | ---- 
+Крапив   |  |  |  |  | 
+ЛугКон   |  |  |  |  | 
+Малин    |  |  |  |  | 
+БелТряс  |  |  |  |  | 
+ЛесКон   |  |  |  |  | 
+ЛесЗав   |  |  |  |  | 
+
+---
+
+## Переменные-индикаторы
+
+Фрагмент модельной матрицы:
+
+sp | spЛугКон &lt;br/&gt; `\(x_1\)` | spМалин &lt;br/&gt; `\(x_2\)` | spБелТряс &lt;br/&gt; `\(x_3\)` | spЛесКон &lt;br/&gt; `\(x_4\)` | spЛесЗав &lt;br/&gt; `\(x_5\)`
+---- | ---- | ---- | ---- | ---- | ---- 
+Крапив   | 0 | 0 | 0 | 0 | 0
+ЛугКон   | 1 | 0 | 0 | 0 | 0
+Малин    | 0 | 1 | 0 | 0 | 0
+БелТряс  | 0 | 0 | 1 | 0 | 0
+ЛесКон   | 0 | 0 | 0 | 1 | 0
+ЛесЗав   | 0 | 0 | 0 | 0 | 1
+
+Переменных-индикаторов всегда на одну меньше, чем число уровней фактора.
+
+Уровень "ЛесЗав" будет базовым: для его кодирования не нужна отдельная переменная.
+
+---
+
+## Коэффициенты модели в параметризации индикаторов
+
+
+.pull-left-60[
+
+Фрагмент модельной матрицы:
+.small[
+sp | spЛугКон &lt;br/&gt; `\(x_1\)` | spМалин &lt;br/&gt; `\(x_2\)` | spБелТряс &lt;br/&gt; `\(x_3\)` | spЛесКон &lt;br/&gt; `\(x_4\)` | spЛесЗав &lt;br/&gt; `\(x_5\)`
+---- | ---- | ---- | ---- | ---- | ---- 
+Крапив   | 0 | 0 | 0 | 0 | 0
+ЛугКон   | 1 | 0 | 0 | 0 | 0
+Малин    | 0 | 1 | 0 | 0 | 0
+БелТряс  | 0 | 0 | 1 | 0 | 0
+ЛесКон   | 0 | 0 | 0 | 1 | 0
+ЛесЗав   | 0 | 0 | 0 | 0 | 1
+]
+]
+
+.pull-right-40[
+
+
+
+
+![](11_two-way_anova_and_interactions_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+]
+
+.pull-down[
+`$$y _{i} = b_0 + b_1 x _{1i} + \ldots + b_5 x_{5i} + e_{i}$$`
+
+
+- `\(b_0\)` --- это среднее значение отклика для базового уровня фактора.
+- `\(b_1, ..., b_5\)` --- это отклонения от базового уровня для средних с другими уровнями фактора.
+
+]
+
+---
+
+## Подбор модели в параметризации индикаторов
+
+
+``` r
+mod_treatment &lt;- lm(len ~ sp, data = eggs)
+```
+
+
+``` r
+round(coef(mod_treatment), 2)
+```
+
+```
+(Intercept)    spЛугКон   spБелТряс     spМалин    spЛесКон    spКрапив 
+      23.11       -0.82       -0.23       -0.56       -0.03       -1.99 
+```
+
+`$$\widehat{len}_i = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} + 1.44 sp_{\text{Малин}\ i} + 1.77 sp_{\text{БелТряс}\ i} + \\ + 1.96 sp_{\text{ЛесКон}\ i} + 1.99 sp_{\text{ЛесЗав}\ i}$$`
+
+
+---
+
+## Уравнение модели в параметризации индикаторов
+
+`$$\widehat{len}_i = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} + 1.44 sp_{\text{Малин}\ i} + 1.77 sp_{\text{БелТряс}\ i} + \\ + 1.96 sp_{\text{ЛесКон}\ i} + 1.99 sp_{\text{ЛесЗав}\ i}$$`
+
+Первый коэффициент --- средний размер яиц кукушек в гнездах крапивников (на базовом уровне):
+
+- `\(\widehat{len}_{\text{Крапив}} = 23.11\)`
+
+Другие коэффициенты --- разница размеров яиц кукушек в гнездах крапивников и других хозяев (отклонения от базового уровня).
+
+Если их прибавить к базовому уровню, то получим предсказанные значения для других видов:
+
+- `\(\widehat{len}_{\text{ЛугКон}\ i} = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} = 22.29\)`
+- `\(\widehat{len}_{\text{Малин}\ i} = 21.12 + 1.44 sp_{\text{Малин}\ i} = 22.88\)`
+- `\(\widehat{len}_{\text{БелТряс}\ i} = 21.12 + 1.77 sp_{\text{БелТряс}\ i} = 22.55\)`
+- `\(\widehat{len}_{\text{ЛесКон}\ i} = 21.12 + 1.96 sp_{\text{ЛесКон}\ i}= 23.08\)`
+- `\(\widehat{len}_{\text{ЛесЗав}\ i} = 21.12 + 1.99 sp_{\text{ЛесЗав}\ i} = 21.12\)`
+
+---
+
+class: middle, center, inverse
+
+# Параметризация эффектов
+
+---
+
+## Другая точка отсчета
+
+В качестве референса можно использовать не базовый уровень, а общее среднее значение.
+
+
+
+
+![](11_two-way_anova_and_interactions_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+
+---
+
+## Переменные-эффекты
+
+Фрагмент модельной матрицы:
+
+sp | sp1 &lt;br/&gt; `\(x_1\)` | sp2 &lt;br/&gt; `\(x_2\)` | sp3 &lt;br/&gt; `\(x_3\)` | sp4 &lt;br/&gt; `\(x_4\)` | sp5 &lt;br/&gt; `\(x_5\)`
+---- | ---- | ---- | ---- | ---- | ----
+Крапив   |  |   |   |   |  
+ЛугКон   |  |   |   |   |  
+Малин    |  |   |   |   |  
+БелТряс  |  |   |   |   |  
+ЛесКон   |  |   |   |   |  
+ЛесЗав   |  |   |   |   | 
+
+
+
+Переменных-эффектов всегда на одну меньше, чем число уровней фактора.
+
+Переменные закодированы при помощи -1, 0 и 1 (сумма кодов для возможных состояний одной переменной равна нулю).
+
+Для последней группы все переменные-эффекты будут равны `\(-1\)`.
+
+---
+
+## Переменные-эффекты
+
+Фрагмент модельной матрицы:
+
+sp | sp1 &lt;br/&gt; `\(x_1\)` | sp2 &lt;br/&gt; `\(x_2\)` | sp3 &lt;br/&gt; `\(x_3\)` | sp4 &lt;br/&gt; `\(x_4\)` | sp5 &lt;br/&gt; `\(x_5\)`
+---- | ---- | ---- | ---- | ---- | ----
+Крапив   |  1 |  0  |  0 |  0 |  0
+ЛугКон   |  0 |  1  |  0 |  0 |  0
+Малин    |  0 |  0  |  1 |  0 |  0
+БелТряс  |  0 |  0  |  0 |  1 |  0
+ЛесКон   |  0 |  0  |  0 |  0 |  1
+ЛесЗав   | -1 | -1  | -1 | -1 | -1
+
+Переменных-эффектов всегда на одну меньше, чем число уровней фактора.
+
+Переменные закодированы при помощи -1, 0 и 1 (сумма кодов для возможных состояний одной переменной равна нулю).
+
+Для последней группы все переменные-эффекты будут равны `\(-1\)`.
+
+---
+
+## Коэффициенты модели в параметризации эффектов
+
+.pull-left[
+Фрагмент модельной матрицы:
+
+sp | sp1 &lt;br/&gt; `\(x_1\)` | sp2 &lt;br/&gt; `\(x_2\)` | sp3 &lt;br/&gt; `\(x_3\)` | sp4 &lt;br/&gt; `\(x_4\)` | sp5 &lt;br/&gt; `\(x_5\)`
+---- | ---- | ---- | ---- | ---- | ----
+Крапив   |  1 |  0  |  0 |  0 |  0
+ЛугКон   |  0 |  1  |  0 |  0 |  0
+Малин    |  0 |  0  |  1 |  0 |  0
+БелТряс  |  0 |  0  |  0 |  1 |  0
+ЛесКон   |  0 |  0  |  0 |  0 |  1
+ЛесЗав   | -1 | -1  | -1 | -1 | -1
+
+]
+
+.pull-right[
+
+
+
+![](11_two-way_anova_and_interactions_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+]
+
+
+.pull-down[
+
+`$$y _{i} = b_0 + b_1 x _{1i} + \ldots + b_5 x_{5i} + e_{i}$$`
+
+- `\(b_0\)` --- это общее среднее значение отклика.
+- `\(b_1, ..., b_5\)` --- это отклонения от общего среднего для средних с другими уровнями фактора, кроме последнего.
+- для последнего уровня фактора отклонения от общего среднего --- это коэффициенты `\(b_1, ..., b_5\)`, взятые с противоположным знаком.
+]
+
+---
+
+## Подбор модели в параметризации эффектов
+
+
+``` r
+mod_sum &lt;- lm(len ~ sp, data = eggs, contrasts = list(sp = contr.sum))
+```
+
+
+``` r
+round(coef(mod_sum), 2)
+```
+
+```
+(Intercept)         sp1         sp2         sp3         sp4         sp5 
+      22.51        0.61       -0.22        0.38        0.05        0.57 
+```
+
+Коэффициенты моделей в разных параметризациях будут разными, но предсказания будут совершенно одинаковыми.
+
+`$$\widehat{len}_i = 22.51 -1.39 sp_{1\ i} -0.22 sp_{2\ i} + 0.05 sp_{3\ i} + 0.38 sp_{4\ i} + 0.57 sp_{5\ i}$$`
+
+---
+
+## Уравнение модели в параметризации эффектов
+
+
+`$$\widehat{len}_i = 22.51 -1.39 sp_{1\ i} -0.22 sp_{2\ i} + 0.05 sp_{3\ i} + 0.38 sp_{4\ i} + 0.57 sp_{5\ i}$$`
+
+Первый коэффициент --- средний размер яиц кукушек по всем данным:
+
+- `\(\overline{len} = 22.51\)`
+
+Другие коэффициенты — отличие размеров яиц в гнездах хозяев от общего среднего. Для всех уровней, кроме последнего — без изменения знака:
+
+- `\(\widehat{len}_{\text{Крапив}\ i} = 22.51 -1.39 sp_{1\ i} = 23.12\)`
+- `\(\widehat{len}_{\text{ЛугКон}\ i} = 22.51 -0.22 sp_{2\ i} = 22.29\)`
+- `\(\widehat{len}_{\text{Малин}\ i} = 22.51 + 0.05 sp_{3\ i} = 22.89\)`
+- `\(\widehat{len}_{\text{БелТряс}\ i} = 22.51 + 0.38 sp_{4\ i} = 22.56\)`
+- `\(\widehat{len}_{\text{ЛесКон}\ i} = 22.51 + 0.57 sp_{5\ i} = 23.08\)`
+
+Для последнего уровня фактора — с противоположным знаком,  
+т.к. для него все переменные-эффекты `\(sp_1,..., sp_5 = -1\)`:
+
+- `\(\widehat{len}_{\text{ЛесЗав}\ i} = 22.51 -1.39 sp_{1\ i} -0.22 sp_{2\ i} + 0.05 sp_{3\ i} + 0.38 sp_{4\ i} + 0.57 sp_{5\ i} = 21.12\)`
+
+
+---
+
+class: middle, center, inverse
+
+## Линейные контрасты
+
+---
+
+## Применение линейных контрастов
+
+Когда нам нужны только какие-то определённые группы сравнения, а не все группы со всеми сразу. Модель сравнения записывается в форме модельной матрицы. Для начала разберёмся со сравнением двуx групп в модели, заданной параметризацией индикаторов. 
+
+Допустим, мы хотим сравнить лугового конька с белой трясогузкой. Возьмём лугового конька в качестве референсной группы. В таком случае можно оценить контраст для неё как: `\(L_1 = 1 * b_{ЛугКон} = 1 * b_{ЛугКон} + 0 * b_{БелТряс}\)`. Данное значение будет идентично интерсепту в R. 
+
+Контраст для второй группы сравнения можно записать как разница между средним значением в ней и референсным значением: `\(L_2 = 1 * b_{БелТряс} - 1 * b_{ЛугКон}\)`.
+
+Таким образом, получаем матрицу следующего вида: 
+
+&lt;div class="math"&gt;
+\[
+\begin{array}{cc} &amp;
+\begin{vmatrix}
+1 &amp; 0 \\
+1 &amp; -1
+\end{vmatrix}\end{array}
+\]
+&lt;/div&gt;
+---
+
+## Линейные контрасты
+
+Так же, как в случае записи модельной матрицы, такая полная запись несколько излишня, поскольку нас интересует только та часть матрицы, которая соответствует __сравнению__ между двумя группами. Т.е. БелТряс --- ЛугКон =
+
+&lt;div class="math"&gt;
+\[
+\begin{array}{cc} &amp;
+\begin{vmatrix}
+1 &amp; -1
+\end{vmatrix}\end{array}
+\]
+&lt;/div&gt;
+
+__НО!__ В нашем датасете гораздо больше групп сравнения, и нас может интересовать большее количество групп. Например, хотим ещё сравнить размер лугового конька с лесной завирушкой. 
+
+Уравнение для данного случая можно записать следующим образом: 
+ `$$\textit{БелТряс} - \textit{ЛугКон} = 0$$`
+
+ `$$\textit{ЛесЗав} - \textit{ЛугКон} = 0$$`
+
+---
+
+## Запись линейных контрастов текстом в R
+
+
+``` r
+library(multcomp)
+
+eggs_contrtext &lt;- glht(mod_treatment,
+                    linfct = mcp(sp = c("БелТряс - ЛугКон = 0",
+                                        "ЛесЗав - ЛугКон = 0")))
+summary(eggs_contrtext)
+```
+
+```
+
+	 Simultaneous Tests for General Linear Hypotheses
+
+Multiple Comparisons of Means: User-defined Contrasts
+
+
+Fit: lm(formula = len ~ sp, data = eggs)
+
+Linear Hypotheses:
+                      Estimate Std. Error t value Pr(&gt;|t|)   
+БелТряс - ЛугКон == 0    0.593      0.270    2.20   0.0580 . 
+ЛесЗав - ЛугКон == 0     0.821      0.277    2.96   0.0073 **
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+(Adjusted p values reported -- single-step method)
+```
+
+---
+
+## Запись матрицы контрастов с несколькими группами сравнения 
+
+В нашиx данныx несколько видов птиц, сначала нужно записать уравнение с учётом каждого значения фактора.
+
+Уравнение для длины яиц в гнездах белой трясогузки:
+`$$Y_{БелТряс} = 1 * b_0       + 0 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 1 * b_{БелТряс} + 0 * b_{ЛесКон} + 0 * b_{ЛесЗав}$$`
+в гнездах лугового конька:
+`$$Y_{ЛугКон}  = 1 * b_0       + 1 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 0 * b_{БелТряс} + 0 * b_{ЛесКон} + 0 * b_{ЛесЗав}$$`
+в гнездах лесной завирушки:
+`$$Y_{ЛесЗав}  = 1 * b_0       + 0 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 0 * b_{БелТряс} + 0 * b_{ЛесКон} + 1 * b_{ЛесЗав}$$`
+
+Для сравнения групп так же вычитаем члены одного уравнения из другого.
+
+---
+
+## Запись матрицы контрастов с несколькими группами сравнения 
+
+Например, для сравнения белой трясогузки и лугового конька.
+
+`$$БелТряс - ЛугКон = 0 * b_0 - 1 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 1 * b_{БелТряс} + 0 * b_{ЛесКон} + 0 * b_{ЛесЗав}$$`
+
+Лесной завирушки и лугового конька:
+
+`$$ЛесЗав - ЛугКон = 0 * b_0 - 1 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 0 * b_{БелТряс} + 0 * b_{ЛесКон} + 1 * b_{ЛесЗав}$$`
+
+---
+
+## Запись матрицы контрастов в R 
+
+В случае когда у нас, например, две группы сравнения: `\(\textit{БелТряс} - \textit{ЛугКон}\)` и `\(\textit{ЛесЗав} - \textit{ЛугКон}\)`, матрица контрастов будет выглядеть на наших данных следующим образом.
+
+&lt;div class="math"&gt;
+\[
+\begin{array}{cc} &amp;
+\begin{vmatrix}
+0 &amp; -1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; -1 &amp; 0 &amp; 0 &amp; 0 &amp; 1
+\end{vmatrix}\end{array}
+\]
+&lt;/div&gt;
+
+Код будет выглядеть следующим образом: 
+
+``` r
+contr &lt;- rbind("БелТряс - ЛугКон" = c(0, -1, 0, 1, 0, 0),
+               "ЛесЗав - ЛугКон" = c(0, -1, 0, 0, 0, 1))
+eggs_contrmat &lt;- glht(mod_treatment, linfct = contr)
+summary(eggs_contrmat)
+```
+
+```
+
+	 Simultaneous Tests for General Linear Hypotheses
+
+Fit: lm(formula = len ~ sp, data = eggs)
+
+Linear Hypotheses:
+                      Estimate Std. Error t value Pr(&gt;|t|)    
+БелТряс - ЛугКон == 0    0.263      0.263    1.00     0.53    
+ЛесЗав - ЛугКон == 0    -1.173      0.270   -4.35  0.00006 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+(Adjusted p values reported -- single-step method)
+```
+
+---
+
+
+
+
+
+class: middle, center, inverse
+
+# Данные, связанные с двумя факторами
 
 ---
 
@@ -1077,7 +1600,7 @@ gg_final &lt;- gg_linep + labs(x = 'Вид', y = 'Масса тела, г') +
 gg_final
 ```
 
-![](11_two-way_anova_and_interactions_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
+![](11_two-way_anova_and_interactions_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1106,9 +1629,9 @@ gg_final
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="assets/macros.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "googlecode",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "highlightStyle": "googlecode",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

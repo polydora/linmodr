@@ -1,7 +1,7 @@
 ---
 title: "Обобщенные линейные модели с нормальным распределением остатков"
 subtitle: "Линейные модели..."
-author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"
+author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова, Валентина Домашкина"
 date: "Осень `r format(Sys.Date(), '%Y')`"
 output:
   xaringan::moon_reader:
@@ -44,7 +44,6 @@ library(cowplot)
 theme_set(theme_bw(base_size = 20))
 library(ggplot2)
 ```
-
 
 ```{r setup1, include = FALSE, cache = FALSE, purl = FALSE}
 options(knitr.kable.NA = '')
@@ -643,35 +642,56 @@ for(j in n:1){
 par(op)
 ```
 
-Каждое значение переменной-отклика принадлежит $N(\mu, \sigma)$.
-
-- $\mu$ лежит на линии регрессии;
-
-- $\sigma$ --- постоянная величина.
-
 ]
 
 .pull-right-55[
 
-Правдоподобие --- это произведение вероятностей данных:
+
+Это произведение вероятностей данных:
 
 $$L(\theta| y_i) = \Pi^n _{i = 1}\color{purple}{f(y_i| \theta)}$$
 
 ]
 
---
-
-Нужно найти параметры  $\theta$, максимизирующие правдоподобие:
-
-$$L(\theta | y_i) \longrightarrow \text{max}$$
-
---
-
-Вычислительно проще работать с логарифмами правдоподобий (loglikelihood): 
+Параметры модели должны максимизировать значение логарифма правдоподобия (loglikelihood): 
 
 $$lnL(\theta| y_i) \longrightarrow \text{max}$$
+<br>
+.small[
+Для тех, кому интересно разобраться вот [хорошая визуализация работы ML и тестов, основанных на LR](https://rpsychologist.com/likelihood/)
+]
+.tiny[
+Magnusson, K. (2020). Understanding Maximum Likelihood: An interactive visualization (Version 0.1.2) [Web App]. R Psychologist. https://rpsychologist.com/likelihood/
+]
 
-Редко можно решить аналитически, обычно используются численные решения.
+---
+
+## ML-оценки для дисперсий -- смещенные
+
+Например, ML оценка обычной выборочной дисперсии будет смещенной:
+
+Хотелось бы:
+
+$\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n - p - 1}$,
+
+
+На самом деле при ML:
+
+$\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n}$,
+
+т.к. в знаменателе не $n - p - 1$, а $n$.
+
+<br/>
+
+Аналогичные проблемы возникают при ML оценках для случайных эффектов в линейных моделях.
+
+Это происходит потому, что в смешанной линейной модели
+
+$\mathbf{Y}  = \mathbf{X}  \pmb{\beta} + \mathbf{Z} \mathbf{b}  + \pmb{\varepsilon}$
+
+$\mathbf{Y} \sim N(\mathbf{X}  \pmb{\beta}, \mathbf{V})$, где $\mathbf{V} = \mathbf{ZDZ'} + \pmb{\Sigma}$
+
+т.е. одновременно приходится оценивать $\pmb{\beta}$ и $\mathbf{V}$.
 
 ---
 

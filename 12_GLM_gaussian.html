@@ -3,24 +3,24 @@
   <head>
     <title>Обобщенные линейные модели с нормальным распределением остатков</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
-    <script src="libs/header-attrs-2.27/header-attrs.js"></script>
-    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
-    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
-    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
-    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
-    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова, Валентина Домашкина" />
+    <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+    <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="site_libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="site_libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="site_libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
-    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
-    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script src="site_libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="site_libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="site_libs/xaringanExtra-search-0.0.1/search.js"></script>
     <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
-    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
-    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
-    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script src="site_libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="site_libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="site_libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
     <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
-    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <link href="site_libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
     <!-- https://github.com/fnaufel/xaringan-smartify-->
     <script
     			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -42,14 +42,13 @@ class: middle, left, inverse, title-slide
 ## Линейные модели…
 ]
 .author[
-### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
+### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова, Валентина Домашкина
 ]
 .date[
-### Осень 2024
+### Осень 2025
 ]
 
 ---
-
 
 
 
@@ -461,35 +460,56 @@ Faraway J.J. (2017) Extending the linear model with R, p.154 - написано 
 
 ![](12_GLM_gaussian_files/figure-html/gg-norm-tunnel0-1.png)&lt;!-- --&gt;
 
-Каждое значение переменной-отклика принадлежит `\(N(\mu, \sigma)\)`.
-
-- `\(\mu\)` лежит на линии регрессии;
-
-- `\(\sigma\)` --- постоянная величина.
-
 ]
 
 .pull-right-55[
 
-Правдоподобие --- это произведение вероятностей данных:
+
+Это произведение вероятностей данных:
 
 `$$L(\theta| y_i) = \Pi^n _{i = 1}\color{purple}{f(y_i| \theta)}$$`
 
 ]
 
---
-
-Нужно найти параметры  `\(\theta\)`, максимизирующие правдоподобие:
-
-`$$L(\theta | y_i) \longrightarrow \text{max}$$`
-
---
-
-Вычислительно проще работать с логарифмами правдоподобий (loglikelihood): 
+Параметры модели должны максимизировать значение логарифма правдоподобия (loglikelihood): 
 
 `$$lnL(\theta| y_i) \longrightarrow \text{max}$$`
+&lt;br&gt;
+.small[
+Для тех, кому интересно разобраться вот [хорошая визуализация работы ML и тестов, основанных на LR](https://rpsychologist.com/likelihood/)
+]
+.tiny[
+Magnusson, K. (2020). Understanding Maximum Likelihood: An interactive visualization (Version 0.1.2) [Web App]. R Psychologist. https://rpsychologist.com/likelihood/
+]
 
-Редко можно решить аналитически, обычно используются численные решения.
+---
+
+## ML-оценки для дисперсий -- смещенные
+
+Например, ML оценка обычной выборочной дисперсии будет смещенной:
+
+Хотелось бы:
+
+`\(\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n - p - 1}\)`,
+
+
+На самом деле при ML:
+
+`\(\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n}\)`,
+
+т.к. в знаменателе не `\(n - p - 1\)`, а `\(n\)`.
+
+&lt;br/&gt;
+
+Аналогичные проблемы возникают при ML оценках для случайных эффектов в линейных моделях.
+
+Это происходит потому, что в смешанной линейной модели
+
+`\(\mathbf{Y}  = \mathbf{X}  \pmb{\beta} + \mathbf{Z} \mathbf{b}  + \pmb{\varepsilon}\)`
+
+`\(\mathbf{Y} \sim N(\mathbf{X}  \pmb{\beta}, \mathbf{V})\)`, где `\(\mathbf{V} = \mathbf{ZDZ'} + \pmb{\Sigma}\)`
+
+т.е. одновременно приходится оценивать `\(\pmb{\beta}\)` и `\(\mathbf{V}\)`.
 
 ---
 
@@ -525,7 +545,7 @@ class: middle, center, inverse
 ## Открываем данные
 
 
-``` r
+```r
 library(Stat2Data)
 data(FishEggs)
 ```
@@ -533,7 +553,7 @@ data(FishEggs)
 Все ли правильно открылось?
 
 
-``` r
+```r
 str(FishEggs)
 ```
 
@@ -548,7 +568,7 @@ str(FishEggs)
 Нет ли пропущенных значений?
 
 
-``` r
+```r
 colSums(is.na(FishEggs))
 ```
 
@@ -564,7 +584,7 @@ colSums(is.na(FishEggs))
 Уровни факторов в исходных данных:
 
 
-``` r
+```r
 levels(FishEggs$Month)
 ```
 
@@ -575,14 +595,14 @@ levels(FishEggs$Month)
 Делаем базовым уровнем сентябрь.
 
 
-``` r
+```r
 FishEggs$Month &lt;- relevel(FishEggs$Month, ref = 'Sep')
 ```
 
 Теперь уровни в хронологическом порядке:
 
 
-``` r
+```r
 levels(FishEggs$Month)
 ```
 
@@ -595,7 +615,7 @@ levels(FishEggs$Month)
 ## Объемы выборок
 
 
-``` r
+```r
 table(FishEggs$Month)
 ```
 
@@ -610,12 +630,12 @@ Sep Nov
 ## Ищем выбросы
 
 
-``` r
+```r
 library(ggplot2)
 theme_set(theme_bw())
 ```
 
-``` r
+```r
 library(cowplot)
 
 gg_dot &lt;- ggplot(FishEggs, aes(y = 1:nrow(FishEggs))) + geom_point()
@@ -664,7 +684,7 @@ plot_grid(gg_dot + aes(x = Age),
 ## Подбираем модель
 
 
-``` r
+```r
 mod &lt;- glm(PctDM ~ Age * Month, data = FishEggs)
 mod
 ```
@@ -685,7 +705,7 @@ Residual Deviance: 47.8 	AIC: 120
 --
 
 
-``` r
+```r
 # Чтобы записать модель, нужна еще сигма.
 sigma(mod)
 ```
@@ -739,7 +759,7 @@ class: middle, center, inverse
 .pull-left[
 
 
-``` r
+```r
 resid(mod, type = 'response')[1:5]
 ```
 
@@ -751,7 +771,7 @@ resid(mod, type = 'response')[1:5]
 
 .pull-right[
 
-``` r
+```r
 resid(mod, type = 'pearson')[1:5]
 ```
 
@@ -784,7 +804,7 @@ resid(mod, type = 'pearson')[1:5]
 Важно проверить, будут ли коллинеарны другие предикторы.
 
 
-``` r
+```r
 library(car)
 vif(update(mod, . ~ . - Age:Month))
 ```
@@ -803,7 +823,7 @@ vif(update(mod, . ~ . - Age:Month))
 ## Данные для анализа остатков
 
 
-``` r
+```r
 mod_diag &lt;- fortify(mod) # функция из пакета ggplot2
 head(mod_diag)
 ```
@@ -823,7 +843,7 @@ head(mod_diag)
 ## График расстояния Кука
 
 
-``` r
+```r
 ggplot(mod_diag, aes(x = 1:nrow(mod_diag), y = .cooksd)) +
   geom_bar(stat = 'identity') +
   geom_hline(yintercept = 1, linetype = 2)
@@ -839,7 +859,7 @@ ggplot(mod_diag, aes(x = 1:nrow(mod_diag), y = .cooksd)) +
 ## График остатков от предсказанных значений
 
 
-``` r
+```r
 gg_resid &lt;- ggplot(data = mod_diag, aes(x = .fitted, y = .stdresid)) +
   geom_point() + geom_hline(yintercept = 0)
 gg_resid
@@ -858,7 +878,7 @@ gg_resid
 
 
 
-``` r
+```r
 ggplot(data = mod_diag, aes(x = Age, y = .stdresid)) +
   geom_point() + geom_hline(yintercept = 0)
 ggplot(data = mod_diag, aes(x = Month, y = .stdresid)) +
@@ -915,7 +935,7 @@ Wasserman, 2006. All of Statistics. Краткий рассказ о тесте 
 .small[
 
 
-``` r
+```r
 summary(mod)
 ```
 
@@ -1053,13 +1073,13 @@ class: middle, center, inverse
 ## Тестируем значимость модели целиком при помощи LRT
 
 
-``` r
+```r
 ?anova.glm
 ```
 
 
 
-``` r
+```r
 null_model &lt;- glm(PctDM ~ 1, data = FishEggs)
 anova(null_model, mod, test = 'Chi')
 ```
@@ -1085,7 +1105,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 **1. Тестируем значимость взаимодействия**
 
-``` r
+```r
 drop1(mod, test = 'Chi')
 ```
 
@@ -1104,7 +1124,7 @@ Age:Month  1     47.9 118      0.0317     0.86
 ## 2. Тестируем значимость предикторов, когда взаимодействие удалено
 
 
-``` r
+```r
 mod_no_int &lt;- update(mod, . ~ . -Age:Month)
 drop1(mod_no_int, test = 'Chi')
 ```
@@ -1202,7 +1222,7 @@ class: middle, center, inverse
 Долю объясненной девиансы легко вычислить
 
 
-``` r
+```r
 (mod$null.deviance - mod$deviance) / mod$null.deviance
 ```
 
@@ -1230,7 +1250,7 @@ class: middle, center, inverse
 ## Данные для графика предсказаний
 
 
-``` r
+```r
 library(dplyr)
 New_Data &lt;- FishEggs %&gt;% 
   group_by(Month) %&gt;%
@@ -1256,7 +1276,7 @@ head(New_Data)
 ## Предсказания при помощи `predict()`
 
 
-``` r
+```r
 Predictions &lt;- predict(mod, newdata = New_Data, se.fit = TRUE)
 New_Data$fit &lt;- Predictions$fit  # Предсказанные значения
 New_Data$se &lt;- Predictions$se.fit # Стандартные ошибки
@@ -1285,7 +1305,7 @@ head(New_Data)
 ## Данные для графика вручную
 
 
-``` r
+```r
 X &lt;- model.matrix(~ Age * Month, data = New_Data) # Модельная матрица
 betas &lt;- coef(mod) # Коэффициенты
 New_Data$fit &lt;- X %*% betas  # Предсказанные значения
@@ -1315,7 +1335,7 @@ head(New_Data)
 ## График предсказаний модели
 
 
-``` r
+```r
 Plot_egg &lt;- ggplot(New_Data, aes(x = Age, y = fit)) +
   geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr, group = Month)) +
   geom_line(aes(colour = Month), size = 1) +
@@ -1345,7 +1365,7 @@ class: middle, center, inverse
 ## Пытаемся сократить модель
 
 
-``` r
+```r
 mod_no_int &lt;- update(mod, . ~ . -Age:Month)
 drop1(mod_no_int, test = 'Chi')
 ```
@@ -1372,7 +1392,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 Как зависит питательная ценность икры от месяца вылова рыбы (сентябрь или ноябрь) с учетом ковариаты (возраста рыбы) и их взаимодействия.
 
 
-``` r
+```r
 mod_no_int
 ```
 
@@ -1391,7 +1411,7 @@ Residual Deviance: 47.9 	AIC: 118
 
 .pull-left[
 
-``` r
+```r
 #Чтобы записать модель,нужна сигма
 sigma(mod_no_int)
 ```
@@ -1470,7 +1490,7 @@ __В GLM с нормальным распределением отклика ч�
 `\(\eta_i = 38.0 - 0.23 Age_{i} + 1.52 Month_{Nov\,i}\)`
 
 
-``` r
+```r
 (p &lt;- length(coef(mod_no_int)) + 1) # число параметров
 ```
 
@@ -1478,7 +1498,7 @@ __В GLM с нормальным распределением отклика ч�
 [1] 4
 ```
 
-``` r
+```r
 logLik(mod_no_int)         # Логарифм правдоподобия
 ```
 
@@ -1486,7 +1506,7 @@ logLik(mod_no_int)         # Логарифм правдоподобия
 'log Lik.' -55.14 (df=4)
 ```
 
-``` r
+```r
 as.numeric(-2 * logLik(mod_no_int) + 2 * p)
 ```
 
@@ -1494,7 +1514,7 @@ as.numeric(-2 * logLik(mod_no_int) + 2 * p)
 [1] 118.3
 ```
 
-``` r
+```r
 AIC(mod_no_int) # Есть готовая функция
 ```
 
@@ -1510,7 +1530,7 @@ AIC(mod_no_int) # Есть готовая функция
 Пусть у нас есть несколько моделей:
 
 
-``` r
+```r
 mod &lt;-        glm(formula = PctDM ~ Age * Month, data = FishEggs)
 mod_no_int &lt;- glm(formula = PctDM ~ Age + Month, data = FishEggs)
 mod_age &lt;-    glm(formula = PctDM ~ Age,         data = FishEggs)
@@ -1518,7 +1538,7 @@ mod_month &lt;-  glm(formula = PctDM ~ Month,       data = FishEggs)
 ```
 
 
-``` r
+```r
 AIC(mod, mod_no_int, mod_age, mod_month)
 ```
 

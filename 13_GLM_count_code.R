@@ -128,8 +128,8 @@ vif(M_norm)
 # Дополните код:
 
 M_norm_diag <- data.frame(
-  .fitted = fitted(M_norm),
-  .resid_p = residuals(M_norm, type = 'pearson'))
+  .fitted = fitted(),
+  .resid_p = residuals())
 
 ggplot(data = , aes()) + geom_hline( = 0) +
   geom_point()

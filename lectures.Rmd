@@ -215,7 +215,7 @@ install.packages("palmerpenguins")
 
 ### 12 GLM для нормально распределенных данных
 
-<!-- - Презентация: [12_GLM_gaussian.html](12_GLM_gaussian.html) -->
+- Презентация: [12_GLM_gaussian.html](12_GLM_gaussian.html)
 - Код:
     + [12_GLM_gaussian_code.R](12_GLM_gaussian_code.R)
     + [12_GLM_gaussian_practice_birds.R](12_GLM_gaussian_practice_birds.R)
@@ -228,9 +228,9 @@ install.packages("AER")
 ```
 
 <!-- - Презентация: [13_GLM_count.html](13_GLM_count.html) -->
-<!-- - Код: [13_GLM_count_code.R](13_GLM_count_code.R) -->
-<!-- - Данные: [Pollinators_Montero-Castano, Vila, 2015.xlsx](data/Pollinators_Montero-Castano, Vila, 2015.xlsx) -->
-<!-- - Код задания: [13_GLM_count_practice.R](13_GLM_count_practice.R) -->
+- Код: [13_GLM_count_code.R](13_GLM_count_code.R)
+- Данные: [Pollinators_Montero-Castano, Vila, 2015.xlsx](data/Pollinators_Montero-Castano, Vila, 2015.xlsx)
+- Код задания: [13_GLM_count_practice.R](13_GLM_count_practice.R)
 
 <!-- - Примерное решение: -->
 <!-- [13_GLM_count_practice_solution.R](13_GLM_count_practice_solution.R) -->

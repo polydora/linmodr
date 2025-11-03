@@ -227,7 +227,7 @@ install.packages("palmerpenguins")
 install.packages("AER")
 ```
 
-<!-- - Презентация: [13_GLM_count.html](13_GLM_count.html) -->
+- Презентация: [13_GLM_count.html](13_GLM_count.html)
 
 - [Очень хороший ресурс для изучения свойств разных распределений](https://www.acsu.buffalo.edu/~adamcunn/probability/probability.html)
 

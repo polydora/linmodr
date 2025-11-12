@@ -288,10 +288,10 @@ install.packages(c("lme4", "pbkrtest"))
 install.packages("faraway")
 ```
 <!-- - Презентация: [16_variance_structure.html](16_variance_structure.html) -->
-<!-- - Код: [16_variance_structure_code.R](16_variance_structure_code.R) -->
-<!-- - Код: [16_variance_structure_code_practice.R](16_variance_structure_code_practice.R) -->
-<!-- - Данные: -->
-<!--     + [mussel_juv_ad.csv](data/mussel_juv_ad.csv) -->
+- Код: [16_variance_structure_code.R](16_variance_structure_code.R)
+- Код: [16_variance_structure_code_practice.R](16_variance_structure_code_practice.R)
+- Данные:
+    + [mussel_juv_ad.csv](data/mussel_juv_ad.csv)
 
 
 

@@ -3,24 +3,24 @@
   <head>
     <title>Моделирование структуры дисперсии в смешанных моделях</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
-    <script src="libs/header-attrs-2.27/header-attrs.js"></script>
-    <link href="libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
-    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
-    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
-    <script src="libs/fabric-4.3.1/fabric.min.js"></script>
-    <link href="libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова, Валентина Домашкина" />
+    <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+    <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
+    <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="site_libs/fabric-4.3.1/fabric.min.js"></script>
+    <link href="site_libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="site_libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
-    <script src="libs/mark.js-8.11.1/mark.min.js"></script>
-    <link href="libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-search-0.0.1/search.js"></script>
+    <script src="site_libs/mark.js-8.11.1/mark.min.js"></script>
+    <link href="site_libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
+    <script src="site_libs/xaringanExtra-search-0.0.1/search.js"></script>
     <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
-    <script src="libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
-    <script src="libs/freezeframe-5.0.2/freezeframe.min.js"></script>
-    <script src="libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
+    <script src="site_libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <script src="site_libs/freezeframe-5.0.2/freezeframe.min.js"></script>
+    <script src="site_libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
     <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
-    <link href="libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <link href="site_libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
     <!-- https://github.com/fnaufel/xaringan-smartify-->
     <script
     			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -43,10 +43,10 @@ class: middle, left, inverse, title-slide
 ## Линейные модели…
 ]
 .author[
-### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
+### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова, Валентина Домашкина
 ]
 .date[
-### Осень 2024
+### Осень 2025
 ]
 
 ---
@@ -209,7 +209,7 @@ ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
 
 Модель:
 
-`$$Longivity_{i} = \beta_0 + \beta_1 Thorax_{i} + \beta_{2} I_{isolated} + \beta_{3} I_{one} + \beta_{4} I_{many} + \beta_{5} I_{low} + \\ + Interactions + \varepsilon_{i}$$`
+`$$Longevity_{i} = \beta_0 + \beta_1 Thorax_{i} + \beta_{2} I_{isolated} + \beta_{3} I_{one} + \beta_{4} I_{many} + \beta_{5} I_{low} + \\ + Interactions + \varepsilon_{i}$$`
 
 `$$\varepsilon_{i} \sim N(0, \sigma^2)$$`
 
@@ -220,7 +220,7 @@ ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
 
 ``` r
 mod_formula &lt;- longevity ~ thorax*activity
-M1 &lt;- lm(mod_formula, data = fruitfly)
+M1 &lt;- lm(mod_formula, data = fly)
 
 library(car)
 Anova(M1)
@@ -246,7 +246,8 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ``` r
 M1_diagn &lt;- fortify(M1)
-ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0)
+ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + 
+  geom_hline(yintercept = 0)
 ```
 
 ![](16_variance_structure_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
@@ -276,7 +277,8 @@ eps_2 &lt;- rnorm(N, 0, h(x))
 y_2 &lt;- b_0 + b_1*x + eps_2
 dat2 &lt;- data.frame(x, y_1, y_2)
 
-p_values &lt;- data.frame(p_no_heter = rep(NA, 1000), p_heter = NA)
+p_values &lt;- data.frame(p_no_heter = rep(NA, 1000), 
+                       p_heter = NA)
 
 for(i in 1:1000){
   df &lt;- dat2[sample(1:1000, 10), ]
@@ -426,7 +428,7 @@ class: middle, center, inverse
 
 ``` r
 library(nlme) 
-M1_gls &lt;- gls(mod_formula, data = fruitfly)
+M1_gls &lt;- gls(mod_formula, data = fly)
 
 Pl_resid_M1_gls &lt;- qplot(x = fitted(M1_gls), y = residuals(M1_gls, type = "pearson")) +
   geom_hline(yintercept = 0)
@@ -766,7 +768,7 @@ M7_gls$modelStruct
 ```
 varStruct  parameters:
   const   power 
--15.867   1.987 
+-15.843   1.987 
 ```
 
 ``` r
@@ -776,9 +778,9 @@ M8_gls$modelStruct
 ```
 varStruct  parameters:
     const.many const.isolated      const.one      const.low     const.high 
-     -17.24327       -0.03472        0.04990        0.16843       -0.96133 
+     -17.21749       -0.03472        0.04990        0.16843       -0.96134 
     power.many power.isolated      power.one      power.low     power.high 
-      -0.56206        3.89001        2.70688        8.26979        3.08716 
+      -0.56206        3.89001        2.70688        8.26973        3.08715 
 ```
 
 ---
@@ -939,7 +941,7 @@ class: middle, center, inverse
 
 --
 
-Для упрощения финальной модели надо изменять фиксированную часть, REML не годится!
+Для упрощения финальной модели надо изменять фиксированную часть: REML не годится!
 
 
 ``` r
@@ -1054,7 +1056,7 @@ head(bw, 14)
 ]
 
 .pull-right[
-Три группы крыс, содержались при разных условиях кормления 64 дня. Каждую крысу взвешивали с определенной периодичностью. 
+Три группы крыс содержали при разных условиях кормления 64 дня. Каждую крысу взвешивали с определённой периодичностью. 
 
 Всего было изучено 16 особей.  
 
@@ -1062,7 +1064,7 @@ head(bw, 14)
 Задача:    
 
 
-Построить модель, которая дала бы ответ на вопрос, изменяется ли характер роста крыс в зависимости от типа диеты?
+Построить модель, отвечающую на вопрос: изменяется ли характер роста крыс в зависимости от типа диеты?
 
 .tiny[
 пример из книги Pinheiro and Bates, 2000 
@@ -1316,9 +1318,9 @@ ggplot(MyData, aes(x = Time, y = Predicted,  color = Diet)) +
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="assets/macros.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "googlecode",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "highlightStyle": "googlecode",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

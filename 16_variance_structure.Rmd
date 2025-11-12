@@ -1,7 +1,7 @@
 ---
 title: "Моделирование структуры дисперсии в смешанных моделях"
 subtitle: "Линейные модели..."
-author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"
+author: "Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова, Валентина Домашкина"
 date: "Осень `r format(Sys.Date(), '%Y')`"
 output:
   xaringan::moon_reader:
@@ -180,7 +180,7 @@ ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
 
 Модель:
 
-$$Longivity_{i} = \beta_0 + \beta_1 Thorax_{i} + \beta_{2} I_{isolated} + \beta_{3} I_{one} + \beta_{4} I_{many} + \beta_{5} I_{low} + \\ + Interactions + \varepsilon_{i}$$
+$$Longevity_{i} = \beta_0 + \beta_1 Thorax_{i} + \beta_{2} I_{isolated} + \beta_{3} I_{one} + \beta_{4} I_{many} + \beta_{5} I_{low} + \\ + Interactions + \varepsilon_{i}$$
 
 $$\varepsilon_{i} \sim N(0, \sigma^2)$$
 
@@ -190,7 +190,7 @@ $$\varepsilon_{i} \sim N(0, \sigma^2)$$
 
 ```{r}
 mod_formula <- longevity ~ thorax*activity
-M1 <- lm(mod_formula, data = fruitfly)
+M1 <- lm(mod_formula, data = fly)
 
 library(car)
 Anova(M1)
@@ -202,7 +202,8 @@ Anova(M1)
 
 ```{r}
 M1_diagn <- fortify(M1)
-ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_hline(yintercept = 0)
+ggplot(M1_diagn, aes(x = .fitted, y = .stdresid)) + geom_point() + 
+  geom_hline(yintercept = 0)
 ```
 
 Мы не можем доверять результатам оценки, так как присутствуют явные признаки гетероскедастичности.
@@ -229,7 +230,8 @@ eps_2 <- rnorm(N, 0, h(x))
 y_2 <- b_0 + b_1*x + eps_2
 dat2 <- data.frame(x, y_1, y_2)
 
-p_values <- data.frame(p_no_heter = rep(NA, 1000), p_heter = NA)
+p_values <- data.frame(p_no_heter = rep(NA, 1000), 
+                       p_heter = NA)
 
 for(i in 1:1000){
   df <- dat2[sample(1:1000, 10), ]
@@ -370,7 +372,7 @@ class: middle, center, inverse
 
 ```{r}
 library(nlme) 
-M1_gls <- gls(mod_formula, data = fruitfly)
+M1_gls <- gls(mod_formula, data = fly)
 
 Pl_resid_M1_gls <- qplot(x = fitted(M1_gls), y = residuals(M1_gls, type = "pearson")) +
   geom_hline(yintercept = 0)
@@ -692,7 +694,7 @@ class: middle, center, inverse
 
 --
 
-Для упрощения финальной модели надо изменять фиксированную часть, REML не годится!
+Для упрощения финальной модели надо изменять фиксированную часть: REML не годится!
 
 ```{r}
 M10_gls_ML <- update(M10_gls, method = "ML")
@@ -760,7 +762,7 @@ head(bw, 14)
 ]
 
 .pull-right[
-Три группы крыс, содержались при разных условиях кормления 64 дня. Каждую крысу взвешивали с определенной периодичностью. 
+Три группы крыс содержали при разных условиях кормления 64 дня. Каждую крысу взвешивали с определённой периодичностью. 
 
 Всего было изучено `r length(unique(bw$Rat))` особей.  
 
@@ -768,7 +770,7 @@ head(bw, 14)
 Задача:    
 
 
-Построить модель, которая дала бы ответ на вопрос, изменяется ли характер роста крыс в зависимости от типа диеты?
+Построить модель, отвечающую на вопрос: изменяется ли характер роста крыс в зависимости от типа диеты?
 
 .tiny[
 пример из книги Pinheiro and Bates, 2000 

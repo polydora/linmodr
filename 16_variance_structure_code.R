@@ -41,7 +41,7 @@ ggplot(fly, aes(x = activity, y = thorax)) + geom_boxplot()
   ## Код для подгонки модели
 
 mod_formula <- longevity ~ thorax*activity
-M1 <- lm(mod_formula, data = fruitfly)
+M1 <- lm(mod_formula, data = fly)
 
 library(car)
 Anova(M1)
@@ -91,7 +91,7 @@ hist(b1_val) #Распределение оценок коэффициента b
 ##### Построение модели с обобщённым методом наименьших квадратов #####
 
 library(nlme)
-M1_gls <- gls(mod_formula, data = fruitfly)
+M1_gls <- gls(mod_formula, data = fly)
 
 
 #Диагностика модели

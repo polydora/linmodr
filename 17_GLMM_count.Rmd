@@ -905,15 +905,53 @@ plot_grid(Pl_init, Pl_mod)
 Итоговая сглаживающая функция - сумма нескольких подобранных сплайнов, умноженных на соответствующие коэффициенты 
 
 
-```{r}
+```{r fig.width=12, echo=FALSE}
 
 model_matrix <- predict(Mod, type = "lpmatrix")
-predicted <- model_matrix %*% coef(Mod) 
+predicted <- model_matrix %*% coef(Mod)
 
-plot(df$y ~ df$x) #Исходные данные
-matplot(df$x, model_matrix[, ], type = "l", lty = 2, add = T) #множество подобранных сплайнов
+# Создаем датафрейм для ggplot
+plot_data <- data.frame(
+  x = df$x,
+  y = df$y,
+  predicted = as.numeric(predicted)
+)
 
-lines(predicted ~ df$x) #Итоговая сглаживающая функция
+# Создаем датафрейм для сплайнов (исключаем intercept)
+spline_data <- as.data.frame(model_matrix[, -1])  # исключаем первый столбец (intercept)
+spline_data$x <- df$x
+spline_data_long <- spline_data %>%
+  pivot_longer(cols = -x, names_to = "spline", values_to = "value")
+
+# Строим график
+Pl1 <- 
+ggplot(plot_data, aes(x = x)) +
+  # Исходные данные
+  geom_point(aes(y = y), alpha = 0.7) +
+  # Множество подобранных сплайнов
+  geom_line(data = spline_data_long[spline_data_long$spline %in% c("s(x).1", "s(x).2"),  ], 
+            aes(y = value, group = spline, color = spline), 
+            linetype = 2) +
+  # Итоговая сглаживающая функция
+  geom_line(aes(y = predicted), color = "red", linewidth = 1.2) +
+  labs(title = "Сглаживающие сплайны \n(только два первых сплайна)",
+       x = "x", y = "y") 
+
+
+Pl2 <- 
+ggplot(plot_data, aes(x = x)) +
+  # Исходные данные
+  geom_point(aes(y = y), alpha = 0.7) +
+  # Множество подобранных сплайнов
+  geom_line(data = spline_data_long, 
+            aes(y = value, group = spline, color = spline), 
+            linetype = 2) +
+  # Итоговая сглаживающая функция
+  geom_line(aes(y = predicted), color = "red", linewidth = 1.2) +
+  labs(title = "Сглаживающие сплайны \n(привыедены все сплайна)",
+       x = "x", y = "y") 
+
+plot_grid(Pl1, Pl2)
 
 ```
 
@@ -943,10 +981,10 @@ AIC(Mod_gam_1, Mod_gam_2)
 
 ## Диагностика модели
 
-```{r}
+```{r fig.width=9, fig.height=7}
 library(gratia)
 
-appraise(Mod_gam_1)
+appraise(Mod_gam_2)
 
 ```
 
@@ -955,15 +993,15 @@ appraise(Mod_gam_1)
 ## Результаты
 
 ```{r}
-summary(Mod_gam_1)
+summary(Mod_gam_2)
 ```
 
 ---
 
 ## Визуализация модели
 
-```{r}
-draw(Mod_gam_1, parametric = T)
+```{r fig.width=9, fig.height=7}
+draw(Mod_gam_2, parametric = T)
 ```
 
 

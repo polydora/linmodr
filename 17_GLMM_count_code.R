@@ -415,7 +415,83 @@ Pl_init <-
   ggplot(df, aes(x, y))+
   geom_point() +
   geom_line(aes(y = mu), color = "blue") +
-  geom_smooth()
+  geom_smooth(method = "gam")
 Pl_init
+
+
+
+##### Вписываем сплайны
+
+model_matrix <- predict(Mod, type = "lpmatrix")
+predicted <- model_matrix %*% coef(Mod)
+
+# Создаем датафрейм для ggplot
+plot_data <- data.frame(
+  x = df$x,
+  y = df$y,
+  predicted = as.numeric(predicted)
+)
+
+# Создаем датафрейм для сплайнов (исключаем intercept)
+spline_data <- as.data.frame(model_matrix[, -1])  # исключаем первый столбец (intercept)
+spline_data$x <- df$x
+spline_data_long <- spline_data %>%
+  pivot_longer(cols = -x, names_to = "spline", values_to = "value")
+
+# Строим график
+Pl1 <-
+  ggplot(plot_data, aes(x = x)) +
+  # Исходные данные
+  geom_point(aes(y = y), alpha = 0.7) +
+  # Множество подобранных сплайнов
+  geom_line(data = spline_data_long[spline_data_long$spline %in% c("s(x).1", "s(x).2"),  ],
+            aes(y = value, group = spline, color = spline),
+            linetype = 2) +
+  # Итоговая сглаживающая функция
+  geom_line(aes(y = predicted), color = "red", linewidth = 1.2) +
+  labs(title = "Сглаживающие сплайны \n(только два первых сплайна)",
+       x = "x", y = "y")
+
+
+Pl2 <-
+  ggplot(plot_data, aes(x = x)) +
+  # Исходные данные
+  geom_point(aes(y = y), alpha = 0.7) +
+  # Множество подобранных сплайнов
+  geom_line(data = spline_data_long,
+            aes(y = value, group = spline, color = spline),
+            linetype = 2) +
+  # Итоговая сглаживающая функция
+  geom_line(aes(y = predicted), color = "red", linewidth = 1.2) +
+  labs(title = "Сглаживающие сплайны \n(привыедены все сплайна)",
+       x = "x", y = "y")
+
+plot_grid(Pl1, Pl2)
+
+##### GAMM для сов
+
+Owls$FoodTreatment <- factor(Owls$FoodTreatment)
+Owls$Nest <- factor(Owls$Nest)
+Owls$SexParent <- factor(Owls$SexParent)
+
+
+# Модель, когда сглаживающая функция общая для двух полов родителей
+Mod_gam_1 <- gam(NCalls ~ s(ArrivalTime, bs = "cr") + SexParent * FoodTreatment + s(Nest, bs = "re"), offset(logBroodSize), method = "REML", family = "nb", data = Owls)
+
+
+# Модель, когда сглаживающая функция подбирается отдельно для каждого пола родителей
+Mod_gam_2 <- gam(NCalls ~ s(ArrivalTime, by = SexParent, bs = "cr") + SexParent * FoodTreatment + s(Nest, bs = "re"), offset(logBroodSize), method = "REML", family = "nb", data = Owls)
+AIC(Mod_gam_1, Mod_gam_2)
+
+library(gratia)
+
+appraise(Mod_gam_2)
+
+summary(Mod_gam_2)
+
+draw(Mod_gam_2, parametric = T)
+
+
+
 
 

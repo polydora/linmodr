@@ -68,6 +68,8 @@ plot_grid(Pl_NCalls, Pl_ArrivalTime, Pl_BroodSize)
 gg_dot <- ggplot(Owls, aes(y = 1:nrow(Owls))) +
   geom_point(colour = "steelblue")
 
+length(unique(Owls$Nest))
+
 plot_grid(gg_dot + aes(x = NCalls),
           gg_dot + aes(x = ArrivalTime), nrow = 1)
 
@@ -129,6 +131,8 @@ vif(M0)
 
 library(lme4)
 
+hist(Owls$ArrivalTime)
+
 M1 <- glmer(NCalls ~ SexParent * FoodTreatment +
               SexParent * ArrivalTime +
               offset(logBroodSize) + (1 | Nest),
@@ -141,7 +145,13 @@ summary(M1)
 # стандартизация предикторов
 Owls$ArrivalTime_std <- (Owls$ArrivalTime - mean(Owls$ArrivalTime)) /  sd(Owls$ArrivalTime)
 
+mean(Owls$ArrivalTime_std)
+
+sd(Owls$ArrivalTime_std)
+
+
 Owls$ArrivalTime_std <- scale(Owls$ArrivalTime)
+
 
 M1 <- glmer(NCalls ~ SexParent * FoodTreatment +
               SexParent * ArrivalTime_std +
@@ -162,6 +172,7 @@ M1 <- glmer(NCalls ~ SexParent * FoodTreatment +
 # распределению, можно его использовать для проверки статистической значимости
 # отклонений.
 
+sum(residuals(M1, type = "pearson"))
 
 R_sum <- sum(residuals(M1, type = "pearson")^2)
 
@@ -190,6 +201,10 @@ overdisp_fun <- function(model) {
 overdisp_fun(M1)
 
 
+library(performance)
+check_overdispersion(M1)
+
+
 # glmmTMB
 
 # ## График остатков
@@ -197,6 +212,7 @@ M1_diag <- data.frame(Owls,
                       .fitted = predict(M1, type = "response"),
                       .pears_resid = residuals(M1, type = "pearson"))
 
+fortify.merMod(M1)
 
 
 
@@ -204,6 +220,7 @@ gg_resid <- ggplot(M1_diag, aes(x = .fitted, y = .pears_resid,
                        colour = FoodTreatment)) +
   geom_point() +
   facet_grid(SexParent ~ FoodTreatment)
+
 gg_resid + geom_smooth() + geom_hline(yintercept = 0)
 
 
@@ -219,6 +236,7 @@ library(mgcv)
 nonlin1 <- gam(.pears_resid ~ s(ArrivalTime),
                data = M1_diag)
 summary(nonlin1)
+
 plot(nonlin1)
 abline(h = 0, lty = 2)
 
@@ -233,7 +251,9 @@ M2 <- glmer.nb(NCalls ~ SexParent * FoodTreatment +
 
 # # Если эта модель вдруг не сходится, есть обходной маневр. Можно попробовать заранее определить k  при помощи внутренней функции. В lme4 параметр k называется theta
 th <- lme4:::est_theta(M1)
+
 M2.1 <- update(M1, family = negative.binomial(theta=th))
+
 bind_rows(fixef(M2), fixef(M2.1))
 
 # ## Задание 2 -----------------------------------------------------
@@ -329,6 +349,7 @@ gg_resid +
   geom_hline(yintercept = 0)
 
 
+
 # ## Есть ли еще какие-то паттерны в остатках?
 gg_resid %+% aes(x = ArrivalTime) + geom_smooth(method = "loess") + geom_hline(yintercept = 0)
 
@@ -414,10 +435,16 @@ ggplot(df, aes(x, y))+
 Pl_init <-
   ggplot(df, aes(x, y))+
   geom_point() +
-  geom_line(aes(y = mu), color = "blue") +
-  geom_smooth(method = "gam")
-Pl_init
+  geom_line(aes(y = mu), color = "blue")
 
+
+Pl_init +
+  geom_smooth()
+
+
+
+Pl_init +
+  geom_smooth(method = "gam")
 
 
 ##### Вписываем сплайны

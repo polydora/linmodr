@@ -350,6 +350,11 @@ t_emp <- abs(mean_a - mean_b)/sqrt(se_a^2 + se_b^2)
 
   t_perm_vector[1000] <- t_emp
 
+  
+  # Визуализация
+  t_perm_vector_dataframe <- as.data.frame(t_perm_vector)
+  ggplot(data = t_perm_vector_dataframe, aes(x = t_perm_vector)) + geom_histogram() + geom_vline(xintercept = t_emp, colour = 'red', size = 2)
+  
 
   mean(t_perm_vector >= t_emp) # Доля пермутационных статистик которые больше или равны выборочной статистике
 

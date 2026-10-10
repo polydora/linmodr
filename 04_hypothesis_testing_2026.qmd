@@ -7,9 +7,6 @@ format:
   revealjs:
     width: 1600
     height: 900
-    margin: 0.05
-    min-scale: 0.2
-    max-scale: 2.0
     code-block-height: 700px
     embed-resources: true
     slide-number: true

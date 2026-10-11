@@ -45,14 +45,14 @@ $code-color: #222222 !default;
 }
 
 .reveal .slide-number {
-  font-size: 50px !important;
+  font-size: 15px !important;
   color: #222222;
   background-color: transparent;
 }
 
 .reveal .slide-logo {
-  max-height: 120px !important;
-  height: 120px !important;
+  max-height: 28px !important;
+  height: 28px !important;
 }
 
 .reveal .code-copy-button {

@@ -64,6 +64,9 @@ install.packages("dplyr")
 - Данные: [aml.csv](data/aml.csv)
 
 
+-[**Документ, через который мы будем обмениваться кодом**](https://docs.google.com/document/d/19GFzAAuE4JanNTehgFo9rTCBWMW5kCVSvg-wIFRjz04/edit?usp=sharing) 
+
+
 ## Линейная регрессия
 
 ### 05 Простая линейная регрессия

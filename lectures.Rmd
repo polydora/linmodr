@@ -78,7 +78,7 @@ install.packages("cowplot")
 
 <!-- - Презентация: [05_LM.html](05_LM.html) -->
 
-<!-- - Код:
+- Код:
     + [05_LM_code.R](05_LM_code.R)
     + [05_LM_task.R](05_LM_task.R)
     + [05_Correlation_permutation_test.R](05_Correlation_permutation_test.R)

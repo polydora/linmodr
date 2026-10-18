@@ -44,11 +44,20 @@ brain_model <-
 
 ##Рисуем графики для разных уровней значимости
 
-pl_alpha1 <- pl_brain + geom_smooth(method="lm", level=0.8) + ggtitle(bquote(alpha==0.2))
+pl_alpha1 <-
+  pl_brain +
+  geom_smooth(method="lm", level=0.8) +
+  ggtitle(bquote(alpha==0.2))
 
-pl_alpha2 <- pl_brain + geom_smooth(method="lm", level=0.95) + ggtitle(bquote(alpha==0.05))
+pl_alpha2 <-
+  pl_brain +
+  geom_smooth(method="lm", level=0.95) +
+  ggtitle(bquote(alpha==0.05))
 
-pl_alpha3 <- pl_brain + geom_smooth(method="lm", level=0.999) + ggtitle(bquote(alpha==0.01))
+pl_alpha3 <-
+  pl_brain +
+  geom_smooth(method="lm", level=0.999) +
+  ggtitle(bquote(alpha==0.01))
 
 
 grid.arrange(pl_alpha1, pl_alpha2, pl_alpha3, ncol=3)
@@ -115,3 +124,6 @@ pl_brain +
 
   # 4) Название графика
   ggtitle("Confidence interval \n and confidence area for prediction")
+
+
+

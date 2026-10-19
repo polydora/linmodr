@@ -58,10 +58,13 @@ install.packages("dplyr")
 ```
 
 
-<!-- - Презентация: [04_hypothesis_testing_2026.html](04_hypothesis_testing_2026.html) -->
+- Презентация: [04_hypothesis_testing_2026.html](04_hypothesis_testing_2026.html)
 - Код: [04_hypothesis_testing_code_2026.R](04_hypothesis_testing_code_2026.R)
 - Объект "population": [population.RData](data/population.RData)
 - Данные: [aml.csv](data/aml.csv)
+
+
+-[**Документ, через который мы будем обмениваться кодом**](https://docs.google.com/document/d/19GFzAAuE4JanNTehgFo9rTCBWMW5kCVSvg-wIFRjz04/edit?usp=sharing) 
 
 
 ## Линейная регрессия
@@ -75,7 +78,7 @@ install.packages("cowplot")
 
 <!-- - Презентация: [05_LM.html](05_LM.html) -->
 
-<!-- - Код:
+- Код:
     + [05_LM_code.R](05_LM_code.R)
     + [05_LM_task.R](05_LM_task.R)
     + [05_Correlation_permutation_test.R](05_Correlation_permutation_test.R)

@@ -1,13 +1,13 @@
 ---
 title: "Тестирование статистических гипотез"
 subtitle: "Линейные модели..."
-author: Марина\ Варфоломеева, Юта\ Тамберг, Вадим\ Хайтов, Анастасия\ Лянгузова, Наталья\ Арбузова
+author: Наталья\ Арбузова, Вадим\ Хайтов, Валентина\  Домашкина, Анастасия\ Лянгузова, Юта\ Тамберг, Марина\ Варфоломеева
 institute: "Кафедра Зоологии беспозвоночных, СПбГУ"
 format:
   revealjs:
     width: 1600
     height: 1080
-    code-block-height: 700px
+    code-block-height: 800px
     embed-resources: true
     slide-number: true
     code-line-numbers: true
@@ -585,7 +585,7 @@ ggplot(data = data.frame(t = -4 : 4), aes(x = t)) +
 
 - Симметричное колоколообразное распределение с толстыми хвостами. 
 - Единственный параметр — число степеней свободы (для доверительного интервала $df = n - 1$).
-- При увеличении объема выборки $t$-распределение приближается к нормальному.
+- При увеличении объема выборки $t$\-распределение приближается к нормальному.
 
 :::
 ::: {.column width="25%"}
@@ -731,7 +731,9 @@ $df = n - 1$
 
 ```{r}
 #| echo: true
-#| eval: !expr -1
+#| classes: big-code
+
+
 library(ggplot2)
 data("diamonds")
 
@@ -742,7 +744,7 @@ good <- diamonds$price[diamonds$cut == "Good"]
 .n <- length(good)                   # объем выборки
 SE <- sd(good)/ sqrt(.n)             # стандартная ошибка
 t_crit <- qt(p = 0.975, df = .n - 1) # критич. зн. t для данного n и p = 0.95
-err <- t_crit * SE                   # предел погрешности
+err <- t_crit * SE                   # величина размаха доверительного интервала 
 err
 # Границы доверительного интервала
 .mean - err
@@ -788,7 +790,7 @@ ideal <- diamonds$price[diamonds$cut == 'Ideal' & diamonds$clarity == 'IF']
 .n <- length(ideal)                   # объем выборки, если нет NA
 SE <- sd(ideal)/ sqrt(.n)             # стандартная ошибка
 t_crit <- qt(p = 0.975, df = .n - 1) # критич. зн. t для данного n и p = 0.95
-err <- t_crit * SE                   # предел погрешности
+err <- t_crit * SE                   # величина размаха доверительного интервала
 err
 # Границы доверительного интервала
 .mean - err
@@ -856,7 +858,7 @@ smr_diamonds <- diamonds %>%             # данные
     .n = n(),                            # объем выборки
     SE = sd(price) / sqrt(.n),           # стандартная ошибка
     t_crit = qt(p = 0.975, df = .n - 1), # критич. зн. t
-    err = t_crit * SE,                   # предел погрешности
+    err = t_crit * SE,                   # величина величина размаха доверительного интервалаа доверительного интервала
     lower = .mean - err,  #  нижняя граница доверительного интервала
     upper = .mean + err   # верхняя граница доверительного интервала
   )
@@ -1109,6 +1111,7 @@ $$t = \cfrac{`r x` - `r mu`}{ `r s` / \sqrt{`r n`} } = `r t_val`$$
 #| echo: false
 #| purl: false
 #| opts.label: fig.medium.taller
+
 cols <- c('yellow2', 'red')
 labs <- c(paste('p =', p_val), expression(alpha ==0.05))
 mappings <- factor(c('p', 'alpha'), levels = c('p', 'alpha'), labels = labs)
@@ -1158,6 +1161,10 @@ gg_test_alpha <- gg_test_0 +
   guides(fill = guide_legend(override.aes = list(alpha = 0.4))) +
   theme(legend.position = c(0, 1), legend.background = element_blank(), legend.justification = c(0, 1))
 # gg_test_alpha
+
+
+cols <- c('yellow2', 'red')
+labs <- c(expression(alpha ==0.05), paste('p =', p_val))
 
 gg_test_alpha_p <- gg_test_t + 
   # Критический уровень значимости
@@ -1926,6 +1933,8 @@ t.test(formula = extra ~ group, data = sleep)
 ## График со средними и доверительными интервалами
 
 ```{r}
+#| classes: big-code
+
 ggplot(data = sleep, aes(x = factor(group), y = extra)) + 
   stat_summary(fun.data = mean_cl_normal)
 ```

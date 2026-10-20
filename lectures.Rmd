@@ -76,11 +76,11 @@ install.packages("gridExtra")
 install.packages("cowplot")
 ```
 
-- Презентация: [05_LM.html](05_LM.html)
+- Презентация: [05_LM.html](05_LM_2026.html)
 
 - Код:
-    + [05_LM_code.R](05_LM_code.R)
-    + [05_LM_task.R](05_LM_task.R)
+    + [05_LM_code.R](05_LM_code_2026.R)
+    + [05_LM_task.R](05_LM_task_2026.R)
     + [05_Correlation_permutation_test.R](05_Correlation_permutation_test.R)
 
 - Данные:

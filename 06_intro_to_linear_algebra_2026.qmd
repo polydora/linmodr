@@ -9,6 +9,7 @@ format:
     height: 1080
     code-block-height: 700px
     embed-resources: true
+    self-contained-math: true 
     slide-number: true
     code-line-numbers: true
     incremental: false
@@ -901,7 +902,7 @@ round(solve(X) %*% X )
 
 ## Примнение обращенных матриц {.center .middle .inverse}
 
-## Решение систем линейных уравнений
+## Решение систем линейных уравнений {.smaller}
 
 Простейший случай использования обратных матриц - решение систем линейных уравнений
 

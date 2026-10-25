@@ -634,18 +634,23 @@ $\color{blue}{\hat{\mathbf{y}}} = \color{purple}{\mathbf{H}}\mathbf{y}$
 
 Влиятельные наблюдения — это наблюдения, которые вносят слишком большой вклад в оценку параметров (коэффициентов) модели.
 
-<!-- ![](images/leverage.png){width=100%}  -->
+::: {.columns}
+::: {.column width="50%"}
 
-```{r}
-#| echo: false
-#| out-width: 90%
+::: {.center}
+![](images/leverage.png){width=100%}
+:::
 
-include_graphics("images/leverage.png")
-```
 
 <small>Из кн. Quinn, Keough, 2002</small>
 
 Учет каких из этих точек повлияет на ход регрессии и почему?
+
+
+:::
+
+::: {.column width="50%"}
+
 
 . . . 
 
@@ -659,28 +664,41 @@ include_graphics("images/leverage.png")
 
 - Точка 3 повлияет сильно, т.к. у нее не только большой остаток, но и экстремальное значение $X$
 
+:::
+:::
+
+
 ## Воздействие точек (leverage)
 
 __Воздействие__ точек $\color{purple}{h_{ii}}$ (_leverage_) показывает силу влияния значений $x_i$ на ход линии регрессии, то есть на $\color{blue}{\hat{y_i}}$
 
 ::: {.columns}
 ::: {.column width="50%"}
-![](images/leverage.png)
+
+
+::: {.center}
+![](images/leverage.png){width=70%}
+:::
 
 <small>Из кн. Quinn, Keough, 2002</small>
 :::
+
+
 ::: {.column width="50%"}
-![](images/seasaw-Weighing-Machine-by-neys-fadzil-on-Flickr.jpg)
+
+::: {.center}
+![](images/seasaw-Weighing-Machine-by-neys-fadzil-on-Flickr.jpg){width=60%}
+:::
+
 
 <small>Weighing Machine by neys fadzil on Flickr</small>
 :::
 :::
 
---
 
 Точки, располагающиеся дальше от $\bar{x}$, оказывают более сильное влияние на $\color{blue}{\hat{y_i}}$
 
-- $\color{purple}{h_{ii}}$ варьирует в промежутке от $1/n$ до 1  
+- $\color{purple}{h_{ii}}$ варьирует в промежутке от $1/n$ до 1    
 - Если  $\color{purple}{h_{ii}} > 2(p/n)$, то надо внимательно посмотреть на данное значение ($p$ — число параметров модели, $n$ — объем выборки)
 
 ## Расстояние Кука (Cook's distance)
@@ -1076,6 +1094,8 @@ mean(p_values$p_no_cor < 0.05)
 ```{r}
 mean(p_values$p_cor < 0.05)
 ```
+
+Повышается вероятность ошибок I рода.
 :::
 
 :::
@@ -1150,6 +1170,7 @@ gg_resid + aes(x =  MRINACount)
 
 ```{r gg-norm-tunnel, echo=FALSE, purl=FALSE}
 #| out-width: 100%
+#| fig-align: center
 
 ## Based on code by Arthur Charpentier:
 ## http://freakonometrics.hypotheses.org/9593
@@ -1166,13 +1187,14 @@ dfr <- data.frame(X, Y)
 reggig <- glm(Y ~ X, data = dfr, family = gaussian(link = "identity"))
 
 op <- par(mar = c(0, 0, 0, 0))
+
 # empty plot
 vX <- seq(min(X) - 0.5, max(X) + 0.5, length = n)
 vY <- seq(min(Y) - 50, max(Y) + 50, length = n)
 mat <- persp(x = vX, y = vY, z = matrix(0, n, n), 
              zlim = c(0, 0.0001),
              theta =  - 30, phi = 20, expand = 0.0018,
-             ticktype  = "detailed",  box = FALSE, border = "gray60")
+             ticktype  = "detailed",  box = FALSE, border = "gray60")  
 
 x <- seq(min(X), max(X), length = 501)
 
@@ -1221,6 +1243,7 @@ for(j in n:1){
   C <- trans3d(x, y, z, mat)
   lines(C, col = "steelblue")
 }
+mtext("PIQ", side = 2, line = 1.5, cex = 0.9)
 par(op)
 ```
 <!-- ::: -->
@@ -1358,7 +1381,7 @@ plot_grid(pl_hom, pl_heter,
 
 ## Чем опасна гетероскедастичность
 
-Создадим две генеральные совокупности, в которых нет связи между $y$ и $x$
+Создадим две генеральные совокупности, в которых **нет связи** между $y$ и $x$ (справедлива $H_0$)
 
 ```{r echo = FALSE, fig.width=10}
 N <- 1000
@@ -1389,8 +1412,7 @@ plot_grid(pl_hom, pl_heter)
 
 
 
-::: {.columns}
-::: {.column width="60%"}
+<!-- ::: {.column width="60%"} -->
 
 ```{r}
 p_values <- data.frame(p_no_heter = rep(NA, 1000), p_heter = NA)
@@ -1403,14 +1425,16 @@ for(i in 1:1000){
   p_values$p_heter[i] <- summary(M_heter)$coefficients[2, 4] #p-value из summary модели     
   }
 ```
-:::
+
+
+::: {.columns}
+
 ::: {.column width="40%"}
 - Нет гетероскедастичности и нет связи между $y$ и $x$ (справедлива $H_0$) частота ошибок составляет 
 
 ```{r}
 mean(p_values$p_no_heter < 0.05)
 ```
-:::
 :::
 
 ::: {.column width="40%"}
@@ -1419,6 +1443,10 @@ mean(p_values$p_no_heter < 0.05)
 ```{r}
 mean(p_values$p_heter < 0.05)
 ```
+
+Повышается вероятность ошибок I рода.
+:::
+
 :::
 
 ## Проверка на гетероскедастичность
@@ -1459,13 +1487,16 @@ plot_grid(pl_heter, pl_heter2, pl_heter_resid, pl_heter_resid2,  nrow = 2)
     - подбираем модель с другим распределением остатков (обобщенную линейную модель)
 - Моделируем гетерогенность дисперсии.
 
-## Тренинг по анализу остатков {.center .middle .inverse}
+## Самые частые паттерны в остатках {.center .middle .inverse}
 
 ## Некоторые частые паттерны на графиках остатков
 
 ::: {.columns}
 ::: {.column width="60%"}
-![](images/Residuals.png)
+
+::: {.center}
+![](images/Residuals.png){width=100%}
+:::
 
 <small>Из кн. Logan, 2010, стр. 174</small>
 :::
@@ -1479,6 +1510,217 @@ plot_grid(pl_heter, pl_heter2, pl_heter_resid, pl_heter_resid2,  nrow = 2)
 - Рис. d — Нелинейный паттерн. Линейная модель использована некорректно
 :::
 :::
+
+## Зоопарк нарушений условий применимости регрессионного анализа {.center .middle .inverse}
+
+## Загон №1 (*Curva nonlinearis*)
+
+::: {.columns}
+::: {.column width="40%"}
+
+::: {.center}
+![](images/Curva nonlinearis.png){width=100%}
+:::
+
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+
+#### Генерируем данные #########
+set.seed(90829)
+x1 <- rnorm(100, 5, 1)
+y1 <- 10 + x1  - x1^2  + rnorm(100, 0, 2)
+dat1 = data.frame(x1, y1)
+################################
+
+ggplot(dat1, aes(x = x1, y =  y1)) + geom_point()+
+  geom_smooth(method="lm", alpha = 0.7)
+
+```
+
+
+:::
+:::
+
+
+
+
+## Загон №2 (*Heteroscedastica horribilis*)
+
+::: {.columns}
+::: {.column width="40%"}
+
+::: {.center}
+![](images/Heteroscedastica horribilis.png){width=100%}
+:::
+
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+
+#######################
+set.seed(7657674)
+x2 <- runif(1000, 1, 100)
+b_0 <- 100;  b_1 <- 20
+h <- function(x) x^0.9
+eps <- rnorm(1000, 0, h(x2^1.1))
+y2 <- b_0 + b_1 * x2 + eps
+dat2 <- data.frame(x2, y2)
+######################
+
+ggplot(dat2, aes(x = x2, y = y2)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+
+:::
+:::
+
+
+
+## Загон №3 (*Mensurae atypica*)
+
+::: {.columns}
+::: {.column width="40%"}
+
+::: {.center}
+![](images/Mensurae atypica.png){width=100%}
+:::
+
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+
+#################
+set.seed(9283)
+x3 <- rnorm(25, 50, 10)
+b_0 <- 20; b_1 <- 20; eps <- rnorm(50, 0, 100)
+y3 <- b_0 + b_1*x3 + eps
+y3[100] <- 1000; x3[100] <- 95; y3[99] <- 1300; x3[99] <- 90; y3[98] <- 1500; x3[98] <- 80
+dat3 <- data.frame(x3, y3)
+#################
+
+ggplot(dat3, aes(x=x3, y=y3)) + geom_point() + geom_smooth(method="lm")
+
+```
+
+:::
+:::
+
+## Загон №4 (*Anima amissa*)
+
+::: {.columns}
+::: {.column width="40%"}
+
+::: {.center}
+![](images/Anima amissa.png){width=100%}
+:::
+
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+#######################
+set.seed(7657674)
+x1 <- runif(30, 1, 100)
+x2 <- runif(30, 1, 100)
+x3 <- runif(30, 1, 100)
+b_0 <- 100;  b_1 <- -20; b_2 <- 20; b_3 <- 0
+eps <- rnorm(30, 0, 1)
+y <- b_0 + b_1 * x1 + b_2*x2 + b_3*x3 + eps
+dat4 <- data.frame(x1, x2, x3, y)
+######################
+
+ggplot(dat4, aes(x=x1, y=y)) + geom_point() + geom_smooth(method="lm")
+
+```
+
+:::
+:::
+
+
+## Загон №5 (*Perdidit commercium*)
+
+::: {.columns}
+::: {.column width="40%"}
+
+::: {.center}
+![](images/Perdidit commercium.png){width=100%}
+:::
+
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+
+
+#######################
+set.seed(7657674)
+x1 <- rnorm(100, 10, 1)
+x2 <- rnorm(100, 100, 1)
+b_0 <- 100;  b_1 <- -1; b_2 <- 2; b_12 <- 10
+dat5 <- data.frame(x1, x2)
+X <- model.matrix(~ x1 * x2, data = dat5)
+dat5$y <- X %*% c(b_0, b_1, b_2, b_12) + rnorm(100, 0, 1)
+######################
+
+ggplot(dat5, aes(x=x1, y=y)) + geom_point() + geom_smooth(method="lm")
+```
+
+:::
+:::
+
+
+## Загон №6 (*Data longitudinalis*)
+
+::: {.columns}
+::: {.column width="40%"}
+
+::: {.center}
+![](images/Data longitudinalis.png){width=100%}
+:::
+
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+#| out-width: 100%
+#######################
+set.seed(657674)
+ts_AR1 <- as.numeric(arima.sim(n = 30, list(ar = 0.999)))
+ts_AR2 <- as.numeric(arima.sim(n = 30, list(ar = 0.999)))
+dat6 <- data.frame(Year = 1:30, V1 = ts_AR1, V2 = ts_AR2)
+######################
+
+ggplot(dat6, aes(x=V2, y=V1)) + geom_point() + geom_smooth(method="lm")
+
+```
+
+:::
+:::
+
+
 
 ## Задание 3
 
@@ -1701,6 +1943,9 @@ qqPlot(mod3, id = FALSE)
 Выполните последнее задание в одном из этих файлов:
 - 07_task_assumptions_catsM.R
 - 07_task_assumptions_GAG.R
+
+
+
 
 ## Take-home messages
 

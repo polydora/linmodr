@@ -1,5 +1,5 @@
 ---
-title: "Краткое введение в мир матричной алгебры"
+title: "Описание линейных моделей, проверка их значимости и валидности"
 subtitle: "Линейные модели..."
 author: Вадим\ Хайтов, Анастасия\ Лянгузова, Наталья\ Арбузова, Валентина\ Домашкина, Юта\ Тамберг, Марина\ Варфоломеева
 institute: "Кафедра Зоологии беспозвоночных, СПбГУ"
@@ -9,6 +9,7 @@ format:
     height: 1080
     code-block-height: 700px
     embed-resources: true
+    self-contained-math: true 
     slide-number: true
     code-line-numbers: true
     incremental: false
@@ -20,1281 +21,1703 @@ format:
     theme: default
     css:
       - assets/my_styles_2026.css
+execute:
+  cache: true
 ---
+
+```{r setup, include = FALSE, cache = FALSE, purl = FALSE, fig.showtext = TRUE}
+library(knitr)
+library(ggplot2)
+
+```
+
+```{r libs, include=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+library(ggplot2)
+
+theme_set(theme_bw(base_size = 20))
+```
+
+## Описание и проверка значимости линейных моделей {.center .middle .inverse}
 
 ## Вы сможете
 
-- Объяснить что такое матрицы и какие бывают их основные разновидности
-- Выполнить базовые операции с матрицами с использованием функций R
-- Применить в среде R методы матричной алгебры для решения простейших задач
+- Подобрать линейную модель зависимости переменной-отклика от одного предиктора
+- Протестировать значимость линейной модели в целом и значимость отдельных ее коэффициентов при помощи t и F критериев
+- Проверить условия применимости линейной регрессии при помощи графиков
 
-```{r setup, include = FALSE, cache = FALSE, purl = FALSE}
-# output options
-options(width = 70, scipen = 6, digits = 3)
-library(knitr)
-# chunk default options
-opts_chunk$set(fig.align = 'center', tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE)
+```{r echo=FALSE, purl=FALSE}
+lm_equation <- function(fit, strict = TRUE, rnd = 2){
+#   extracting call formula 
+  frml <- as.character(fit$call)[2]
+#   extract signs
+    sign <- ifelse(grepl("-", coef(fit)[-1]), " - ", " + ")
+  # extract coefficients
+  coeffs <- format(round(abs(coef(fit)), rnd), digits = 2, nsmall = rnd, trim = TRUE)
+  if(strict == TRUE){
+    i <- 1:(length(coeffs) - 1)
+    vars <- c("Y", paste0(" X", i))
+    
+  } else {
+# extract vector of variable names
+  vars <- c(all.vars(formula(fit))[1], names(fit$coefficients)[-1])
+# combine everything
+  }
+  start <- ifelse(coef(fit)[1] > 0, paste(vars[1], coeffs[1], sep = " = "), paste(vars[1], coeffs[1], sep = " = - "))
+  end <- paste(sign, coeffs[-1], vars[-1], sep = "", collapse = "")
+  return(paste0(start, end, sep = ""))
+}
 ```
 
-## Зачем понадобилась эта лекция?
+## Вспомним пример из прошлой лекции {.center .middle .inverse}
 
-```{r, out.width = "90%", echo=FALSE}
-include_graphics("images/Page_Zuur_with_matrix_notation.png")
-```
+## Пример: IQ и размеры мозга
 
-## Решите задачу
+Зависит ли уровень интеллекта от размера головного мозга? (Willerman et al. 1991)
 
-В популяции некоторого организма в момент времени $t_1$ представлено четыре возрастные группы:
+::: {.columns}
+::: {.column width="50%"}
+![Scan_03_11](images/MRI-Scan_03_11-by_bucaorg_Paul_Burnett_no_Flickr.jpg)
 
-| Возрастная группа| Количество особей |
-|:-----------------:|:-----------------:|
-|         0+        |        100        |
-|         1+        |         10        |
-|         2+        |         5         |
-|         3+        |         1         |
+<small>[Scan_03_11](https://flic.kr/p/c45eZ3) by bucaorg(Paul_Burnett) on Flickr</small>
+:::
+::: {.column width="50%"}
+Было исследовано 20 девушек и 20 молодых людей
 
----
+У каждого индивида измеряли:
 
-Какова будет численность возрастных групп в момент времени $t_2$ если известно, что
+- вес
+- рост
+- размер головного мозга (количество пикселей на изображении ЯМР сканера)
+- Уровень интеллекта измеряли с помощью IQ тестов
 
-1. каждая особь возрастом 2+ оставляет 10 потомков, а каждая особь возрастом 3+ - 20 потомков.
-2. вероятность выживания особей при переходе от $t_1$ к $t_2$ описывается следующими величинами
+<small>Пример: Willerman, L., Schultz, R., Rutledge, J. N., and Bigler, E. (1991), "In Vivo Brain Size and Intelligence", Intelligence, 15, p.223--228.  
+Данные: ["The Data and Story Library"](http://lib.stat.cmu.edu/DASL)  
+Фото: [Scan\_03\_11](https://flic.kr/p/c45eZ3) by bucaorg (Paul Burnett) on Flickr
+</small>
+:::
+:::
 
-| Переход из  младшей группы в старшую | Вероятность выживания |
-|:------------------------------------:|:---------------------:|
-|                0+ - 1+               |          0.1          |
-|                1+ - 2+               |          0.5          |
-|                2+ - 3+               |          0.3          |
+## Вспомним, на чем мы остановились
 
-## Простое, но нерациональное решение
+```{r echo=FALSE, purl=TRUE}
+## Код из прошлой лекции #################################
 
-| Возрастная группа | Количество особей в момент времени $t_2$ |
-|:-----------------:|:----------------------------------------:|
-| 0+                | $5 \cdot 10 + 1 \cdot 20 = 70$ |
-| 1+                | $100 \cdot 0.1 = 10$           |
-| 2+                | $10 \cdot 0.5 = 5$     |
-| 3+                | $5 \cdot 0.3 = 1.5$    |
-
-## Рациональное решение
-
-Демографический вектор в момент времени $t_1$
-
-```{r}
-#| echo: true
-
-t1 <- c(100, 10, 5, 1)
-t1
-```
-
-## Рациональное решение
-
-Демографическая матрица Лесли
-
-$$
-\begin{pmatrix}
-F_1 & F_2 & F_3 & F_4 \\
-P_{0+ -1+}& 0 & 0 & 0  \\
-0 & P_{1+-2+} & 0 & 0  \\
-0 & 0 & P_{2+-3+} & 0  \\
-\end{pmatrix}
-$$
-
-```{r}
-#| echo: true
-
-lesley <- matrix(c(c(0, 0, 10, 20), c(0.1, 0, 0, 0), c(0, 0.5, 0, 0), c(0, 0, 0.3, 0)), nrow = 4, byrow = T)
-
-lesley
-```
-
-## Рациональное решение - решение средствами матричной алгебры
-
-```{r}
-#| echo: true
-
-lesley %*% t1
-```
-
-## Зачем нужны матрицы? {.center .middle .inverse}
-
-## Матричные объекты
-
-- Есть много типов объектов, для которых такое выражение оказывается наиболее естественным (изображения, описания многомерных объектов и т.д.)
-- В матрицах, как и в обычных числах, скрыта информация, которую можно извлекать и преобразовывать по определенным правилам
-
-## Структура матриц
-
-$$\begin{pmatrix}
-a_{11} & a_{12} & \cdots & a_{1c} \\
-a_{21} & a_{22} & \cdots & a_{2c} \\    
-\vdots & \vdots & \ddots & \vdots \\
-a_{r1} & a_{r2} & \cdots & a_{rc}
-\end{pmatrix}
-    $$
-
-Размер (порядок) матрицы $r \times c$
-
-## Разновидности матриц
-
-Вектор-строка (row matrix)
-
-$$ 
-\textbf {A} =
-\begin{pmatrix}
-1 & 2 & 3 
-\end{pmatrix}
-$$
-
-Вектор-столбец (column matrix)
-
-$$ 
-\textbf {B} =
-\begin{pmatrix}
-1 \\
-4 \\    
-7 \\
-10 
-\end{pmatrix}
-$$
-
-## Разновидности матриц
-
-Прямоугольные матрицы (rectangular matrices)
-
-$$ 
-\textbf {C} =
-\begin{pmatrix}
-1 & 2 & 3 \\
-4 & 5 & 6 \\    
-7 & 8 & 9 \\
-10 & 11 & 12 
-\end{pmatrix}
-$$
-
-$$ 
-\textbf {D} =
-\begin{pmatrix}
-1 & 2 & 3 \\
-4 & 5 & 6     
-\end{pmatrix}
-$$
-
-В таком виде обычно представляются исходные данные
-
-## Квадратные матрицы (square matrices)
-
-Это наиболее "операбельные" матрицы
-
-$$ 
-\textbf {E} =
-\begin{pmatrix}
-1 & 2 & 3 \\
-4 & 5 & 6 \\    
-7 & 8 & 9 
-\end{pmatrix}
-$$
-
-Диагональные матрицы (diagonal matrix)
-
-$$ 
-\textbf {F} =
-\begin{pmatrix}
-1 & 0 & 0 & 0 \\
-0 & 5 & 0 & 0 \\    
-0 & 0 & 9 & 0 \\
-0 & 0 & 0 & 1
-\end{pmatrix}
-$$
-
-<!-- ##Квадратные матрицы (square matrices) -->
-
-<!-- Треугольные матрицы (triangular matrices) -->
-<!-- $$ \textbf {H} = -->
-<!-- \begin{pmatrix} -->
-<!-- 1 & 2 & 3 & 4 \\ -->
-<!-- 0 & 5 & 6 & 7 \\     -->
-<!-- 0 & 0 & 9 & 10 \\ -->
-<!-- 0 & 0 & 0 & 1 -->
-<!-- \end{pmatrix} -->
-<!-- $$ -->
-
-<!-- или -->
-
-<!-- $$  -->
-<!-- \textbf {H} = -->
-<!-- \begin{pmatrix} -->
-<!-- 1 & 0 & 0 & 0 \\ -->
-<!-- 3 & 5 & 0 & 0 \\     -->
-<!-- 4 & 7 & 9 & 0 \\ -->
-<!-- 5 & 8 & 10 & 11 -->
-<!-- \end{pmatrix} -->
-<!-- $$ -->
-
-## Квадратные матрицы (square matrices)
-
-Единичная матрица (identity matrix)
-
-$$ 
-\textbf {I} =
-\begin{pmatrix}
-1 & 0 & 0 & 0 \\
-0 & 1 & 0 & 0 \\    
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 1
-\end{pmatrix}
-$$
-
-Единичная матрица (обозначение $\textbf{I}$) занимают особое место в матричной алгебре.   
-Она выполняет ту же роль, которую выполняет единица в обычной алгебре. 
-
-## Особенность квадратных матриц
-
-Для квадратных матриц могут быть найдены (но не обязательно существуют) некоторые важные для матричной алгебры показатели: *определитель*, *инверсия*, *собственные значения* и *собственные векторы*
-
-## Задание
-
-Создайте с помощью R следующую матрицу
-
-$$ 
-\begin{pmatrix}
-1 & 2 & 3 & 4 \\
-5 & 6 & 7 & 8 \\    
-9 & 10 & 11 & 12 \\
-\end{pmatrix}
-$$
-
-## Решение
-
-```{r, echo=T}
-matrix(1:12, ncol = 3, byrow = TRUE)
-```
-
-## Задание
-
-Создайте с помощью R единичную матрицу
-
-$$ 
-\begin{pmatrix}
-1 & 0 & 0 & 0 \\
-0 & 1 & 0 & 0 \\    
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 1 
-\end{pmatrix}
-$$
-
-## Решение
-
-```{r, echo=TRUE, purl = FALSE}
-diag(rep(1,5))
-```
-
-## Операции с матрицами {.center .middle .inverse}
-
-## Транспонирование матриц
-
-```{r}
-A <- matrix(1:12, ncol = 3)
-A
-```
-
-Транспонированная матрица $\textbf{A}$
-
-```{r}
-B <- t(A)
-B
-```
-
-## Сложение матриц
-
-```{r, purl = FALSE}
-A + 4
-```
-
-```{r, purl = FALSE}
-A + A
-```
-
-Но! Нельзя складывать матрицы разных размеров
-
-```{r, eval=TRUE, purl = FALSE, error=TRUE}
-A + B
-```
-
-## Биологическое приложение
-
-Предположим, что мы подсчитывали двумя разными методами крупных и мелких животных  трех  видов в одних и тех же пробах
-
-```{r, echo = FALSE, purl = T}
-Large <- data.frame(Sp1 = round(rnorm(5, 10, 2)), Sp2 = round(rnorm(5, 10, 3)), Sp3 = round(rnorm(5, 10, 2))) 
-
-rownames(Large) <- c("Sample1", "Sample2", "Sample3", "Sample4", "Sample5" )
-
-Small <- data.frame(Sp1 = round(rnorm(5, 50, 5)), Sp2 = round(rnorm(5, 50, 5)), Sp3 = round(rnorm(5, 50, 5))) 
-
-rownames(Small) <- c("Sample1", "Sample2", "Sample3", "Sample4", "Sample5" )
-```
-
-
-Крупные животные
-```{r, echo=FALSE, purl = FALSE}
-Large
-```
-
-Мелкие животные
-
-```{r, echo=FALSE, purl = FALSE}
-Small
-```
-
-
-
-## Биологическое приложение
-
-Общее обилие
-
-```{r, purl = T}
-Large + Small
-```
-
-## Простое умножение
-
-**Простое умножение на число**
-
-```{r, purl = FALSE}
-A * 4
-```
-
-
-**Умножение на матрицы на вектор**
-
-Простое умножение матрицы на вектор возможно только если число элементов в векторе равно числу строк в матрице
-
-```{r, purl = FALSE}
-#| echo: true
-
-A * c(10, 11, 12, 13)
-```
-
-Все элементы первой строки матрицы умножаются на первый элемент вектора, все элементы второй строки на второй элемент вектора и т.д.  
-
-## Биологическое применение
-
-Допустим, учет организмов в части описаний проходил не на всей выборке, а лишь в ее части.
-
-```{r, purl = T}
-#| echo: true
-
-Rpocessed_portion <- c(1, 1, 1/2, 1/3, 1/4)
-Processed_Factor <- 1/Rpocessed_portion
-```
-
-```{r, purl = T}
-#| echo: true
-
-Small * Processed_Factor
-```
-
-## Скалярное произведение векторов
-
-Это уже настоящая матричная операция
-
-Допустимо только для векторов одинаковой размерности
-
-$$
-\textbf{a} \bullet \textbf{b} =  
-\begin{pmatrix}
-a_1 \\ a_2 \\ a_3 \\ a_4 \\ a_5 \\ a_6 \\ a_7
-\end{pmatrix}
-\times
-\begin{pmatrix}
-b_1 & b_2 & b_3 & b_4 & b_5 & b_6 & b_7
-\end{pmatrix}
-= a_1 \cdot b_1 + a_2 \cdot b_2 + \ldots + a_7 \cdot b_7 = x 
-$$
-
-Результат этой операции - число (скаляр)
-
-## Биологическое применение
-
-Сколько особей родится в популяции, если мы знаем репродуктивные характеристики всех возрастных групп?
-
-$$
-\begin{pmatrix}
-N_1 \\ N_2 \\ N_3 \\ N_4 \\ N_5 \\ N_6 \\ N_7
-\end{pmatrix}
-\times
-\begin{pmatrix}
-F_1 & F_2 & F_3 & F_4 & F_5 & F_6 & F_7
-\end{pmatrix}
-$$
-
-```{r}
-#| echo: true
-N <- c(20, 40, 32, 45, 80, 50, 10)
-Fert <- c( 0,  0,   1,   2,   2,   0,   0)
-t(N) %*% (Fert)
-```
-
-## Умножение матриц {.smaller}
-
-Умножать можно только в том случае, если число строк одной из матриц равно числу столбцов у другой матрицы. 
-
-Матрица **A**
-
-```{r}
-A
-```
-
-Матрица **B** 
-
-```{r}
-B
-```
-
-кзультата матричного умножения $\textbf{A} \times \textbf{B}$
-
-```{r}
-#| echo: true
-
-A %*% B
-```
-
-У первой матрицы (`A`) число строк равно числу столбцов у второй матрицы (`B`)
-
-## Умножение матриц
-
-Порядок имеет смысл!
-
-Если поменять местами матрицы `A` и `B`, то изменится и результат  
-
-```{r}
-#| echo: true
-
-B %*% A
-```
-
-## Умножение матриц
-
-Удалим из матрицы `B` последнюю строчку 
-
-```{r}
-#| echo: true
-
-C <- B[-3, ]
-C
-```
-
-Такое произведение возможно
-
-```{r}
-#| echo: true
-
-C %*% A
-```
-
-Но невозможно такое произведение
-
-```{r, eval=TRUE, error=TRUE}
-#| echo: true
-
-A %*% C
-```
-
-## Умножение матриц
-
-Если матрица (**A**) не квадратная, то нельзя произвести такое умножение
-
-```{r, eval=FALSE}
-#| echo: true
-
-A %*% A
-```
-
-## Схема умножения матриц
-
-```{r}
-#| echo: true
-
-M1 <- matrix(c(1, 2, 3, 4, 5, 6), byrow = T, ncol = 3)
-M2 <-  matrix(7:12, byrow = T, ncol = 2)
-M1 %*% M2  
-```
-
-$$
-\begin{pmatrix}
-1 & 2 & 3 \\ 
-4 & 5 & 6 \\
-\end{pmatrix}
-\times
-\begin{pmatrix}
-7 & 8 \\ 9 & 10\\ 11 & 12\\
-\end{pmatrix}
-=
-\begin{pmatrix}
-7 \cdot 1 + 9 \cdot 2 + 11 \cdot 3 & 8 \cdot 1 + 10 \cdot 2 + 12 \cdot 3 \\ 7 \cdot 4 + 9 \cdot 5 + 11 \cdot 6 & 8 \cdot 4 + 10 \cdot 5 + 12 \cdot 6  \\
-\end{pmatrix}
-= \\
-=
-\begin{pmatrix}
-58 & 64 \\ 139 & 154\\ 
-\end{pmatrix}
-$$
-
-## Схема умножения матриц
-
-$$
-\begin{pmatrix}
-A & B  \\
-C & D \\
-\end{pmatrix}
-\times
-\begin{pmatrix}
-E & F \\ G & H\\ 
-\end{pmatrix}
-=
-\begin{pmatrix}
-(A \cdot E + B \cdot G)  & (A \cdot F + B \cdot H ) \\ (C \cdot E + D \cdot G)  & (C \cdot F + D \cdot H)  \\
-\end{pmatrix}
-$$
-
-## Биологическое применение
-
-Простейший пример использования умножения матриц - построение модели динамики демографической структуры популяции
-Для вычислений необходим начальный *демографический вектор* и *матрица Лесли*
-
-$$
-\begin{pmatrix}
-F_1 & F_2 & F_3 & F_4 & F_5 & F_6 & F_7 \\
-P_{1-2}& 0 & 0 & 0 & 0 & 0 & 0 \\    
-0 & P_{2-3} & 0 & 0 & 0 & 0 & 0 \\    
-0 & 0 & P_{3-4} & 0 & 0 & 0 & 0 \\    
-0 & 0 & 0 & P_{4-5} & 0 & 0 & 0 \\    
-0 & 0 & 0 & 0 & P_{5-6} & 0 & 0 \\    
-0 & 0 & 0 & 0 & 0 & P_{6-7} & 0     
-\end{pmatrix}
-\times
-\begin{pmatrix}
-N1_t \\
-N2_t \\
-N3_t \\    
-N4_t \\
-N5_t \\
-N6_t \\
-N7_t
-\end{pmatrix}
-=
-\begin{pmatrix}
-N1_{t+1} \\
-N2_{t+1} \\
-N3_{t+1} \\    
-N4_{t+1} \\
-N5_{t+1} \\
-N6_{t+1} \\
-N7_{t+1}
-\end{pmatrix}
-$$
-
-## Простейшая демографическая модель
-
-```{r, echo=FALSE}
-T1 <- c(20, 40, 32, 45, 80, 50, 10)
-Age <- c("0", "1-10", "11-20", "21-35", "36-45", "46-55", "56-65")
-Pop <- data.frame(Age, T1)
-```
-
-Демографический вектор в момент времени $t$ 
-
-```{r, echo=FALSE}
-Pop
-```
-
-Матрица Лесли
-
-```{r, echo=FALSE}
-Lesl <- matrix(
-c( 0,  0,   1,   2,   2,   0,   0,
-  0.6, 0,   0,   0,   0,   0,   0,
-   0,  0.7, 0,   0,   0,   0,   0, 
-   0,  0,   0.8, 0,   0,   0,   0,
-   0,  0,   0,   0.7, 0,   0,   0,
-   0,  0,   0,   0,   0.6, 0,   0,
-   0, 0,    0,   0,   0,  0.2, 0  ),
-byrow = T, 
-ncol = 7)
-Lesl
-```
-
-## Демографическая струкутра в момент времени $t+1$ 
-
-```{r}
-Pop$T2 <- as.vector( Lesl %*% (Pop$T1 ))
-Pop$T3 <- as.vector( Lesl %*% (Pop$T2 ))
-Pop$T4 <- as.vector( Lesl %*% (Pop$T3 ))
-Pop$T5 <- as.vector( Lesl %*% (Pop$T4 ))
-Pop$T6 <- as.vector( Lesl %*% (Pop$T5 ))
-Pop$T7 <- as.vector( Lesl %*% (Pop$T6 ))
-Pop$T8 <- as.vector( Lesl %*% (Pop$T7 ))
-Pop$T9 <- as.vector( Lesl %*% (Pop$T8 ))
-Pop$T10 <- as.vector( Lesl %*% (Pop$T9 ))
-```
-
-## Демографическая струкутра в момент времени $t+1$ 
-
-```{r, echo=FALSE, message=FALSE, fig.width=6, fig.height=6}
-library(ggplot2)
-library(reshape2)
-Pop2 <- melt(Pop)
-ggplot(Pop2, aes(x=Age, y = value)) + 
-  geom_bar(stat = "identity") + 
-  facet_wrap(~variable, ncol = 2, dir = "v") + 
-  labs(x = "Возраст", y = "Число особей")
-```
-
-<!-- ## Задание -->
-
-<!-- Представим себе, что вы решили купить четыре товара, по следующим ценам  -->
-
-<!-- $$ -->
-<!-- \begin{matrix} -->
-<!-- Товар & Цена \\ -->
-<!-- \hline -->
-<!-- Товар 1 & 10 \\ -->
-<!-- Товар 2 & 20 \\ -->
-<!-- Товар 3 & 30 \\ -->
-<!-- Товар 4 & 40 \\ -->
-<!-- \end{matrix} -->
-<!-- $$ -->
-
-<!-- Прямых выходов на продавца у вас нет, но есть три посредника, которые выставляют следующие "накрутки" цен.  -->
-
-<!-- Какой из посредников выгоднее? -->
-
-<!-- $$ -->
-<!-- \begin{matrix} -->
-<!--  & Товар 1 & Товар 2 & Товар 3 & Товар 4 \\ -->
-<!-- \hline -->
-<!-- Посредник 1 & 0.1& 0.15& 0.05& 0.05 \\ -->
-<!-- Посредник 2 & 0.15& 0.15& 0.09& 0.01 \\ -->
-<!-- Посредник 3 & 0.2& 0.05& 0.1& 0.1   -->
-<!-- \end{matrix} -->
-<!-- $$ -->
-
-## Вычисление корреляций через произведение матриц {.smaller}
-
-Коэффициент корреляции
-$$r_{x,y} = \frac{\sum(x_i-\bar{x})(y_i-\bar{y})} {\sqrt{\sum(x_i-\bar{x})^2}\sqrt{\sum(y_i-\bar{y})^2}} = \frac{cov_{x,y}} {\sigma_x \sigma_y}$$
-В матричной форме
-
-$$\bf{Cor} = \frac{\bf{{X}'_{stand}}\bf{X_{stand}}}{N-1}$$
-
-Используем известные нам данные по размеру головного мозга
-
-```{r}
-#| echo: true
-#| code-fold: false
-brain <- read.csv("data/IQ_brain.csv", header = TRUE)
-br <- brain[complete.cases(brain), -1]
-br <- as.matrix(br)
-br_scaled <- scale(br) #Стандартизуем значения
-```
-
-Матричное произведение 
-
-```{r}
-#| echo: true
-
-t(br_scaled) %*% br_scaled / (nrow(br_scaled) - 1) 
-```
-
-
-
-<!-- ## Задание -->
-
-<!-- Используя датасет `iris`, вычислите корреляцию между `Sepal.Length`  и `Sepal.Width` -->
-
-<!-- ## Решение {.smaller} -->
-
-<!-- ```{r} -->
-<!-- L <- iris$Sepal.Length -->
-<!-- W <- iris$Sepal.Width -->
-<!-- matr <- as.matrix(data.frame(L, W), ncol = 2) -->
-
-<!-- matr_scaled <- scale(matr) -->
-
-<!-- t(matr_scaled) %*% matr_scaled / (nrow(matr_scaled) - 1)  -->
-<!-- ``` -->
-
-<!-- Проверим -->
-
-<!-- ```{r} -->
-<!-- cor(matr) -->
-<!-- ``` -->
-
-## Важные положения теории матриц {.center .middle .inverse}
-
-## Если существует произведение матриц $\textbf{BC}$, то не обязательно существует $\textbf{CB}$
-
-```{r}
-#| echo: true
-B <- matrix(1:24, ncol = 4)
-C <- matrix(1:12, ncol = 3)
-
-B %*% C
-```
-
-НО!
-
-```{r, eval=TRUE, error=TRUE}
-#| echo: true
-C %*% B
-```
-
-Такое произведение невозможно
-
-## Всегда существует такое произведение матриц $\textbf{CС'}$ и $\textbf{C'С}$
-
-```{r}
-#| echo: true
-C %*% t(C)
-```
-
-```{r}
-#| echo: true
-t(C) %*% C
-```
-
-## Произведение матриц $\textbf{BC}$ как правило не равно $\textbf{CB}$
-
-```{r}
-#| echo: true
-B <- matrix(1:9, ncol = 3)
-C <- matrix(11:19, ncol = 3)
-
-B %*%  C
-
-```
-
-```{r}
-#| echo: true
-C %*% B
-
-```
-
-
-## $[\textbf{BC}]' = \textbf{C}'\textbf{B}'$
-
-```{r}
-#| echo: true
-
-t(B %*% C)
-```
-
-```{r}
-#| echo: true
-
-t(C) %*% t(B)
-```
-
-## Произведение $\textbf{BB'}$ и $\textbf{B'B}$ всегда дает симметричную матрицу
-
-```{r}
-#| echo: true
-
-B %*% t(B)
-```
-
-```{r}
-#| echo: true
-
-t(B) %*% B
-```
-
-## Определтель матрицы
-
-Определитель матрицы --- это некоторое число.
-
-По значению этого числа можно *определить* есть ли у матрицы некоторые свойства (например, обратима ли матрица).
-
-Определитель бывает *только у квадратных матриц*.
-
-## Определтель матрицы {.smaller}
-
-Матрицы, имеющие определитель равный нулю, называются *сингулярными* матрицами.
-
-```{r}
-#| echo: true
-
-B
-det(B)
-```
-
-<br>
-<br>
-
-НО!
-
-```{r}
-#| echo: true
-
-B[3,3] <- B[3,3] + 1
-B
-det(B)
-```
-
-## Обращение (инверсия) матриц
-
-В матричной алгебре нет процедуры деления. Вместо нее используют обращение матриц.
-
-$$
-\textbf{X}^{-1}\textbf{X} = \textbf{I}
-$$
-
-Произведение инверсии матрицы и исходной матрицы дает единичную матрицу
-
-## Обращение (инверсия) матриц
-
-Только некоторые квадратные матрицы, могут иметь обратную матрицу. 
-
-Поэтому для квадратных матриц  справедливо 
-$$\textbf{X} \textbf{X}^{-1} = \textbf{X}^{-1} \textbf{X}$$
-
-## Обращение (инверсия) матриц
-
-Для матриц, определитель которых равен нулю, обратной матрицы не существует
-
-## Обращение матриц в среде R
-
-Создадим матрицу
-
-```{r, echo=FALSE}
-#| echo: true
-
-X <- matrix(c(seq(1, 8),10), nrow = 3, byrow = T)
-X
-```
-
-Ее определитель
-
-```{r}
-#| echo: true
-
-det(X)
-```
-
-## Обращение матриц в среде R
-
-Обратная матрица 
-
-```{r}
-#| echo: true
-
-solve(X)
-```
-
-По определению, $\textbf{X}^{-1}\textbf{X} = \textbf{I}$
-
-```{r}
-#| echo: true
-
-round(solve(X) %*% X )
-```
-
-## Примнение обращенных матриц {.center .middle .inverse}
-
-## Решение систем линейных уравнений
-
-Простейший случай использования обратных матриц - решение систем линейных уравнений
-
-$$
-\begin{cases}
-1x + 2y + 3z = 2\\  
-4x + 5y + 6z = 4 \\  
-7x + 8y + 10z = 10   
-\end{cases}
-$$
-
-Эту систему можно представить в матричном виде
-
-$$
-\begin{pmatrix}
-1 & 2 & 3 \\
-4 & 5 & 6 \\
-7 & 8 & 10
-\end{pmatrix}
-\begin{pmatrix}
-x \\ y \\ z
-\end{pmatrix}
-=
-\begin{pmatrix}
-2 \\ 4 \\ 10
-\end{pmatrix}
-$$
-
-Тогда 
-
-$$
-\begin{pmatrix}
-x \\ y \\ z
-\end{pmatrix}
-=
-\begin{pmatrix}
-1 & 2 & 3 \\
-4 & 5 & 6 \\
-7 & 8 & 10
-\end{pmatrix}
-^{-1}
-\begin{pmatrix}
-2 \\ 4 \\ 10
-\end{pmatrix}
-$$
-
-## Зачем нужен определитель  
-
-Если определитель матрицы коэффициентов не равен нулю, то для этой матрицы возможно обращение, а система уравнений имеет решение.
-
-С помощью определителя матрицы коэффициентов можно определить будет ли система уравнений иметь решение.
-
-Если определитель равен нулю, то инверсия матрицы невозможна и система уравнений имеет бесконечное количество решений. 
-
-## Задание 
-
-Решите приведенную систему уравнений с использованием матричной алгебры 
-
-$$
-\begin{cases}
-1x + 2y + 3z = 2\\  
-4x + 5y + 6z = 4 \\  
-7x + 8y + 10z = 10   
-\end{cases}
-$$
-
-## Решение
-
-```{r}
-#| echo: true
-
-Coef <- matrix(c(1 , 2 , 3 ,
-         4 , 5 , 6 ,
-         7 , 8 , 10), byrow = T, ncol = 3)
-Val <- c(2,4,10)
-
-solve(Coef) %*% Val
-```
-
-## Проверим
-
-```{r}
-#| echo: true
-
-round(1*3.33 + 2*-6.67 + 3*4.00)
-round(4*3.33 + 5*-6.67 + 6*4.00)
-round(7*3.33 + 8*-6.67 + 10*4.00)
-```
-
-## Задание
-
-Решите систему из двух уравнений
-
-$$
-\left\{\begin{array}{c}2x-4y=-6\\ 2x+y=4\end{array}\right.
-$$
-
-## Подбор параметров линейной регрессии методом наименьших квадратов с использованием матричной алгебры {.center .middle .inverse}
-
-## Линейная регрессия в матричном виде
-
-Модель линейной регрессии $y_i = b_0 + b_1x_i + e_i$ можно записать в матричном виде
-
-$$
-\mathbf{y} = \mathbf{X}{\pmb{\beta}} + \mathbf{e}
-$$
-Или
-
-$$
-\mathbf{\hat{y}} = \mathbf{X}{\pmb{\beta}} 
-$$
-
-Здесь  
-
-$\textbf{y}$ - вектор наблюдаемых значений зависимой переменной
-
-$\mathbf{\hat{y}}$ - вектор предсказанных значений зависимой переменной
-
-$\textbf{X}$ - модельная матрица  
-
-$\pmb{\beta}$  - вектор коэффициентов модели $b_0 + b_1x$: $(b_0, b_1)$
-
-$\mathbf{e}$ --- вектор остатков.
-
-## Модельная матрица
-
-Это матрица, описывающая "поведение" предикторов.
-
-Для модели $y_i = b_0 + b_1x_i + e_i$
-
-$$
-\mathbf{X} = 
-\begin{pmatrix}
-1 & x_1 \\
-1 & x_2 \\
-\vdots & \vdots\\
-1 & x_n \\
-\end{pmatrix}
-$$
-
-## Решение этого уравнения   
-
-Умножим обе части уравнения на транспонированную матрицу $\textbf{X}'$  
-
-$$ \textbf{X}'  \textbf{y} = \textbf{X}'\textbf{X} \pmb{\beta}$$
-
-Матрица $\textbf{X}'\textbf{X}$ - это всегда квадратная матрица. Ее можно обратить.
-
-Тогда
-$$
-\pmb{\beta} = [\textbf{X}'\textbf{X}]^{-1}[\textbf{X}'\textbf{y}]
-$$
-
-## Подбираем коэффициенты с помощью фунции `lm()`
-
-```{r}
-#| echo: true
-
+## Открываем данные
+library(readxl)
 brain <- read.csv("data/IQ_brain.csv", header = TRUE)
 
-M_brain <- lm(PIQ ~ MRINACount, data = brain)
+
 ```
 
-## Коэффициенты модели
 
 ```{r}
 #| echo: true
-
-coefficients(M_brain)
+brain_model <- lm(PIQ ~ MRINACount, data = brain)
+summary(brain_model)
 ```
 
-## Графическое отражение, построенное с помощью `geom_smooth()`
+## Уравнение и график зависимости
 
-```{r}
-#| echo: true
+$$PIQ_i = 1.744 + 0.0001202 \cdot MRINACount_i$$
 
+```{r echo=FALSE, purl=TRUE}
 library(ggplot2)
-theme_set(theme_bw())
+theme_set(theme_bw(base_size = 22))
+ggplot(brain, aes(x = MRINACount, y = PIQ)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
 
-ggplot(brain, aes(x = MRINACount, y = PIQ)) + geom_point() + geom_smooth(method = "lm")
+## Тестирование гипотез о линейных моделях {.center .middle .inverse}
+
+## Способы проверки значимости модели и ее коэффициентов
+
+Два равноправных способа
+
+**Значима ли модель целиком?**
+
++ F критерий
+<!-- : действительно ли объясненная моделью дисперсия $MS_{r}$ больше, чем случайная (= остаточная) дисперсия $MS_{e}$? -->
+
+**Значима ли связь между предиктором и откликом?**
+
++ t-критерий
+<!-- : отличается ли от нуля коэффициент $b_k$ при этом предикторе $x_k$ -->
+
++ F-критерий
+<!-- : действительно ли объясненная предиктором дисперсия $MS_{x_{k}}$ больше, чем случайная (= остаточная) дисперсия $MS_{e}$? -->
+
+## Тестирование гипотез с помощью t-критерия {.center .middle .inverse}
+
+## Тестирование гипотез с помощью t-критерия
+
+### Гипотезы
+
+Зависимость есть, если угловой коэффициент $\beta_k \ne 0$
+
+Нулевая гипотеза $H_0: \beta_k = 0$
+
+## Тестирование гипотез с помощью t-критерия
+
+### Гипотезы
+
+Зависимость есть, если угловой коэффициент $\beta_k \ne 0$
+
+Нулевая гипотеза $H_0: \beta_k = 0$
+
+### Тестовая статистика
+
+$$t=\frac{b_k - \beta_k}{SE_{b_k}} = \frac{b_k - 0}{SE_{b_k}} = \frac{b_k}{SE_{b_k}}$$
+
+При соблюдении условий применимости, t-статистика должна подчиняться t-распределению с параметром $df$   
+
+
+Число степеней свободы: $df = n − p$, 
+
+где 
+
+$n$ — объем выборки,      
+$p$ — число параметров модели,     
+$b_k$ — конкретный коэффициент регрессии.     
+
+Для простой линейной регрессии с одним предиктором $df = n - 2$.
+
+## Зависит ли IQ от размера головного мозга?
+
+$$PIQ_i = 1.744 + 0.0001202 \cdot MRINACount_i$$
+
+```{r}
+summary(brain_model)
+```
+
+```{r echo=FALSE, purl=FALSE}
+n <- nrow(brain_model$model)
+n_par <- length(coef(brain_model))
+df_t <-  n - n_par
+smr_brain <- coef(summary(brain_model))
+t_val <- round(smr_brain[2, "t value"], 2)
+p_val <- round(smr_brain[2, "Pr(>|t|)"], 3)
+t_crit <- qt(p = 0.95, df = 38)
+```
+
+Результаты теста на IQ статистически значимо связаны <br/> с размерами мозга на МРТ ( $t_{ 0.05, `r df_t`}$ = `r t_val`, $p$ = `r p_val` ).
+
+## Тестирование гипотез при помощи F-критерия {.center .middle .inverse}
+
+```{r echo=FALSE}
+lims <- range(brain$PIQ) + c(-1, 1)
+yannot <- lims[1] + 0.5
+xannot <- max(brain$MRINACount)
+gmean <- mean(brain$PIQ, na.rm = TRUE)
+Y <- 150
+Y_hat <- predict(brain_model, newdata = brain[brain$PIQ == 150, ])
+X <- brain$MRINACount[brain$PIQ == 150]
+
+th_smaller_title <- theme(title = element_text(size = 14))
+
+# Общая изменчивость
+pl_tot <- ggplot(brain, aes(x = MRINACount, y = PIQ)) + 
+  geom_hline(yintercept = gmean, size = 1) + 
+  geom_segment(aes(x = MRINACount, y = PIQ, 
+                   xend = MRINACount, yend = gmean), colour = "grey70") + 
+  geom_point() +
+    annotate("text", label = "Общее\nсреднее", 
+             x = 1050000, y = gmean - 8, size = 5, hjust = 0.7) + 
+  ggtitle("Общая изменчивость") + 
+  annotate("text", label = "SS[t] == sum((y[i] - bar(y)))^2", parse = TRUE, x = xannot,  y = yannot, hjust = 0.95, vjust = 0.2, size = 7) + th_smaller_title
+
+# Когда есть зависимость
+pl_all <- ggplot(brain, aes(x = MRINACount, y = PIQ)) +  
+  geom_smooth(method = "lm", se = F, size = 1.3) + 
+    geom_segment(aes(x = MRINACount, y = PIQ, 
+                   xend = MRINACount, yend = gmean), colour = "grey70") +  
+  geom_hline(yintercept = gmean, size = 2) + 
+      annotate("text", label = "Общее среднее", 
+             x = 1050000, y = gmean - 8, size = 4, hjust = 0.7) + 
+  annotate("segment", x = X - 1500, y = Y, xend = X - 1500, yend = gmean, colour = "grey70", size = 2) + 
+  annotate("segment", x = X + 2000, y = Y, xend = X + 2000, yend = Y_hat, colour = "#009E73", size = 2) +
+  annotate("segment", x = X + 2000, y = Y_hat, xend = X + 2000, yend = gmean, colour = "blue", size = 2) +
+  geom_point(size = 2) + th_smaller_title
+
+# Когда нет зависимости
+pl_no <- ggplot(brain, aes(x = MRINACount, y = PIQ)) +  
+      geom_segment(aes(x = MRINACount, y = PIQ, 
+                   xend = MRINACount, yend = gmean), colour = "grey70") +  
+  geom_hline(yintercept = gmean, size = 5) + 
+      annotate("text", label = "Общее среднее", 
+             x = 1050000, y = gmean - 8, size = 5, hjust = 0.7) + 
+    geom_hline(yintercept = gmean, size = 2, colour = "dodgerblue1") + 
+  annotate("segment", x = X - 1500, y = Y, xend = X - 1500, yend = gmean, colour = "grey70", size = 2) + 
+  annotate("segment", x = X + 2000, y = Y, xend = X + 2000, yend = gmean, colour = "#009E73", size = 2) +
+  geom_point(size = 2) + th_smaller_title
+
+# Объясненная изменчивость
+pl_exp <- ggplot(brain, aes(x = MRINACount, y = PIQ)) + 
+  geom_smooth(method = "lm", se = F, size = 1.3) + 
+  geom_hline(yintercept = gmean, size = 1) + 
+  geom_segment(aes(x = MRINACount, y = gmean, 
+                   xend = MRINACount, yend = fitted(brain_model)), colour = "blue") + 
+  geom_point() +
+  annotate("text", label = "Общее\nсреднее", 
+           x = 1050000, y = gmean - 8, size = 5, hjust = 0.7) + 
+  ggtitle("Объясненная изменчивость") +
+      annotate("text", label = "SS[r] == sum((hat(y)[i] - bar(y)))^2", parse = TRUE, x = xannot,  y = yannot, hjust = 0.95, vjust = 0.2, size = 7) + th_smaller_title
+
+# Остаточная изменчивость
+pl_res <- ggplot(brain, aes(x = MRINACount, y = PIQ)) + 
+  geom_smooth(method ="lm", se = F, size = 1.3) + 
+  geom_segment(aes(x = MRINACount, y = PIQ, 
+                   xend = MRINACount, yend = fitted(brain_model)), colour = "#009E73") + 
+  geom_point() +
+  ggtitle("Случайная изменчивость") +
+  annotate("text", label = "SS[e] == sum((y [i] - hat(y)[i]))^2", parse = TRUE, x = xannot,  y = yannot, hjust = 0.95, vjust = 0.2, size = 7) + th_smaller_title
+```
+
+## Общая изменчивость
+
+Общая изменчивость $SS_{t}$ — это сумма квадратов отклонений наблюдаемых значений $y_i$ от общего среднего $\bar y$
+
+```{r echo=FALSE}
+pl_tot
+```
+
+
+
+
+## Структура общей изменчивости
+
+$$SS_t = \color{blue}{SS_r} + \color{green}{SS_e}$$
+Общую изменчивость зависимой переменной можно разложить на две составляющие:
+
+$\color{blue}{SS_r}$ - отклонения предсказанных значений от общего среднего (*Объясненная изменчивость*)
+
+$\color{green}{SS_e}$ - отклонения наблюдаемых значений от предсказанных (*Остаточная изменчивость*)
+
+```{r}
+pl_all
+```
+
+## Общая изменчивость
+
+```{r}
+pl_tot
+```
+
+
+
+## Объясненная изменчивость
+
+
+```{r}
+pl_exp
+```
+
+## Случайная (остаточная) изменчивость
+
+```{r}
+pl_res
+```
+
+## Все изменчивости 
+
+```{r echo=FALSE}
+#| fig-width: 10
+plot_grid(pl_tot, pl_exp, pl_res, 
+            nrow = 1, rel_widths = c(1, 1.05, 1))
+```
+
+
+## От сумм квадратов к дисперсиям
+
+```{r echo=FALSE}
+#| fig-width: 8
+#| out-width: 100%
+
+plot_grid(pl_tot, pl_exp, pl_res, 
+          nrow = 1, rel_widths = c(1, 1.05, 1))
+```
+
+| $MS_t$, полная дисперсия | $\color{blue}{MS_r}$, дисперсия, <br /> объясненная регрессией  | $\color{green}{MS_e}$, остаточная дисперсия | 
+|-----|-----|-----|
+| $MS_{t} =\frac{SS_{t}}{df_{t}}$ | $\color{blue}{MS_{r}} =\frac{\color{blue}{SS_{r}}}{df_{r}}$ | $\color{green}{MS_{e}} =\frac{\color{green}{SS_{e}}}{df_{e}}$ |
+| $SS_{t}=\sum{(y_i - \bar{y})^2}$ | $\color{blue}{SS_{r}}=\sum{(\hat{y}-\bar{y})^2}$ | $\color{green}{SS_{e}}=\sum{(y_i - \hat{y})^2}$ |
+| $df_{t} = n-1$ | $df_{r} = 1$ | $df_{e} = n-2$  |
+
+## С помощью $MS_r$ и $MS_e$ можно тестировать значимость коэффициентов
+
+Если дисперсии остатков для всех значений x равны, то
+
+$E(\color{blue}{MS_r}) = \color{green}{\sigma^2} + \color{red}{\beta_1}^2\sum(x_i - \bar x)^2 =$ 
+
+. . .
+
+$= \color{green}{\sigma^2} + \sigma_{x}^2$
+
+. . . 
+
+$E(\color{green}{MS_e}) = \color{green}{\sigma^2}$
+
+<br/>
+
+. . . 
+
+Если зависимости нет, то $\color{red}{\beta_1} = 0$, и тогда 
+
+$\color{blue}{MS_r} \approx \color{green}{MS_e}$
+
+
+Мы хотим протестировать гипотезы:
+
+- $H_0: \color{red}{\beta_1} = 0$
+- $H_A: \color{red}{\beta_1} \ne 0$
+
+Если справедлива $H_A: \color{red}{\beta_1} \ne 0$, то $\color{blue}{MS_r} > \color{green}{MS_e}$
+
+. . . 
+
+$$F= \frac{\color{blue}{MS _{r}}}{\color{green}{MS_{e}}}$$
+. . .
+
+Поздравляю, вы только что изобрели _F_-критерий!
+
+## Тестирование значимости коэффициентов регрессии при помощи F-критерия
+
+::: {.columns}
+::: {.column width="60%"}
+- $H_0: \color{red}{\beta_1} = 0$
+- $H_A: \color{red}{\beta_1} \ne 0$
+
+$$F_{df_r, df_e}= \frac{\color{blue}{MS _{r}}}{\color{green}{MS_{e}}}$$
+
+Для простой линейной регрессии  
+$df_{r} = 1$ и $df_{e} = n - 2$
+
+```{r f-distr, echo=FALSE, purl=FALSE}
+ar <- arrow(type = "closed", length = unit(0.15,"cm"))
+arb <- arrow(type = "closed", length = unit(0.15,"cm"), ends = "both")
+
+dfr <- data.frame(f = seq(-0.01, 2, 0.001))
+ggplot(dfr, aes(x = f)) + 
+  stat_function(fun = df, args = list(df1 = 1, df2 = 38), size = 1.3) + 
+labs(title = expression(bold(paste("F-распределение,", ~df[1]==1, ", ", ~ df[2]==38))),
+     x = "F", y = "Плотность вероятности") + th_smaller_title
+```
+:::
+::: {.column width="40%"}
+- У F-распределения два параметра: $df_{r}$ и $df_{e}$
+
+- Логика F-теста аналогична t-критерию: Определяем вероятность того, что при *условии справедливости $H_0$* при повторных выборках появится значение F больше или равное F, полученному в нашем эксперименте.    
+
+- F-тест будет односторонним, т.к. соотношение дисперсий может быть только положительным.
+:::
+:::
+
+## Таблица результатов дисперсионного анализа
+
+| Источник изменчивости  | df | SS | MS | F  | 
+| ----- | ----- | ----- | ----- | ----- | 
+| Регрессия | $df _r = 1$ | $\color{blue}{SS _r} = \sum{(\hat y _i - \bar y)^2}$ | $\color{blue}{MS _r} = \frac{\color{blue}{SS _r}}{df _r}$ | $F _{df _r, df _e} = \frac{\color{blue}{MS _r}}{\color{green}{MS _e}}$ | 
+| Остаточная |  $df _e = n - 2$ | $\color{green}{SS _e} = \sum{(y _i - \hat y _i)^2}$ | $\color{green}{MS _e} = \frac{\color{green}{SS _e}}{df _e}$ | 
+| Общая | $df _t = n - 1$ | $SS _t = \sum {(y _i - \bar y)^2}$ | 
+
+<br/><br/>
+
+Минимальное упоминание результатов в тексте должно содержать $F _{df _r, df _e}$ и $p$.
+
+## Посмотрим на `summary()`
+
+```{r}
+#| echo: true
+summary(brain_model)
+```
+
+С помощью F-критерия мы показали, что модель целиком значима.
+
+
+
+## Дисперсионный анализ модели `anova()`
+
+```{r}
+anova(brain_model)
+```
+
+С помощью F-критерия мы показали, что влияние предиктора значимо!
+
+## Оценка качества подгонки модели {.center .middle .inverse}
+
+## В чем различие между этими двумя моделями?
+
+```{r residuals-scatter, echo=FALSE, opts.label='fig.wide'}
+x <- rnorm(200, 20, 5)
+y1 <- 10 * x + 5 + rnorm(100, 0, 5)
+y2 <- 10 * x + 5 + rnorm(100, 0, 30)
+d <- data.frame(x = x, y1 = y1)
+pl_R1 <- ggplot(d, aes(x = x, y = y1)) + geom_point() + 
+  geom_smooth(method = "lm", se = F)
+pl_R2 <- ggplot(d, aes(x = x, y = y2)) + geom_point() + 
+  geom_smooth(method = "lm", se = F)
+plot_grid(pl_R1, pl_R2, nrow = 1)
+```
+
+--
+
+У этих моделей разный разброс остатков:
+
+- Модель слева объясняет практически всю изменчивость
+- Модель справа объясняет не очень много изменчивости
+
+## Коэффициент детерминации — мера качества подгонки модели
+
+__Коэффициент детерминации__ описывает какую долю дисперсии зависимой переменной объясняет модель
+
+$$R^2 = \frac{\color{blue}{SS_{r}}}{SS_{t}}$$
+
+- $0 < R^2 < 1$
+- $R^2 = r^2$ — для простой линейной регрессии коэффициент детерминации равен квадрату коэффициента Пирсоновской корреляции
+
+## Если в модели много предикторов, нужно внести поправку
+
+__Скорректированный коэффициет детерминации__ (adjusted R-squared)
+
+Применяется если необходимо сравнить две модели с разным количеством параметров  
+
+$$ R^2_{adj} = 1- (1-R^2)\frac{n-1}{n-p}$$
+
+$p$ - количество параметров в модели   
+
+Вводится штраф за каждый новый параметр
+
+## Еще раз смотрим на результаты регрессионного анализа зависимости IQ от размеров мозга {.smaller}
+
+```{r}
+summary(brain_model)
+```
+
+
+Модель зависимости IQ от размеров мозга на МРТ объясняет всего лишь `r round(summary(brain_model)$r.squared * 100, 1)` % общей изменчивости IQ в этих данных. 
+
+Ценность такой модели сомнительна.
+
+## Как записываются результаты регрессионного анализа в тексте статьи?
+
+Мы показали, что связь между результатами теста на IQ и размером головного мозга на МРТ описывается моделью вида
+<br/>
+IQ = 1.74 + 0.00012 MRINACount ( $F_{1,38}$ = 6.686, p = 0.014, $R^2$ = `r round(summary(brain_model)$r.squared, 2)`)
+
+. . .
+
+Пишем статью?
+
+## Задание 1 & 2
+
+Выполните задания 1 и 2 в одном из этих файлов:
+
+- 07_task_assumptions_catsM.R
+- 07_task_assumptions_GAG.R
+
+## Зачем нужна диагностика линейных моделей {.center .middle .inverse}
+
+## Если стохастическая модель адекватна, то что мы можем сказать про остатки?
+
+```{r echo=FALSE}
+pl_R2 + labs(x = "Предиктор", y = "Зависимая переменная")
+```
+
+--
+
+- Остатки --- это просто шум. Обычно считается, что $\varepsilon_i \in N(0, \sigma)$.
+
+- В остатках не должно быть никаких закономерностей (паттернов).
+
+## Зачем нужна диагностика модели? Разве тестов было недостаточно? {.smaller}
+
+Пусть у нас есть некоторая модель, которая показывает зависимость $V_1 = f(V_2, V_3, V_4, V_5)$ 
+
+```{r}
+#| echo: true
+#| code-fold: true
+
+dat <- read.table('data/orly_owl_Lin_4p_5_flat.txt')
+fit <- lm(V1 ~ V2 + V3 + V4 + V5, data = dat)
+summary(fit)
+```
+
+Все значимо! 
+
+Пишем статью?
+
+## Остатки модели
+
+Постройте график зависимости остатков от предсказанных значений при помощи этого кода
+
+```{r bird, eval=FALSE, purl=FALSE}
+#| echo: true
+library(car)
+residualPlot(fit, pch = ".")
+```
+
+## Oh, really?
+
+```{r bird, eval=TRUE, purl=TRUE, fig.width=5, fig.height=5}
+```
+
+[http://www4.stat.ncsu.edu/~stefanski/NSF_Supported/Hidden_Images/stat_res_plots.html](http://www4.stat.ncsu.edu/~stefanski/NSF_Supported/Hidden_Images/stat_res_plots.html)
+
+. . .
+
+В остатках скрыта информация! 
+
+## Анализ остатков {.center .middle .inverse}
+
+
+## Анализ остатков линейных моделей
+
+Этот анализ дает возможность:
+
+1) Проверить данные на наличие влиятельных наблюдений и выявить их;
+
+2) Проверить соответствует ли построенная модель условиям применимости линейных моделей.
+
+## Условия применимости линейных моделей
+
+1. Линейная связь
+1. Независимость наблюдений
+1. Соответствие нормальному распределению
+1. Гомогенность дисперсий
+1. Отсутствие коллинеарности предикторов (для множественной регрессии)
+
+
+## Какие бывают остатки?
+
+
+### "Сырые" остатки
+$$\color{green}{e_i} = y_i - \color{blue}{\hat{y_i}}$$
+
+. . . 
+
+### Стандартизованные (стьюдентизированные) остатки
+
+$$s_i = \frac{\color{green}{e_i}}{\sqrt{MS_e(1-\color{purple}{h_{ii}})}}$$
+
+- легко сравнивать (стандартизованы), учитывают силу влияния наблюдений
+
+<hr />
+
+- $\sqrt{MS_e}$ — стандартное отклонение остатков
+- $\color{purple}{h_{ii}}$ — "сила воздействия" отдельных наблюдений (leverage, рычаг проекционной матрицы)
+
+## Что такое проекционная матрица?
+
+По определению, остатки $\color{green}{\mathbf{e}} = \mathbf{y} - \color{blue}{\hat{\mathbf{y}}}$.
+
+Тогда $\color{green}{\mathbf{e}} = \mathbf{y} - \mathbf{X} \mathbf{\beta} = \mathbf{y} - \mathbf{X}[\mathbf{X}'\mathbf{X}]^{-1}\mathbf{X}'\mathbf{y}$.
+
+<br/>
+
+Обозначим  $\color{purple}{\mathbf{H}} \equiv  \mathbf{X}[\mathbf{X}'\mathbf{X}]^{-1}\mathbf{X}'$.
+
+Матрица $\color{purple}{\mathbf{H}}$ — называется __"хэт"-матрица__ (_hat-matrix_) или __проекционная матрица__, т.к. она позволяет получить предсказанные значения из наблюдаемых.
+
+$\color{blue}{\hat{\mathbf{y}}} = \color{purple}{\mathbf{H}}\mathbf{y}$
+
+<br/>
+
+Тогда остатки можно получить как $\color{green}{\mathbf{e}} = \mathbf{y} - \color{purple}{\mathbf{H}}\mathbf{y} = (\mathbf{I} - \color{purple}{\mathbf{H}})\mathbf{y}$.
+
+Диагональные элементы проекционной матрицы $\color{purple}{h_{ii}}$ — это мера __воздействия__ точек на ход линии регрессии.
+
+## Влиятельные наблюдения {.center .middle .inverse}
+
+## Влиятельные наблюдения (influential points)
+
+Влиятельные наблюдения — это наблюдения, которые вносят слишком большой вклад в оценку параметров (коэффициентов) модели.
+
+<!-- ![](images/leverage.png){width=100%}  -->
+
+```{r}
+#| echo: false
+#| out-width: 90%
+
+include_graphics("images/leverage.png")
+```
+
+<small>Из кн. Quinn, Keough, 2002</small>
+
+Учет каких из этих точек повлияет на ход регрессии и почему?
+
+. . . 
+
+- Точка 1 почти не повлияет, т.к. у нее маленький остаток, хоть и экстремальное значение $X$
+
+. . .
+
+- Точка 2 почти не повлияет, т.к. ее $X$ близок к среднему, хоть и большой остаток
+
+. . .
+
+- Точка 3 повлияет сильно, т.к. у нее не только большой остаток, но и экстремальное значение $X$
+
+## Воздействие точек (leverage)
+
+__Воздействие__ точек $\color{purple}{h_{ii}}$ (_leverage_) показывает силу влияния значений $x_i$ на ход линии регрессии, то есть на $\color{blue}{\hat{y_i}}$
+
+::: {.columns}
+::: {.column width="50%"}
+![](images/leverage.png)
+
+<small>Из кн. Quinn, Keough, 2002</small>
+:::
+::: {.column width="50%"}
+![](images/seasaw-Weighing-Machine-by-neys-fadzil-on-Flickr.jpg)
+
+<small>Weighing Machine by neys fadzil on Flickr</small>
+:::
+:::
+
+--
+
+Точки, располагающиеся дальше от $\bar{x}$, оказывают более сильное влияние на $\color{blue}{\hat{y_i}}$
+
+- $\color{purple}{h_{ii}}$ варьирует в промежутке от $1/n$ до 1  
+- Если  $\color{purple}{h_{ii}} > 2(p/n)$, то надо внимательно посмотреть на данное значение ($p$ — число параметров модели, $n$ — объем выборки)
+
+## Расстояние Кука (Cook's distance)
+
+описывает, как повлияет на модель удаление данного наблюдения
+
+$$D_i = \frac{\sum{( \color{blue}{\hat{y_{j}}} - \color{red}{\hat{y}_{j(i)}})^2}}{p \; MS_e}$$
+
+- $\color{blue}{\hat{y_j}}$ — значение предсказанное полной моделью
+- $\color{red}{\hat{y}_{j(i)}}$ — значение, предсказанное моделью, построенной без учета $i$-го значения предиктора
+- $p$ — количество параметров в модели
+- $MS_{e}$ — среднеквадратичная ошибка модели ( $\hat\sigma^2$ )
+
+## Расстояние Кука покажет оба аспекта влиятельности
+
+Формулу расстояния Кука для данного $i$-того наблюдения можно расписать:
+
+$$D_i = \frac{\color{green}{e_i}^2}{p \; MS_e} \cdot \frac { \color{purple}{h_{ii}} } {(1 - \color{purple}{h_{ii}}) ^ 2}$$
+
+Видно, что $D_i$ зависит сразу от
+
+- $\color{green}{e_i}$ — это величина остатков
+- $\color{purple}{h_{ii}}$ — это воздействие наблюдений
+
+При каком значении $D_i$ будем считать наблюдение выбросом?
+
+Два варианта:
+
+- $D_i > 1$ — "мягкий" порог (для простоты в этом курсе такой)
+- $D_i > \frac{4}{(n - p)}$ —  "жесткий" порог ( $n$ — объем выборки, $p$ — число параметров)
+
+## Что делать с наблюдениями-выбросами?
+
+. . .
+
+- Удалить?
+
+. . .
+
+__Осторожно!__ Только очевидные ошибки в наблюдениях можно удалять. Лучше найти причины.
+
+. . .
+
+- Трансформировать? Это не всегда поможет.
+- Иногда можно переформулировать модель.
+
+## Некоторые виды трансформаций
+
+Трансформация  |  Формула  
+------------- | -------------   
+степень -2 | $1/x^2$
+степень -1 | $1/x$
+степень -0.5  | $1/\sqrt{x}$
+степень 0.5 | $\sqrt{x}$
+логарифмирование | $log(x)$  
+
+## Данные для анализа остатков {.smaller}
+
+```{r}
+#| echo: true
+library(ggplot2)
+brain_diag <- fortify(brain_model)
+head(brain_diag, 2)
+```
+
+- `.hat` — "сила воздействия" данного наблюдения (leverage)
+- `.cooksd` — расстояние Кука
+- `.fitted` — предсказанные значения
+- `.resid` — остатки
+- `.stdresid` — стандартизованные остатки
+
+## График расстояния Кука
+
+Проверяем наличие влиятельных наблюдений в `brain_model`.
+
+Порядок значений на графике такой же как в исходных данных.
+
+```{r  purl=FALSE}
+#| echo: true
+#| code-fold: true
+
+cook_cutoff <- 4 / (nrow(brain) - length(coef(brain_model)))
+```
+
+```{r gg-cook}
+# График расстояния Кука
+ggplot(brain_diag, aes(x = 1:nrow(brain_diag), y = .cooksd)) + 
+  geom_bar(stat = "identity")
 ```
 
 . . .
 
-:::{.center}
-**Мы научимся все эти результаты получать вручную!**
+- Есть одно влиятельное наблюдение, которое нужно проверить, но сила его влияния невелика (расстояние Кука $< 1$, и только одно наблюдение больше $4/(n-p) = `r round(cook_cutoff, 2)`$)
+
+## График остатков от предсказанных значений
+
+Большую часть того, что нужно знать про остатки вы увидите на этом графике. А сейчас давайте научимся читать такой график.
+
+```{r gg-resid}
+#| echo: true
+#| code-fold: true
+
+gg_resid <- ggplot(data = brain_diag, aes(x = .fitted, y = .stdresid)) + 
+  geom_point() + 
+  geom_hline(yintercept = 0)
+gg_resid
+```
+
+## 1. Линейность связи {.center .middle .inverse}
+
+## Нелинейность связи видно на графиках остатков
+
+```{r non-linear, echo=FALSE, purl=FALSE, fig.height=5}
+set.seed(39484)
+x <- rnorm(100, 10, 3)
+y <- (x^2.4) + rnorm(100, 0, 100)
+pl_1 <- ggplot(data.frame(x = x, y = y), aes(x = x, y = y)) + geom_point() 
+
+lm1 <- lm(y ~ x)
+
+pl_1res <- ggplot(data.frame(fit = fitted(lm1), res = residuals(lm1)), aes(x = fit, y = res)) + geom_point() + geom_hline(yintercept = 0) + xlab("Fitted") + ylab("Residuals")
+
+x2 <- runif(100, 1, 8)
+y2 <- sin(x2) + 2 * x2 + rnorm(100)
+pl_2 <- ggplot(data.frame(x = x2, y = y2), aes(x = x, y = y)) + geom_point() 
+
+lm2 <- lm(y2 ~ x2)
+pl_2res <- ggplot(data.frame(fit = fitted(lm2), res = residuals(lm2)), aes(x = fit, y = res)) + geom_point() + geom_hline(yintercept = 0) + xlab("Fitted") + ylab("Residuals") 
+
+plot_grid(pl_1, pl_2, pl_1res, pl_2res, nrow = 2)
+```
+
+__Проверка на линейность связи__
+
+- График зависимости $y$ от $x$ (и от других переменных, не включенных в модель)
+- График остатков от предсказанных значений
+
+## Что делать, если связь нелинейна?  
+
+- Добавить неучтенные переменные или взаимодействия;
+- Применить линеаризующее преобразование (Осторожно!);
+- Применить обобщенную линейную модель с другой функцией связи (GLM);
+- Построить аддитивную модель (GAM), если достаточно наблюдений по $x$;
+- Построить нелинейную модель, если известна форма зависимости.
+
+## Примеры линеаризующих преобразований {.smaller}  
+
+```{r linearisation, echo=FALSE, purl=FALSE}
+set.seed(475)
+a <- 1
+b <- 2
+gg_tr <- ggplot() + 
+  geom_point(alpha = 0.7) + 
+  geom_smooth(method = "lm", alpha = 0.7)
+
+# Логарифмическая модель
+x1 <- runif(100, 2, 100)
+y1 <- log(a * x1 ^ b) + rnorm(100, 0, 0.5)
+# x1t <- log(x1)
+pl_raw <- gg_tr %+% data.frame(x1, y1) + 
+  aes(x = x1, y = y1) + 
+  coord_cartesian(ylim = c(0, 10))
+pl_log <- gg_tr %+% data.frame(x1, y1) + 
+  aes(x = log(x1), y = y1) +
+  coord_cartesian(ylim = c(0, 10)) +
+  theme(axis.title.y = element_blank())
+
+# Степенная
+x4 <- runif(100, 0.1, 5)
+y4 <- a * b ^ x4 + rnorm(100, 0, 1)
+# y4t <- log(y4)
+pl_raw1 <- gg_tr %+% data.frame(x4, y4) + aes(x = x4, y = y4)
+pl_pwr <- gg_tr %+% data.frame(x4, y4) + aes(x = x4, y = log(y4))
+```
+
+__Логарифмирование__
+
+```{r log-transform, echo=FALSE, purl=FALSE, opts.label='fig.wider.smaller'}
+plot_grid(pl_raw, pl_log, ncol = 2, rel_widths = c(0.52, 0.48))
+```
+
+__Возведение в степень__, и т.д.
+
+```{r power-transform, echo=FALSE, purl=FALSE, opts.label='fig.wider.smaller'}
+plot_grid(pl_raw1, pl_pwr, ncol = 2, rel_widths = c(0.52, 0.48))
+```
+
+## Не стоит трансформировать отклик!
+
+```{r dep-var-transform, echo=FALSE, purl=FALSE, opts.label='fig.wider.small'}
+set.seed(475)
+x <- runif(100, 2, 5)
+eps <- rnorm(100, 0, 10 + abs(x) ^ (3))
+y <- (3.8 ^ (1 * x)) + eps
+
+pl_raw <- ggplot(data.frame(x = (x), y = (y)), aes(x = x, y = y)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", alpha = 0.7)
+
+pl_log <- ggplot(data.frame(x = (x), y = log(y + 1)), aes(x = x, y = y)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", alpha = 0.7) + ylab("Log (y)")
+
+plot_grid(pl_raw, pl_log, ncol = 2)
+```
+
+__Осторожно!__ Вы рискуете изучить не то, что хотели:  
+
+1.При логарифмировании отклика вы будете изучать поведение мат.ожидания логарифма  
+$E(log(y_i)) = b_0 + b_1x_{1i} + ... + e_i$.  
+
+2.Трансформация отклика не только линеаризует зависимость, но и затронет величину остатков $e$.
+
+. . .
+
+Вместо трансформации отклика лучше использовать обобщенную линейную модель с подходящей функцией связи, например:
+
+$log(E(y_i)) =  b_0 + b_1x_{1i}+ ... + e_i$
+
+## 2. Независимость {.center .middle .inverse}
+
+## Каждое значение $y_i$ должно быть независимо от любого другого $y_j$ 
+
+Это нужно контролировать на этапе планирования сбора материала 
+
+* Наиболее частые источники зависимостей: 
+    + псевдоповторности (повторно измеренные объекты)
+    + неучтенные переменные
+    + временные автокорреляции (если данные - временной ряд)
+    + пространственные автокорреляции (если пробы взяты в разных местах)
+    + и т.п.
+
+## Диагностика нарушений независимости
+
+Взаимозависимости можно заметить на графиках остатков
+
+- остатки vs. предсказанные значения
+- остатки vs. переменные в модели
+- остатки vs. переменные не в модели
+
+## Нарушение независимости: Неучтенная переменная
+
+```{r unaccounted-var, echo=FALSE, purl=FALSE, fig.width=12, fig.height=6.75}
+set.seed(239874)
+x1 <- runif(100, 20, 50)
+x2 <- runif(100, 8, 22)
+y <- 21 + 2 * x1 + 2 * x2 + rnorm(100, 0, 10)
+NewData1 <- data.frame(y = y, x1 = x1, x2 = x2)
+
+mod1 <- lm(y ~ x1)
+gg_lm1 <- ggplot(NewData1, aes(x = x1, y = y)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", alpha = 0.7) + 
+  xlab("X1") + ggtitle("Y ~ X1")
+gg_res1 <- ggplot(data.frame(fit = fitted(mod1), res = residuals(mod1, type = "pearson")), 
+                  aes(x = fit, y = res)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "loess") + 
+  geom_hline(yintercept = 0) + 
+  xlab("Fitted") + ylab("Residuals")
+gg_res2 <-
+ggplot(data.frame(fit = fitted(mod1), res = residuals(mod1, type = "pearson")), 
+       aes(x = x2, y = res)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "loess") + 
+  geom_hline(yintercept = 0) + 
+  xlab("X2") + ylab("Residuals")
+
+mod2 <- lm(y ~ x1 + x2)
+NewData2 <- data.frame(
+  x1 = seq(min(x1), max(x1), length.out = 10),
+  x2 = mean(x2))
+NewData2$y <- predict(mod2, newdata = NewData2)
+gg_lm2 <- ggplot(NewData2, aes(x = x1, y = y)) + 
+  geom_point(data = NewData1, aes(x = x1, y = y)) + 
+  geom_line(colour = "blue", size = 1) + 
+  xlab("X1") + ggtitle("Y ~ X1 + X2")
+gg_res3 <- ggplot(data.frame(fit = fitted(mod2), 
+                             res = residuals(mod2, type = "pearson")), 
+                  aes(x = fit, y = res)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "loess") + 
+  geom_hline(yintercept = 0) + 
+  xlab("Fitted") + ylab("Residuals")
+gg_res4 <- ggplot(data.frame(fit = fitted(mod2), 
+                             res = residuals(mod2, type = "pearson")), 
+                  aes(x = x2, y = res)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "loess") + 
+  geom_hline(yintercept = 0) + 
+  xlab("X2") + ylab("Residuals")
+
+plot_grid(gg_lm1, gg_lm2, gg_res1, gg_res3, 
+             gg_res2, gg_res4, ncol = 2, 
+          rel_heights = c(1.1, 1, 1))
+```
+
+. . .
+
+- Слева: Если в модели не учтена переменная $X2$, внешне все нормально, но величина остатков зависит от $X2$
+- Справа: Если $X2$ учесть, то зависимость остатков от $X2$ исчезает
+
+## Нарушение независимости: Автокорреляция
+
+В данном случае, наблюдения — это временной ряд <br/>или ряд наблюдений в пространстве.
+
+```{r autocorr, echo=FALSE, purl=FALSE, opts.label='fig.medium.taller'}
+x3 <- seq(1, 100, 1)
+
+y3 <-  diffinv(rnorm(99)) + rnorm(100, 0, 2)
+
+y3 <- y3[1:100]
+pl_3 <- ggplot(data.frame(x = x3, y = y3), 
+               aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "lm", alpha = 0.7) +
+  labs(x = "Time or space")
+
+lm3 <- lm(y3 ~ x3)
+
+pl_3res <- ggplot(data.frame(fit = fitted(lm3), 
+                             res = residuals(lm3)), 
+                  aes(x = fit, y = res)) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess") +
+  geom_hline(yintercept = 0) +
+  xlab("Fitted") + ylab("Residuals")
+
+plot_grid(pl_3, pl_3res, nrow = 2)
+```
+
+. . .
+
+На графиках остатков четко видно, что остатки не являются независимыми. Наблюдения, расположенные на определенном расстоянии друг от друга, имеют остатки похожей величины.
+
+## Чем опасна автокорреляция (и любая другая зависимость наблюдений друг от друга)
+
+```{r}
+set.seed(123)
+population <- rnorm(1000)
+population_correlated <- arima.sim(list(order = c(1,0,0), ar = 0.5), n = 1000, sd=1)
+```
+
+```{r echo=FALSE}
+Pl_cor <- 
+ggplot(data.frame(x = 1:length(population_correlated), y = as.numeric(population_correlated)), aes(x, y)) + geom_line() + ggtitle("Есть автокоррляция") + geom_smooth(method = "lm")
+```
+
+```{r echo=FALSE}
+Pl_no_cor <-
+ggplot(data.frame(x = 1:length(population), y = population), aes(x, y)) + geom_line() + ggtitle("Нет автокорреляции")  + geom_smooth(method = "lm")
+```
+
+```{r echo=FALSE, fig.width= 10}
+plot_grid(Pl_no_cor, Pl_cor)
+```
+
+## Чем опасна автокорреляция (и любая другая зависимость наблюдений друг от друга)
+
+Построим 1000 моделей на случайных выборках по 10 последовательных наблюдений 
+
+
+```{r}
+p_values <- data.frame(p_no_cor = rep(NA, 1000), p_cor = NA)
+
+for(i in 1:1000){
+  begin = sample(1:900, 1)
+  x = begin:(begin + 9)
+  y_cor = population_correlated[begin:(begin + 9)] #Случайная выборка из генеральной совокупности с автокорреляцией
+  y = population[begin:(begin + 9)] #Случайная выборка из генеральной совокупности без автокорреляции
+  df = data.frame(x, y_cor, y)
+  M_no_cor <- lm(y ~ x, data = df)
+  M_cor <- lm(y_cor ~ x, data = df)
+  p_values$p_no_cor[i] <- summary(M_no_cor)$coefficients[2, 4] #p-value из summary модели 
+  p_values$p_cor[i] <- summary(M_cor)$coefficients[2, 4] #p-value из summary модели     
+  }
+```
+
+::: {.columns}
+
+::: {.column width="50%"}
+Для простого "шума", когда **нет автокорреляций** и нет связи между $y$ и $x$ (справедлива $H_0$) частота ошибок составляет 
+
+```{r}
+mean(p_values$p_no_cor < 0.05)
+```
 :::
 
-## Вычисление коэффициентов линейной регрессии вручную
+::: {.column width="50%"}
 
-Находим вектор коэффициентов на основе матичного  уравнения 
-$$\pmb{\beta} = [\textbf{X}'\textbf{X}]^{-1}[\textbf{X}'\textbf{y}]$$
+Для **автокоррелированных** данных, при отсутствии связи между  $y$ и $x$ (справедлива $H_0$) частота ошибок составляет 
 
 ```{r}
-#| echo: true
-#| code-fold: false
-X <- model.matrix(~MRINACount, data = brain)
-X <- as.matrix(data.frame(Intercept = 1, MRINACount = brain$MRINACount)) # Аналогичная запись 
+mean(p_values$p_cor < 0.05)
+```
+:::
 
+:::
+
+## Проверка на автокорреляцию {.smaller}
+
+Проверка на автокорреляцию нужна, если данные --- это временной ряд, или если известны координаты или время сбора проб. Способы проверки временной автокорреляции (годятся, если наблюдения в ряду расположены через равные интервалы):
+
+- График автокорреляционной функции остатков (ACF-plot) покажет корреляции с разными лагами.
+
+```{r, echo=FALSE}
+#| out-width: 90%
+
+
+library(ggfortify)
+p1 <- autoplot(acf(population, plot = FALSE), conf.int.fill = '#0000FF', conf.int.value = 0.8, conf.int.type = 'ma') + ggtitle("Нет автокоррляции")
+
+p2 <- autoplot(acf(population_correlated, plot = FALSE), conf.int.fill = '#0000FF', conf.int.value = 0.8, conf.int.type = 'ma') + ggtitle("Есть автокоррляция")
+
+plot_grid(p1, p2)
+```
+
+- Критерий Дарбина-Уотсона (значимость автокорреляции 1-го порядка).
+
+Для проверки пространственных автокорреляций: *вариограммы* (большая и сложная тема!)
+
+<!-- - I Морана (Moran's I) -->
+
+## Что делать, если у вас нарушено условие независимости значений?
+
+Выбор зависит от обстоятельств. Вот несколько возможных вариантов.
+
++ псевдоповторности
+    - избавляемся от псевдоповторностей, вычислив среднее
+    - подбираем смешанную модель (модель со случайным фактором)
++ неучтенные переменные
+    - включаем в модель (если возможно)
++ временные автокорреляции
+    - моделируем автокорреляцию
+    - подбираем модель со случайным фактором
++ пространственные автокорреляции
+    - моделируем пространственную автокорреляцию
+    - делим на пространственные блоки и подбираем модель со случайным фактором (= random effects model, mixed model)
+
+## Проверка условия независимости
+
+### Графики зависимости остатков от предикторов в модели
+
+```{r resid-predict}
+# Полный код
+ggplot(data = brain_diag, aes(x = MRINACount, y = .stdresid)) + 
+  geom_point() + 
+  geom_hline(yintercept = 0)
+```
+
+```{r eval=FALSE}
+# То же самое с использованием ранее созданного gg_resid
+gg_resid + aes(x =  MRINACount)
+```
+
+### Графики зависимости остатков от предикторов не в модели
+
+В данном случае их нет
+
+## 3. Нормальное распределение {.center .middle .inverse}
+
+## 3. Нормальное распределение $y$ (для каждого уровня значений $x$) 
+
+<!-- ::: {.columns} -->
+<!-- ::: {.column width="60%"} -->
+
+
+```{r gg-norm-tunnel, echo=FALSE, purl=FALSE}
+#| out-width: 100%
+
+## Based on code by Arthur Charpentier:
+## http://freakonometrics.hypotheses.org/9593
+## TODO: wrap it into a function and adapt it for use with other distributions
+## as Markus Gesmann has done here
+## http://www.magesblog.com/2015/08/visualising-theoretical-distributions.html
+
+n <- 2
+X <- brain$MRINACount 
 Y <- brain$PIQ
-betas <- solve(t(X) %*% X) %*% (t(X) %*% Y)
-betas
+dfr <- data.frame(X, Y)
+
+# regression
+reggig <- glm(Y ~ X, data = dfr, family = gaussian(link = "identity"))
+
+op <- par(mar = c(0, 0, 0, 0))
+# empty plot
+vX <- seq(min(X) - 0.5, max(X) + 0.5, length = n)
+vY <- seq(min(Y) - 50, max(Y) + 50, length = n)
+mat <- persp(x = vX, y = vY, z = matrix(0, n, n), 
+             zlim = c(0, 0.0001),
+             theta =  - 30, phi = 20, expand = 0.0018,
+             ticktype  = "detailed",  box = FALSE, border = "gray60")
+
+x <- seq(min(X), max(X), length = 501)
+
+# expected values
+C <- trans3d(x, predict(reggig, newdata = data.frame(X = x), type = "response"), rep(0, length(x)), mat)
+lines(C, lwd = 2)
+
+sdgig <- sqrt(summary(reggig)$dispersion)
+
+# 1SD
+y1 <- qnorm(.95, predict(reggig, newdata = data.frame(X = x), type = "response"),  sdgig)
+C <- trans3d(x, y1, rep(0, length(x)), mat)
+lines(C, lty = 2, col = "#d95f02")
+y2 <- qnorm(.05, predict(reggig, newdata = data.frame(X = x), type = "response"),  sdgig)
+C <- trans3d(x, y2, rep(0, length(x)), mat)
+lines(C, lty = 2, col = "#d95f02")
+
+# data points
+C <- trans3d(X, Y, rep(0, length(X)), mat)
+points(C, pch = 1, col = "black", cex = 0.4)
+
+# density curves
+n <- 6
+vX <- seq(min(X), max(X), length = n)
+
+mgig <- predict(reggig, newdata = data.frame(X = vX))
+sdgig <- sqrt(summary(reggig)$dispersion)
+
+for(j in n:1){
+  stp <- 251
+  x <- rep(vX[j], stp)
+  y <- seq(min(min(Y) - 50, 
+               qnorm(.05, 
+                     predict(reggig, 
+                             newdata = data.frame(X = vX[j]), 
+                             type = "response"),  
+                     sdgig)), 
+           max(Y) + 50, 
+           length = stp)
+  z0 <- rep(0, stp)
+  z <- dnorm(y,  mgig[j],  sdgig)
+  C <- trans3d(c(x, x), c(y, rev(y)), c(z, z0), mat)
+  polygon(C, border = NA, col = "light blue", density = 40)
+  C <- trans3d(x, y, z0, mat)
+  lines(C, lty = 2, col = "grey60")
+  C <- trans3d(x, y, z, mat)
+  lines(C, col = "steelblue")
+}
+par(op)
 ```
+<!-- ::: -->
+<!-- ::: {.column width="40%"} -->
+Это условие невозможно проверить "в лоб", т.к. обычно каждому $x$ соответствует лишь небольшое число $y$ 
+<!-- ::: -->
+<!-- ::: -->
 
-<!-- ##Вычисление вариационно-ковариационной матрицы  -->
-<!-- Подобранные параметры - это лишь _оценки_ некоторых параметров, описывающих связь между зависимой переменной и предиктором в популяции.     -->
+## Проверка нормальности распределения остатков
 
-<!-- Варьирование параметров описывает *вриацонно-ковариационная матрица*.     -->
+Если $y$ это нормально распределенная случайная величина
 
-<!-- В среде `R`, если модель задана, например, с помощью функции `lm()`, эта матрица вычисляется так    -->
+$$y_i \sim N(\mu_{y_i}, \sigma)$$
 
-<!-- ```{r} -->
-<!-- vcov(Mod) -->
-<!-- ``` -->
+. . .
 
-<!-- ##Вычисление вариационо-ковариационной матрицы вручную -->
+и мы моделируем ее как 
 
-<!-- $$ -->
-<!-- \textbf{V}(\pmb{\beta}) = s^2[\textbf{X}'\textbf{X}]^{-1} -->
-<!-- $$ -->
-<!-- где -->
+$$y_i = b_0 + b_1x_{1i} + \cdots + e_i$$ 
 
-<!-- $$ -->
-<!-- s^2 = \frac{\sum\limits_{\substack{i=1}}^n e_i^2}{n-k} -->
-<!-- $$ -->
+. . .
 
-<!-- $\sum\limits_{\substack{i=1}}^n e_i^2$ - сумма квадратов остатков    -->
-<!-- $n$ - объем выборки    -->
-<!-- $k$ - число параметров в модели -->
+то остатки от этой модели — тоже нормально распределенная случайная величина 
 
-<!-- ##Вычисление вариационо-ковариационной матрицы вручную -->
-<!-- Вычисляем $\sum\limits_{\substack{i=1}}^n e_i^2$    -->
+$$e_i \sim N(0, \sigma)$$
 
-<!-- ```{r} -->
-<!-- predict_values <- X %*% betas -->
+. . . 
 
-<!-- resid_values <- cars$dist - predict_values -->
+Т.е. выполнение этого условия можно оценить по поведению случайной части модели.
 
-<!-- s2 <- sum(resid_values^2)/(length(resid_values) - length(betas)) -->
+## Проверка нормальности распределения остатков
 
-<!-- s2 -->
-<!-- ``` -->
+Есть формальные тесты, но:
 
-<!-- ##Вычисление вариационо-ковариационной матрицы вручную -->
-<!-- Вычисляем вариационно-ковариационную матрицу -->
+- у формальных тестов тоже есть свои условия применимости
+- при больших выборках формальные тесты покажут, что значимы даже небольшие отклонения от нормального распределения
+- тесты, которые используются в линейной регрессии, устойчивы к небольшим отклонениям от нормального распределения
 
-<!-- $$ -->
-<!-- \textbf{V}(\pmb{\beta}) = s^2[\textbf{X}'\textbf{X}]^{-1} -->
-<!-- $$ -->
+. . .
 
-<!-- ```{r} -->
-<!-- covbetas <- s2 * solve(t(X) %*% X) -->
-<!-- covbetas -->
-<!-- ``` -->
+Лучший способ проверки — квантильный график остатков.
 
-## Применение матричной алгебры для построения графиков регрессионных моделей 
+## Квантильный график остатков
 
-Шаг 1. Формируем искусственный датасет со всеми возможными значениями предиктора
+По оси Х — квантили теоретического распределения, по оси Y — квантили остатков модели. Если наблюдаемое распределение соответствует теоретическому, то точки должны лечь вдоль прямой по диагонали графика.
 
-```{r}
+<br/>
+
+. . .
+
+Обычные остатки должны подчиняться нормальному распределению $e \sim N(0, \sigma)$
+
+. . .
+
+Cтьюдентизированные остатки — t-распределению
+
+```{r qqplot}
 #| echo: true
-MyData <- data.frame(MRINACount = seq(min(brain$MRINACount), max(brain$MRINACount), length.out = 100))
+#| code-fold: true
 
-head(MyData)
+library(car)
+qqPlot(brain_model, id = FALSE) # из пакета car
 ```
 
-## Применение матричной алгебры для построения графиков регрессионных моделей 
+## Что делать, если остатки распределены не нормально?
 
-Шаг 2. Формируем модельную матрицу для искусственно созданных данных
+Зависит от причины
+
+- Нелинейная связь?
+    - Построить аддитивную модель, GAM (если достаточно наблюдений по $x$)
+    - Построить нелинейную модель (если известна форма зависимости)
+- Неучтенные переменные?
+    - добавляем в модель
+- Зависимая переменная распределена по-другому?
+    - трансформируем данные (неудобно)
+    - подбираем модель с другим распределением остатков (обобщенную линейную модель)
+
+## 4. Постоянство дисперсии {.center .middle .inverse}
+
+## 4. Постоянство дисперсии (= гомогенность дисперсии, гомоскедастичность)
+
+::: {.columns}
+::: {.column width="60%"}
+```{r gg-norm-tunnel, echo=FALSE, fig.height=7, purl=FALSE}
+```
+:::
+::: {.column width="40%"}
+Это самое важное условие, поскольку многие тесты чувствительны к гетероскедастичности.
+:::
+:::
+
+## Проверка гомогенности дисперсий
+
+Есть формальные тесты (тест Бройша-Пагана, тест Кокрана), но:
+
+- у формальных тестов тоже есть свои условия применимости, и многие сами неустойчивы к гетероскедастичности
+- при больших выборках формальные тесты покажут, что значима даже небольшая гетероскедастичность
+
+. . .
+
+Лучший способ проверки на гомогенность дисперсий — график остатков от предсказанных значений.
+
+## Проверка гомогенности дисперсий
+
+```{r homo-hetero, echo=FALSE, purl=FALSE, opts.label='fig.wide.taller'}
+N <- 300
+b_0 <- 0.5
+b_1 <- 8
+
+set.seed(123456)
+x <- rnorm(N, 10, 3)
+eps_1 <- rnorm(N, 0, 10)
+y_1 <- b_0 + b_1*x + eps_1
+
+# |v|^(2*t), t = 0.7
+h <- function(x) x^(2*0.7) 
+eps_2 <- rnorm(N, 0, h(x))
+y_2 <- b_0 + b_1*x + eps_2
+dat <- data.frame(x, y_1, y_2)
+dat$log_y <- log(y_2)
+
+pl_hom <- ggplot(dat, aes(x = x, y = y_1)) + geom_point(alpha = 0.5) + geom_smooth(method = "lm", alpha = 0.7) + ggtitle("Гомоскедастичность") + ylab("Y")
+pl_heter <- pl_hom + aes(y = y_2) + ggtitle("Гетероскедастичность") + ylab("Y")
+
+dat_diag_1 <- fortify(lm(y_1 ~ x, data = dat))
+dat_diag_2 <- fortify(lm(y_2 ~ x, data = dat))
+
+pl_hom_resid <- ggplot(dat_diag_1, aes(x = .fitted, y = .stdresid)) + geom_point(alpha = 0.5) + geom_smooth(se=FALSE, method = "loess")
+pl_heter_resid <- pl_hom_resid %+% dat_diag_2
+
+plot_grid(pl_hom, pl_heter, 
+          pl_hom_resid, pl_heter_resid, 
+          ncol = 2, rel_heights = c(0.55, 0.45))
+```
+
+## Чем опасна гетероскедастичность
+
+Создадим две генеральные совокупности, в которых нет связи между $y$ и $x$
+
+```{r echo = FALSE, fig.width=10}
+N <- 1000
+b_0 <- 0
+b_1 <- 0
+
+set.seed(123456)
+x <- rnorm(N, 10, 3)
+eps_1 <- rnorm(N, 0, 10)
+y_1 <- b_0 + b_1*x + eps_1
+
+h <- function(x) x^(2*0.7) 
+eps_2 <- rnorm(N, 0, h(x))
+y_2 <- b_0 + b_1*x + eps_2
+dat2 <- data.frame(x, y_1, y_2)
+
+pl_hom <- 
+  ggplot(dat2, aes(x = x, y = y_1)) + geom_point(alpha = 0.5)  + ggtitle("Гомоскедастичность") + ylab("Y")
+
+pl_heter <- 
+  pl_hom + aes(y = y_2) + ggtitle("Гетероскедастичность") + ylab("Y")
+
+plot_grid(pl_hom, pl_heter)
+```
+
+## Чем опасна гетероскедастичность
+Возьмем 1000 выборок из этих совокупностей по 10 наблюдений и построим много линейных моделей
+
+
+
+::: {.columns}
+::: {.column width="60%"}
 
 ```{r}
+p_values <- data.frame(p_no_heter = rep(NA, 1000), p_heter = NA)
+
+for(i in 1:1000){
+  df <- dat2[sample(1:1000, 10), ]
+  M_no_heter <- lm(y_1 ~ x, data = df)
+  M_heter <- lm(y_2 ~ x, data = df)
+  p_values$p_no_heter[i] <- summary(M_no_heter)$coefficients[2, 4] #p-value из summary модели 
+  p_values$p_heter[i] <- summary(M_heter)$coefficients[2, 4] #p-value из summary модели     
+  }
+```
+:::
+::: {.column width="40%"}
+- Нет гетероскедастичности и нет связи между $y$ и $x$ (справедлива $H_0$) частота ошибок составляет 
+
+```{r}
+mean(p_values$p_no_heter < 0.05)
+```
+:::
+:::
+
+::: {.column width="40%"}
+- Для совокупности с гетероскедастичностью, при отсутствии связи между  $y$ и $x$ (справедлива $H_0$) частота ошибок составляет 
+
+```{r}
+mean(p_values$p_heter < 0.05)
+```
+:::
+
+## Проверка на гетероскедастичность
+
+Этот график у нас уже есть
+
+```{r resid-plot}
+gg_resid
+```
+
+. . .
+
+- Гетерогенность дисперсий не выражена.
+
+## Что делать, если найдена гетероскедастичность?
+
+```{r hetero-log-transform, echo=FALSE, purl=FALSE, opts.label='fig.wide.taller'}
+dat_diag2 <- fortify(lm(log_y~x, data=dat))
+pl_heter2 <- ggplot(dat, aes(x=x, y=log_y)) + geom_point() + geom_smooth(method = "lm", alpha = 0.7)
+pl_heter_resid2 <- ggplot(dat_diag2, aes(x = .fitted, y = .stdresid)) + geom_point() + geom_smooth(se = FALSE, method = "loess")
+pl_heter <- pl_heter + ggtitle("No transformation")
+pl_heter2 <- pl_heter2 + ggtitle("Log transformed Y")
+plot_grid(pl_heter, pl_heter2, pl_heter_resid, pl_heter_resid2,  nrow = 2)
+```
+
+. . .
+
+Трансформация может помочь, но лучше изменить модель.
+
+## Возможные причины гетероскедастичности
+
+Даже если трансформация может помочь, лучше поискать причину гетерогенности дисперсий
+
+- Неучтенные переменные
+    - добавляем в модель
+- Зависимая переменная распределена по-другому
+    - трансформируем данные (неудобно)
+    - подбираем модель с другим распределением остатков (обобщенную линейную модель)
+- Моделируем гетерогенность дисперсии.
+
+## Тренинг по анализу остатков {.center .middle .inverse}
+
+## Некоторые частые паттерны на графиках остатков
+
+::: {.columns}
+::: {.column width="60%"}
+![](images/Residuals.png)
+
+<small>Из кн. Logan, 2010, стр. 174</small>
+:::
+::: {.column width="40%"}
+- Рис. a — Условия применимости соблюдаются, модель хорошая
+
+- Рис. b — Клиновидный паттерн. Есть гетероскедастичность. Модель плохая
+
+- Рис. c — Остатки рассеяны равномерно, но нужны дополнительные предикторы
+
+- Рис. d — Нелинейный паттерн. Линейная модель использована некорректно
+:::
+:::
+
+## Задание 3
+
+Выполните три блока кода
+
+Какие нарушения условий применимости линейных моделей здесь наблюдаются?
+
+Вам понадобятся
+
+1. График расстояния Кука
+2. График остатков от предсказанных значений
+3. Графики остатков от предикторов в модели и не в модели
+4. Квантильный график остатков
+
+## Задание 3, блок 1
+
+```{r block-1-task}
 #| echo: true
+#| code-fold: true
 
-X2 <- model.matrix( ~ MRINACount, data = MyData)
-
-head(X2)
+set.seed(90829)
+x1 <- seq(1, 100, 1)
+y1 <-  diffinv(rnorm(99))  + rnorm(100, 0.2, 4)
+dat1 = data.frame(x1, y1)
+ggplot(dat1, aes(x = x1, y =  y1)) + geom_point()+ 
+  geom_smooth(method="lm", alpha = 0.7)
 ```
 
-## Применение матричной алгебры для построения графиков регрессионных моделей 
+## Решение, блок 1
 
-Шаг 3. Вычисляем предсказанные значения для искусственно созданных данных
+### Графики
 
-```{r}
+```{r block-1, fig.show='hold', purl=FALSE, echo=FALSE, opts.label='fig.wide.taller'}
 #| echo: true
+#| code-fold: true
 
-MyData$Predicted <- X2 %*% betas
-
-head(MyData)
+mod1 <- lm(y1 ~ x1, data = dat1)
+mod1_diag <- fortify(mod1)
+library(cowplot)
+plot_grid(
+  ggplot(mod1_diag, aes(x = 1:nrow(mod1_diag), y = .cooksd)) + 
+    geom_bar(stat = "identity"),
+  ggplot(data = mod1_diag, aes(x = .fitted, y = .stdresid)) + 
+    geom_point() + geom_hline(yintercept = 0),
+  ggplot(data = mod1_diag, aes(x = x1, y = .stdresid)) + 
+    geom_point() + geom_hline(yintercept = 0),
+  ggplot(dat1, aes(sample = y1)) + stat_qq() + stat_qq_line(),
+  nrow = 2)
 ```
 
-## Применение матричной алгебры для построения графиков регрессионных моделей 
+. . .
 
-Шаг 4. Рисуем график
+- Выбросов нет, зависимость нелинейна
+- Небольшие отклонения от нормального распределения
 
-```{r}
+## Решение, блок 1
+
+```{r eval=FALSE, purl=FALSE}
 #| echo: true
+#| code-fold: true
 
-library(ggplot2)
-Pl <-
-ggplot(MyData, aes(x = MRINACount, y = Predicted)) + 
-  geom_line(color = "blue", size = 1.5) + 
-  geom_point(data = brain, aes(x = MRINACount, y = PIQ))
+mod1 <- lm(y1 ~ x1, data = dat1)
 
-Pl
+# Данные для графиков остатков
+mod1_diag <- fortify(mod1)
+
+# 1) График расстояния Кука
+ggplot(mod1_diag, aes(x = 1:nrow(mod1_diag), y = .cooksd)) + 
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod1_diag, aes(x = .fitted, y = .stdresid)) + 
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x1)
+
+# 4) Квантильный график остатков
+qqPlot(mod1, id = FALSE)       
 ```
 
-Осталось нанести границы доверительной области. Но для этого необходимо ввести понятие **вариационно-ковариационной матрицы**
+## Задание 3, блок 2
 
-## Вычисление вариационно-ковариационной матрицы
-
-Подобранные параметры (вектор коэффициентов) -- это лишь _оценки_ некоторых параметров, описывающих связь между зависимой переменной и предиктором в генеральной совокупности.
-
-Варьирование параметров описывает *вриацонно-ковариационная матрица*.
-
-В среде `R`, если модель задана, например, с помощью функции `lm()`, эта матрица вычисляется так
-
-```{r}
+```{r block-2-task}
 #| echo: true
+#| code-fold: true
 
-vcov(M_brain)
+  set.seed(7657674)
+  x2 <- runif(1000, 1, 100)
+  b_0 <- 100;  b_1 <- -20
+  h <- function(x) x^0.5
+  eps <- rnorm(1000, 0, h(x2))
+  y2 <- b_0 + b_1 * x2 + eps
+  dat2 <- data.frame(x2, y2)
+  ggplot(dat2, aes(x = x2, y = y2)) + 
+    geom_point() + 
+    geom_smooth(method = "lm")
 ```
 
-## Вычисление вариационно-ковариационной матрицы вручную
+## Решение, блок 2
 
-$$
-\textbf{V}_b = s^2[\textbf{X}'\textbf{X}]^{-1}
-$$
-где
-
-$$
-s^2 = \frac{\sum\limits_{\substack{i=1}}^n e_i^2}{n-k}
-$$
-
-$\sum\limits_{\substack{i=1}}^n e_i^2$ - сумма квадратов остатков    
-$n$ - объем
-$k$ - количество параметров модели
-
-
-## Вычисление вариационно-ковариационной матрицы вручную
-
-Вычислем вектор остатков
-```{r}
+```{r block-2, fig.show='hold', purl=FALSE, echo=FALSE, opts.label='fig.wide.taller'}
 #| echo: true
-#| 
-RES <- brain$PIQ - X %*% betas
+#| code-fold: true
+
+mod2 <- lm(y2 ~ x2, data = dat2)
+mod2_diag <- fortify(mod2)
+plot_grid(
+  ggplot(mod2_diag, aes(x = 1:nrow(mod2_diag), y = .cooksd)) + 
+    geom_bar(stat = "identity"),
+  ggplot(data = mod2_diag, aes(x = .fitted, y = .stdresid)) + 
+    geom_point() + geom_hline(yintercept = 0),
+  ggplot(data = mod2_diag, aes(x = x2, y = .stdresid)) + 
+    geom_point() + geom_hline(yintercept = 0),
+  ggplot(dat2, aes(sample = y2)) + stat_qq() + stat_qq_line(),
+  nrow = 2)
 ```
 
-Вычисляем $s^2 = \frac{\sum\limits_{\substack{i=1}}^n e_i^2}{n-k}$
+. . .
 
-```{r}
+- Выбросов нет
+- Гетерогенность дисперсий, остатки не подчиняются нормальному распределению
+
+## Решение, блок 2
+
+```{r eval=FALSE, purl=FALSE}
 #| echo: true
-S2 <- sum(RES^2)/(nrow(brain) - length(betas))
+#| code-fold: true
+
+mod2 <- lm(y2 ~ x2, data = dat2)
+
+# Данные для графиков остатков
+mod2_diag <- fortify(mod2)
+
+# 1) График расстояния Кука
+ggplot(mod2_diag, aes(x = 1:nrow(mod2_diag), y = .cooksd)) + 
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod2_diag, aes(x = .fitted, y = .stdresid)) + 
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x2)
+
+# 4) Квантильный график остатков
+qqPlot(mod2, id = FALSE)       
 ```
 
-Вычисляем $\textbf{V}_b = s^2[\textbf{X}'\textbf{X}]^{-1}$
+## Задание 3, блок 3
 
-```{r}
+```{r block-3-task}
 #| echo: true
-VarCov <- S2 * solve(t(X) %*% X)
+#| code-fold: true
+
+set.seed(9283)
+x3 <- rnorm(25, 50, 10)
+b_0 <- 20; b_1 <- 20; eps <- rnorm(50, 0, 100)
+y3 <- b_0 + b_1*x3 + eps
+y3[100] <- 1000; x3[100] <- 95; y3[99] <- 1300; x3[99] <- 90; y3[98] <- 1500; x3[98] <- 80
+dat3 <- data.frame(x3, y3)
+ggplot(dat3, aes(x=x3, y=y3)) + geom_point() + geom_smooth(method="lm")
 ```
 
-```{r}
-VarCov
-```
+## Решение, блок 3
 
-## Применяем вариационно-ковариационую матрицу для вычисления доверительных интервалов
-
-Для построения доверительного интервала надо вычислить значение стандартных ошибок для всех возможных значений предиктора.
-
-Мы можем взять любую новую модельную матрицу $\textbf{X}$, связанную с этой моделью.
-
-Тогда 
-$$
-SE = \sqrt{diag(\textbf{X} \times \textbf{VC} \times \textbf{X}')}
-$$
-
-
-```{r}
+```{r block-3, fig.show='hold', purl=FALSE, echo=FALSE, opts.label='fig.wide.taller'}
 #| echo: true
+#| code-fold: true
 
-MyData$se <- sqrt(diag(X2 %*% VarCov  %*% t(X2)))
-
-MyData$CiUp  <- MyData$Predicted + 1.96 *MyData$se
-MyData$CiLow  <- MyData$Predicted - 1.96 *MyData$se
+mod3 <- lm(y3 ~ x3, data = dat3)
+mod3_diag <- fortify(mod3)
+plot_grid(
+  ggplot(mod3_diag, aes(x = 1:nrow(mod3_diag), y = .cooksd)) + 
+    geom_bar(stat = "identity"),
+  ggplot(data = mod3_diag, aes(x = .fitted, y = .stdresid)) + 
+    geom_point() + geom_hline(yintercept = 0),
+  ggplot(data = mod3_diag, aes(x = x3, y = .stdresid)) + 
+    geom_point() + geom_hline(yintercept = 0),
+  ggplot(dat2, aes(sample = y2)) + stat_qq() + stat_qq_line(),
+  nrow = 2)
 ```
 
-## Откладываем на графике доверительные интервалы
+. . .
 
-```{r}
+- 100-е наблюдение сильно влияет на ход регрессии
+- Зависимость может быть нелинейна
+
+## Решение, блок 3
+
+```{r eval=FALSE, purl=FALSE}
 #| echo: true
-#| 
-Pl +
-  geom_line(data = MyData, aes(y = CiLow), linetype = 2) +
-  geom_line(data = MyData, aes(y = CiUp), linetype = 2)
+#| code-fold: true
+
+mod3 <- lm(y3 ~ x3, data = dat3)
+
+# Данные для графиков остатков
+mod3_diag <- fortify(mod3)
+
+# 1) График расстояния Кука
+ggplot(mod3_diag, aes(x = 1:nrow(mod3_diag), y = .cooksd)) + 
+  geom_bar(stat = "identity")
+
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = mod3_diag, aes(x = .fitted, y = .stdresid)) + 
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid
+
+# 3) Графики остатков от предикторов в модели и не в модели
+gg_resid + aes(x = x3)
+
+# 4) Квантильный график остатков
+qqPlot(mod3, id = FALSE)       
 ```
 
+## Задание 4
+
+Выполните последнее задание в одном из этих файлов:
+- 07_task_assumptions_catsM.R
+- 07_task_assumptions_GAG.R
+
+## Take-home messages
+
+- Гипотезы о наличии зависимости можно тестировать при помощи t- или F-теста.
+- Качество подгонки модели можно оценить при помощи коэффициента детерминации $R^2$.
+
+- У линейных моделей есть условия применимости, поэтому не спешите описывать результаты — сначала проверьте.
+
+
+- Если условия применимости нарушены, то результатам тестов для этой модели нельзя верить (получаются заниженные доверительные вероятности, возрастает вероятность ошибок I рода).
+- Анализ остатков дает разностороннюю информацию о валидности моделей.
+
+## Что почитать
+
++ Гланц, С., 1998. Медико-биологическая статистика. М., Практика
++ Кабаков Р.И. R в действии. Анализ и визуализация данных на языке R. М.: ДМК Пресс, 2014
++ Diez, D.M., Barr, C.D. and Çetinkaya-Rundel, M., 2015. OpenIntro Statistics. OpenIntro.
++ Zuur, A., Ieno, E.N. and Smith, G.M., 2007. Analyzing ecological data. Springer Science & Business Media.
++ Quinn G.P., Keough M.J. 2002. Experimental design and data analysis for biologists
++ Logan M. 2010. Biostatistical Design and Analysis Using R. A Practical Guide

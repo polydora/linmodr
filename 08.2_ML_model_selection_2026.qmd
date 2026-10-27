@@ -1,0 +1,741 @@
+---
+title: "Сравнение линейных моделей"
+subtitle: "Линейные модели..."
+author: Валентина\ Домашкина, Вадим\ Хайтов, Анастасия\ Лянгузова, Наталья\ Арбузова, Юта\ Тамберг, Марина\ Варфоломеева
+institute: "Кафедра Зоологии беспозвоночных, СПбГУ"
+format:
+  revealjs:
+    width: 1600
+    height: 1080
+    code-block-height: 700px
+    embed-resources: true
+    self-contained-math: true 
+    slide-number: true
+    code-line-numbers: true
+    incremental: false
+    title-slide-attributes:
+      data-background-color: "#7ea9b9"
+      data-state: "inverse"
+    df-print: default
+    logo: assets/Linmod_logo.gif
+    theme: default
+    css:
+      - assets/my_styles_2026.css
+execute:
+  cache: false
+---
+
+```{r setup, include=FALSE, cache=FALSE, purl=FALSE}
+options(width = 70, scipen = 6, digits = 3)
+library(knitr)
+library(ggplot2)
+
+knitr::opts_chunk$set(
+  fig.align = "center",
+  tidy = FALSE,
+  fig.width = 7,
+  fig.height = 3,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+```{r libs, include=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+library(gridExtra)
+
+theme_set(theme_bw(base_size = 20))
+```
+
+## Сравнение линейных моделей {.center .middle .inverse}
+
+## Мы рассмотрим
+
+- Вложенные модели
+- Тестирование значимости отдельных предикторов при помощи частного F-критерия
+- Принципы отбора моделей
+- Упрощение моделей
+
+## Вы сможете
+
+- Определять, какие модели являются вложенными
+- Сравнивать вложенные модели при помощи частного F-критерия
+- Объяснить связь между качеством описания существующих данных и краткостью модели
+- Объяснить, что такое «переобучение» модели
+- Упростить линейную модель при помощи частного F-критерия, следуя обратному пошаговому алгоритму
+
+# Модель множественной линейной регрессии с прошлой лекции {.center .middle .inverse}
+
+## Пример: птицы в лесах Австралии
+
+От каких характеристик лесного участка зависит обилие птиц в лесах юго-западной Виктории, Австралия (Loyn, 1987)
+
+Переменных много, мы хотим из них выбрать **оптимальный небольшой** набор.
+
+::: {.columns}
+::: {.column width="50%"}
+![](images/vict_m.jpg){width=100%}
+
+<small>Mystic Forest - Warburton, Victoria by ¡kuba! on flickr</small>
+:::
+
+::: {.column width="50%"}
+56 лесных участков:
+
+- ABUND — обилие птиц
+- AREA — площадь участка
+- YRISOL — год изоляции участка
+- DIST — расстояние до ближайшего леса
+- LDIST — расстояние до ближайшего большого леса
+- GRAZE — пастбищная нагрузка (1-5)
+- ALT — высота над уровнем моря
+:::
+:::
+
+<small>Пример из кн. Quinn, Keugh, 2002, данные из Loyn, 1987)</small>
+
+## Модель из прошлой лекции
+
+```{r}
+#| echo: true
+#| code-line-numbers: false
+
+bird <- read.csv("data/loyn.csv")
+bird$logAREA <- log(bird$AREA)
+bird$logDIST <- log(bird$DIST)
+bird$logLDIST <- log(bird$LDIST)
+mod2 <- lm(ABUND ~ logAREA + YRISOL + logDIST + logLDIST + ALT, data = bird)
+```
+
+$$\begin{aligned}\widehat{ABUND}_i = &-226.00 + 3.69 \cdot logAREA_i + 0.12 \cdot YRISOL_i \\
+&- 0.10 \cdot logDIST_i - 0.33 \cdot logLDIST_i + 0.03 \cdot ALT_i\\
+\end{aligned}$$
+
+- Проверим ещё одним способом, влияют ли предикторы.
+- Разберёмся, можно ли оптимизировать модель.
+
+# Вложенные модели {.center .middle .inverse}
+
+## Вложенные модели (nested models)
+
+Две модели являются **вложенными**, если одну из них можно получить из другой путём удаления некоторых предикторов.
+
+Удаление предиктора — коэффициент при данном предикторе равен нулю.
+
+### Полная модель (full model)
+
+М1: $y_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + e_i$
+
+### Неполные модели (reduced models)
+
+М2: $y_i = b_0 + b_1 x_{1i} + e_i$
+
+М3: $y_i = b_0 + b_2 x_{2i} + e_i$
+
+- М2 вложена в М1
+- М3 вложена в М1
+- М2 и М3 **не** вложены друг в друга
+
+### Нулевая модель (null model)
+
+$y_i = b_0 + e_i$ — вложена в полную (М1) и в неполные (М2, М3)
+
+## Задание
+
+Для тренировки запишем вложенные модели для данной полной модели:
+
+(1) $y_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + b_3 x_{3i} + e_i$
+
+## Решение {.smaller .tight}
+
+Для тренировки запишем вложенные модели для данной полной модели:
+
+(1) $y_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + b_3 x_{3i} + e_i$
+
+::: {.columns}
+::: {.column width="50%"}
+**Модели:**
+
+- (2) $y_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + e_i$
+- (3) $y_i = b_0 + b_1 x_{1i} + b_3 x_{3i} + e_i$
+- (4) $y_i = b_0 + b_2 x_{2i} + b_3 x_{3i} + e_i$
+- (5) $y_i = b_0 + b_1 x_{1i} + e_i$
+- (6) $y_i = b_0 + b_2 x_{2i} + e_i$
+- (7) $y_i = b_0 + b_3 x_{3i} + e_i$
+- (8) $y_i = b_0 + e_i$
+:::
+
+::: {.column width="50%"}
+**Вложенность:**
+
+- (2)–(4) → в (1)
+- (5) → в (1), (2), (3)
+- (6) → в (1), (2), (4)
+- (7) → в (1), (3), (4)
+- (8) → во все
+:::
+:::
+
+
+# Частный F-критерий {.center .middle .inverse}
+
+## Сравнение вложенных линейных моделей при помощи F-критерия
+
+### Полная модель (со всеми предикторами)
+
+$y_i = b_0 + b_1 x_{1i} + \ldots + b_k x_{ki} + b_l x_{li} + e_i$
+
+$SS_{r, full}$, $df_{r, full} = p - 1$
+
+$SS_{e, full}$, $df_{e, full} = n - p$
+
+### Уменьшенная модель с $(p - 1)$ параметрами (например, без предиктора $b_l x_{li}$)
+
+$y_i = b_0 + b_1 x_{1i} + \ldots + b_k x_{ki} + e_i$
+
+$SS_{r, reduced}$, $df_{r, reduced} = (p - 1) - 1$
+
+$SS_{e, reduced}$, $df_{e, reduced} = n - (p - 1)$
+
+## Полная модель всегда будет лучше
+
+$SS_{r, full} > SS_{r, reduced}$
+
+или то же самое:
+
+$SS_{e, full} < SS_{e, reduced}$
+
+Можно оценить, насколько именно полная модель лучше уменьшенной (или насколько уменьшенная модель хуже полной).
+
+## Частный F-критерий оценивает разницу объяснённой дисперсии между моделями
+
+$$F = \frac{(SS_{e, reduced} - SS_{e, full})/(df_{e, reduced} - df_{e, full})}{SS_{e, full} / df_{e, full}}$$
+
+**Если модель значимо ухудшается от удаления предиктора, то влияние этого предиктора значимо.**
+
+## Краткое обозначение частного F-критерия
+
+Чтобы проверить значимость предиктора `ALT`, нам нужно сравнить две модели:
+
+`ABUND ~ logAREA + YRISOL + logDIST + logLDIST + ALT`  
+`ABUND ~ logAREA + YRISOL + logDIST + logLDIST`
+
+Это можно обозначить:
+
+$F_{(\text{ALT | logAREA, YRISOL, logDIST, logLDIST})}$
+
+А разницу остаточных сумм квадратов $SS_{e, reduced} - SS_{e, full}$, которую мы тестируем, можно обозначить:
+
+$SS_{(\text{ALT | logAREA, YRISOL, logDIST, logLDIST})}$
+
+## Частный F-критерий в R: `anova(модель_1, модель_2)`
+
+Если высота над уровнем моря входит в модель после учёта влияния остальных предикторов, то её влияние не значимо ($F = 1.84$, $p = 0.18$).
+
+$F_{(\text{ALT | logAREA, YRISOL, logDIST, logLDIST})}$
+
+```{r}
+#| echo: true
+
+mod2_reduced <- update(mod2, . ~ . - ALT)
+anova(mod2_reduced, mod2)
+```
+
+## Характер влияния предиктора зависит от состава модели
+
+Если высота над уровнем моря — единственный предиктор в модели, то его влияние статистически значимо ($F = 9.45$, $p < 0.05$).
+
+$F_{(\text{ALT})}$
+
+```{r}
+#| echo: true
+
+mod_ALT1 <- lm(ABUND ~ ALT, data = bird)
+mod_null <- lm(ABUND ~ 1, data = bird)
+anova(mod_null, mod_ALT1)
+```
+
+# I и II типы сумм квадратов {.center .middle .inverse}
+
+## Порядок проведения сравнений при F-тестах (типы сумм квадратов)
+
+`Y ~ A + B + C`
+
+::: {.columns}
+::: {.column width="50%"}
+### I тип сумм квадратов (SS type I)
+
+Последовательно вычисляем вклады предикторов при условии, что все предыдущие включены в модель:
+
+- $SS_{A}$
+- $SS_{B|A}$
+- $SS_{C|A, B}$
+:::
+
+::: {.column width="50%"}
+### II тип сумм квадратов (SS type II)
+
+Поочерёдно вычисляем вклад каждого предиктора при условии, что все остальные включены в модель:
+
+- $SS_{A|B, C}$
+- $SS_{B|A, C}$
+- $SS_{C|A, B}$
+:::
+:::
+
+## Последовательное тестирование `anova(модель)`
+
+```{r}
+#| echo: true
+
+anova(mod2)
+```
+
+## Осторожно: при последовательном тестировании результат зависит от порядка предикторов
+
+Если мы поставим `ALT` первым, то изменится SS для других предикторов, а влияние самого `ALT` станет значимым (т.к. оно оценено без учёта других предикторов).
+
+```{r}
+#| echo: true
+
+mod2_reordered <- lm(ABUND ~ ALT + logAREA + YRISOL + logDIST + logLDIST,
+                     data = bird)
+anova(mod2_reordered)
+```
+
+## Поочерёдное тестирование `Anova(модель)`
+
+```{r}
+#| echo: true
+
+library(car)
+Anova(mod2)
+```
+
+## При поочерёдном тестировании результат НЕ зависит от порядка предикторов
+
+```{r}
+#| echo: true
+
+Anova(mod2_reordered)
+```
+
+## F-тест позволяет упростить модель
+
+```{r}
+#| echo: true
+
+Anova(mod2)
+```
+
+Если не все предикторы влияют, то, может, можно удалить лишние — то есть упростить модель?
+
+# Отбор моделей {.center .middle .inverse}
+
+## Упрощение линейных моделей при помощи частного F-критерия
+
+Постепенно удаляем предикторы. Модели обязательно должны быть вложенными!*
+
+### Обратный пошаговый алгоритм (backward selection)
+
+1. Подбираем полную модель.
+2. Удаляем один предиктор (строим уменьшенную модель).
+3. Тестируем отличие уменьшенной модели от полной.
+
+Повторяем 2–3 для каждого из предикторов:
+
+4. Выбираем предиктор для окончательного удаления: это предиктор, удаление которого минимально ухудшает модель. Модель без него будет «полной» для следующего раунда выбора оптимальной модели.
+
+Повторяем 1–4 до тех пор, пока что-то можно удалить.
+
+<hr/>
+
+\* — **Важно!** Начинать упрощать модель нужно со взаимодействий между предикторами. Если взаимодействие из модели удалить нельзя, то нельзя удалять и отдельно стоящие предикторы, из которых оно состоит. Но мы поговорим о взаимодействиях позже.
+
+## Влияют ли предикторы? {.smaller}
+
+Можем попробовать оптимизировать модель.
+
+```{r}
+#| echo: true
+#| code-block-height: 400px
+#| classes: smaller-code
+
+summary(mod2)
+```
+
+## Что происходит на каждом шаге обратного пошагового алгоритма?
+
+`anova(модель_1, модель_2)`
+
+Подбираем полную модель, удаляем предикторы по одному, тестируем, ухудшилась ли модель. Для окончательного удаления на этом шаге выбираем предиктор, удаление которого меньше всего её ухудшает.
+
+```{r}
+#| eval: false
+
+mod3 <- update(mod2, . ~ . - logAREA)
+anova(mod2, mod3)
+mod4 <- update(mod2, . ~ . - YRISOL)
+anova(mod2, mod4)
+mod5 <- update(mod2, . ~ . - logDIST)
+anova(mod2, mod5)
+mod6 <- update(mod2, . ~ . - logLDIST)
+anova(mod2, mod6)
+mod7 <- update(mod2, . ~ . - ALT)
+anova(mod2, mod7)
+```
+
+> Но мы пойдём другим путём. Все эти действия может выполнить одна функция `drop1()`.
+
+## Частный F-критерий при помощи `drop1()` (шаг 1)
+
+Тестируем значимость всех предикторов за один раз. Затем выбираем предиктор, удаление которого меньше всего ухудшает модель.
+
+```{r}
+#| echo: true
+
+drop1(mod2, test = "F")
+# Нужно убрать logDIST
+```
+
+## Тестируем предикторы (шаг 2)
+
+Удаляем выбранный предиктор и повторяем тесты снова. И т.д.
+
+```{r}
+#| echo: true
+
+# Убрали logDIST
+mod3 <- update(mod2, . ~ . - logDIST)
+drop1(mod3, test = "F")
+# Нужно убрать logLDIST
+```
+
+## Тестируем предикторы (шаг 3)
+
+```{r}
+#| echo: true
+#| purl: false
+
+# Убрали logLDIST
+mod4 <- update(mod3, . ~ . - logLDIST)
+drop1(mod4, test = "F")
+# Нужно убрать ALT
+```
+
+## Тестируем предикторы (шаг 4)
+
+```{r}
+#| echo: true
+#| purl: false
+
+# Убрали ALT
+mod5 <- update(mod4, . ~ . - ALT)
+drop1(mod5, test = "F")
+# Больше ничего не убрать
+```
+
+## Итоговая модель
+
+```{r}
+#| echo: true
+
+summary(mod5)
+```
+
+## Задание
+
+Проверьте финальную модель на выполнение условий применимости. Дополните код.
+
+```{r}
+#| eval: false
+#| purl: true
+
+library()
+mod_diag <- data.frame(fortify(), bird[, c()])
+# 1) График расстояния Кука
+ggplot(data = , aes(x = 1:, y = .cooksd)) + geom_bar(stat = "")
+# 2) График остатков от предсказанных значений
+gg_resid <- ggplot(data = , aes(x = , y = )) + geom_point() + geom_hline()
+gg_resid
+# 3) Графики остатков от предикторов в модели и нет
+res_1 <- gg_resid + aes(x = logAREA)
+res_1
+res_2 <- gg_resid
+res_3 <- gg_resid
+res_4 <- gg_resid
+res_5 <- gg_resid
+res_6 <- gg_resid
+# все графики вместе
+library()
+grid.arrange(res_1, res_2, nrow = 2)
+# 4) Квантильный график остатков
+library()
+qq
+```
+
+## Решение: 1) График расстояния Кука
+
+- Выбросов нет
+
+```{r}
+#| fig.show: hold
+#| purl: false
+#| fig.width: 10
+#| fig.height: 2.2
+
+mod5_diag <- data.frame(
+  fortify(mod5),
+  bird[, c("logDIST", "logLDIST", "GRAZE", "ALT")]
+)
+
+ggplot(mod5_diag, aes(x = 1:nrow(mod5_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+```
+
+## Решение: 2) График остатков от предсказанных значений
+
+- Выбросов нет
+- Гетерогенность дисперсии?
+- Два наблюдения с очень большими предсказанными значениями и большими остатками. Хорошо бы проверить их.
+
+```{r}
+#| fig.show: hold
+#| purl: false
+#| fig.width: 10
+#| fig.height: 2.2
+
+gg_resid <- ggplot(data = mod5_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+gg_resid
+```
+
+## Решение: 3) Графики остатков от предикторов
+
+- Величина остатков зависит от уровня выпаса скота. Возможно, не стоило удалять эту переменную
+- Есть наблюдения с экстремальными значениями предикторов (два больших леса, один далёкий, один высокогорный). Хорошо бы проверить их.
+
+```{r}
+#| fig.show: hold
+#| purl: false
+#| fig.width: 10
+#| fig.height: 5
+#| echo: false
+
+res_1 <- gg_resid + aes(x = logAREA)
+res_2 <- gg_resid + aes(x = YRISOL)
+res_3 <- gg_resid + aes(x = logDIST)
+res_4 <- gg_resid + aes(x = logLDIST)
+res_5 <- gg_resid + aes(x = ALT)
+res_6 <- gg_resid + aes(x = GRAZE)
+
+library(gridExtra)
+grid.arrange(res_1, res_2, res_3, res_4,
+             res_5, res_6, nrow = 2)
+```
+
+## Решение: 3) Код для графиков остатков от предикторов
+
+```{r}
+#| fig.show: hide
+#| purl: false
+#| echo: true
+
+res_1 <- gg_resid + aes(x = logAREA)
+res_2 <- gg_resid + aes(x = YRISOL)
+res_3 <- gg_resid + aes(x = logDIST)
+res_4 <- gg_resid + aes(x = logLDIST)
+res_5 <- gg_resid + aes(x = ALT)
+res_6 <- gg_resid + aes(x = GRAZE)
+
+library(gridExtra)
+grid.arrange(res_1, res_2, res_3, res_4,
+             res_5, res_6, nrow = 2)
+```
+
+## Решение: 4) Квантильный график остатков
+
+- Отклонения от нормального распределения остатков незначительны
+
+```{r}
+#| purl: false
+#| fig.width: 4
+#| fig.height: 4
+#| message: false
+
+library(car)
+qqPlot(mod5)
+```
+
+## Описываем финальную модель
+
+```{r}
+#| echo: true
+
+summary(mod5)
+```
+
+## График предсказаний модели: один предиктор
+
+$$\widehat{ABUND}_i = -252.20 + 3.73 \cdot logAREA_i + 0.14 \cdot YRISOL_i$$
+
+```{r}
+#| echo: false
+#| purl: false
+
+# Искусственный датафрейм для предсказаний
+MyData1 <- data.frame(
+  logAREA = seq(min(bird$logAREA), max(bird$logAREA), length.out = 100),
+  YRISOL = mean(bird$YRISOL))
+# Предсказанные значения
+Predictions1 <- predict(mod5, newdata = MyData1, interval = 'confidence')
+MyData1 <- data.frame(MyData1, Predictions1)
+# Обратная трансформация предиктора, который будем изображать
+MyData1$AREA <- exp(MyData1$logAREA)
+# График предсказаний модели
+Pl_predict1 <- ggplot(MyData1, aes(x = AREA, y = fit)) +
+  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr)) +
+  geom_line()
+Pl_predict1
+```
+
+## Задание: постройте график предсказаний модели
+
+Отобразите, как меняются значения зависимой переменной в зависимости от значений одного из предикторов, при условии, что другие предикторы принимают свои средние значения. Дополните этот код:
+
+```{r}
+#| eval: false
+
+# Искусственный датафрейм для предсказаний
+MyData1 <- data.(
+   = seq(min(   ), max(   ),    ),
+  YRISOL = )
+# Предсказанные значения
+Predictions1 <- predict(   , newdata = , interval =    )
+MyData1 <- data.frame(MyData1,    )
+# Обратная трансформация предиктора, который будем изображать
+MyData1$AREA <-
+# График предсказаний модели
+Pl_predict1 <- ggplot(   , aes(x = AREA, y = )) +
+  geom_   (alpha = 0.2, aes(ymin = , ymax = )) +
+  geom_   ()
+Pl_predict1
+```
+
+## Код для графика предсказаний модели: один предиктор
+
+$$\widehat{ABUND}_i = -252.20 + 3.73 \cdot logAREA_i + 0.14 \cdot YRISOL_i$$
+
+```{r}
+#| eval: false
+#| echo: true
+#| purl: false
+
+# Искусственный датафрейм для предсказаний
+MyData1 <- data.frame(
+  logAREA = seq(min(bird$logAREA), max(bird$logAREA), length.out = 100),
+  YRISOL = mean(bird$YRISOL))
+# Предсказанные значения
+Predictions1 <- predict(mod5, newdata = MyData1, interval = 'confidence')
+MyData1 <- data.frame(MyData1, Predictions1)
+# Обратная трансформация предиктора, который будем изображать
+MyData1$AREA <- exp(MyData1$logAREA)
+# График предсказаний модели
+Pl_predict1 <- ggplot(MyData1, aes(x = AREA, y = fit)) +
+  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr)) +
+  geom_line()
+Pl_predict1
+```
+
+## График предсказаний модели: два предиктора
+
+$$\widehat{ABUND}_i = -252.20 + 3.73 \cdot logAREA_i + 0.14 \cdot YRISOL_i$$
+
+```{r}
+#| echo: false
+#| purl: false
+
+# Искусственный датафрейм для предсказаний
+MyData2 <- expand.grid(
+  logAREA = seq(min(bird$logAREA), max(bird$logAREA), length.out = 100),
+  YRISOL = round(quantile(bird$YRISOL)))
+# Предсказанные значения
+Predictions2 <- predict(mod5, newdata = MyData2, interval = 'confidence')
+MyData2 <- data.frame(MyData2, Predictions2)
+# Обратная трансформация предиктора, который будем изображать
+MyData2$AREA <- exp(MyData2$logAREA)
+# Делаем год фактором
+MyData2$YRISOL <- factor(MyData2$YRISOL)
+# График предсказаний модели
+Pl_predict2 <- ggplot(MyData2, aes(x = AREA, y = fit, group = YRISOL)) +
+  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr)) +
+  geom_line(aes(colour = YRISOL)) +
+  scale_colour_brewer(palette = 'Spectral')
+Pl_predict2
+```
+
+## Код для графика предсказаний модели: два предиктора
+
+$$\widehat{ABUND}_i = -252.20 + 3.73 \cdot logAREA_i + 0.14 \cdot YRISOL_i$$
+
+```{r}
+#| eval: false
+#| echo: true
+#| purl: true
+
+# Искусственный датафрейм для предсказаний
+MyData2 <- expand.grid(
+  logAREA = seq(min(bird$logAREA), max(bird$logAREA), length.out = 100),
+  YRISOL = round(quantile(bird$YRISOL)))
+# Предсказанные значения
+Predictions2 <- predict(mod5, newdata = MyData2, interval = 'confidence')
+MyData2 <- data.frame(MyData2, Predictions2)
+# Обратная трансформация предиктора, который будем изображать
+MyData2$AREA <- exp(MyData2$logAREA)
+# Делаем год фактором
+MyData2$YRISOL <- factor(MyData2$YRISOL)
+# График предсказаний модели
+Pl_predict2 <- ggplot(MyData2, aes(x = AREA, y = fit, group = YRISOL)) +
+  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr)) +
+  geom_line(aes(colour = YRISOL)) +
+  scale_colour_brewer(palette = 'Spectral')
+Pl_predict2
+```
+
+## Недостатки этой модели
+
+$$\widehat{ABUND}_i = -252.20 + 3.73 \cdot logAREA_i + 0.14 \cdot YRISOL_i$$
+
+```{r}
+#| echo: false
+#| purl: false
+
+Pl_predict2
+```
+
+- Отрицательные предсказания для очень давно изолированных маленьких лесов (обилие птиц не может быть отрицательным).
+- Не учтён уровень выпаса скота из-за коллинеарности с другими предикторами (но он особенно интересен исследователям, и остатки от него зависят).
+- В выборке очень мало лесов большой площади — место, где кривая выходит на плато, плохо поддержано данными.
+
+## Недостатки и ограничения методологии отбора моделей
+
+- Разные способы отбора оптимальной модели могут приводить к разным результатам. Не важно, какой из способов выбрать, но важно сделать это заранее, **до анализа**, чтобы не поддаваться соблазну подгонять результаты.
+- При отборе моделей приходится делать множество тестов, поэтому увеличивается риск ошибок I рода (подробнее на занятии про дисперсионный анализ). Чтобы хоть как-то себя обезопасить, лучше не включать в модель всё подряд — только самое необходимое.
+- Оптимальную модель лучше применять для тестирования гипотез на независимых данных, иначе получаются заниженные стандартные ошибки и завышенные эффекты. Обычно эту проблему игнорируют, но если у вас есть возможность, лучше сделать хотя бы [кросс-валидацию](https://en.wikipedia.org/wiki/Cross-validation_(statistics)).
+- Какой-то одной «лучшей» модели, как правило, не существует.
+
+## Take-home messages
+
+- Модели, которые качественно описывают существующие данные, включают много параметров, но предсказания с их помощью менее точны из-за переобучения.
+- Для выбора оптимальной модели используются разные критерии в зависимости от задачи.
+- Сравнивая модели, можно отбраковать переменные, включение которых в модель не улучшает её.
+- **Метод сравнения моделей нужно выбрать заранее, ещё до анализа.**
+
+## Что почитать
+
++ <span style="color:red">Must read paper!</span> Zuur, A.F. and Ieno, E.N., 2016. A protocol for conducting and presenting results of regression‐type analyses. Methods in Ecology and Evolution, 7(6), pp.636-645.
++ Кабаков Р.И. R в действии. Анализ и визуализация данных на языке R. М.: ДМК Пресс, 2014
++ Zuur, A., Ieno, E.N. and Smith, G.M., 2007. Analyzing ecological data. Springer Science & Business Media.
++ Quinn G.P., Keough M.J. 2002. Experimental design and data analysis for biologists
++ Logan M. 2010. Biostatistical Design and Analysis Using R. A Practical Guide

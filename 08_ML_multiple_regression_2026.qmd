@@ -269,15 +269,15 @@ $$y_i = b_0 + b_1x_{1i} + b_2x_{2i} + b_3x_{3i} + ... + b_{p - 1}x_{p - 1\;i} + 
 
 Прежде всего, нужно осмыслить дизайн сбора материала, чтобы понять являются ли отдельные наблюдения взаимно-независимыми.
 
-- Нет ли скрытых группирующих (случайных) факторов
-- Нет ли временных и пространственных автокорреляций
+- Нет ли скрытых группирующих (случайных) факторов?
+- Нет ли временных и пространственных автокорреляций?
 
 ## 1. Дизайн сбора материала
 
 Прежде всего, нужно осмыслить дизайн сбора материала, чтобы понять являются ли отдельные наблюдения взаимно-независимыми.
 
-- Нет ли скрытых группирующих (случайных) факторов
-- Нет ли временных и пространственных автокорреляций
+- Нет ли скрытых группирующих (случайных) факторов?
+- Нет ли временных и пространственных автокорреляций?
 
 ```{r}
 #| echo: false
@@ -291,15 +291,157 @@ plot_grid(p_resid_naive, p_resid_grouped, nrow = 1)
 *Слева — стандартный график остатков. Выглядит как случайный шум, ничего не заподозришь. Справа — те же остатки, но раскрашенные по ID растения. Видно, что остатки одного растения «кучкуются»: одни растения дают в основном положительные остатки, другие — отрицательные. Это и есть сигнал скрытой группировки.*
 
 
+## Нарушение независимости наблюдений {.smaller}
+
+::: {.columns}
+::: {.column width="33%"}
+### Скрытые группирующие факторы
+
+- Псевдоповторности
+- Кластерный дизайн (гнёзда, клетки)
+- Наблюдатели / приборы
+- Локации
+
+**Симптом:** «дорожки» на остатках с раскраской по группе
+:::
+
+::: {.column width="33%"}
+### Временные автокорреляции
+
+- Тренд
+- Сезонность
+- Инерция
+- «До–после»
+
+**Симптом:** волны на остатках от времени; ACF-график
+:::
+
+::: {.column width="33%"}
+### Пространственные автокорреляции
+
+- Пробы на поле
+- Географические данные
+- Вложенная структура
+
+**Симптом:** «пятна» на карте остатков; вариограммы
+:::
+:::
+
+> **Чем опасно:** заниженные SE, ложно маленькие p, ошибки I рода.
+
+* Что делать: псевдоповторности → усреднить или смешанная модель; кластеры → случайный фактор; время → модель с автокорреляцией; пространство → пространственная модель или блоки. *
+
+
 ## 2. Влиятельные наблюдения
 
 Нужно проверить, нет ли отскакивающих значений.
 
 Такие значения иногда могут быть следствием ошибки в исходных данных.
 
+```{r}
+#| echo: false
+#| purl: false
+#| fig.width: 12
+#| fig.height: 5
+
+# Симулируем данные без выброса
+set.seed(42)
+n <- 30
+x <- runif(n, 0, 10)
+y <- 2 + 1.5 * x + rnorm(n, 0, 1.5)
+
+dat_clean <- data.frame(x = x, y = y)
+
+# Добавляем одну влиятельную точку (экстремальный X + большой остаток)
+dat_outlier <- rbind(dat_clean, data.frame(x = 9.5, y = 2))
+
+# Модели
+mod_clean <- lm(y ~ x, data = dat_clean)
+mod_outlier <- lm(y ~ x, data = dat_outlier)
+
+# График 1: без выброса
+p1 <- ggplot(dat_clean, aes(x = x, y = y)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", size = 1.5) +
+  labs(
+    title = "Без влиятельного наблюдения",
+    subtitle = sprintf("b₁ = %.2f", coef(mod_clean)[2]),
+    x = "Предиктор X", y = "Отклик Y"
+  ) +
+  ylim(0, 20) +
+  theme_bw(base_size = 18)
+
+# График 2: с выбросом
+p2 <- ggplot(dat_outlier, aes(x = x, y = y)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", size = 1.5) +
+  geom_point(data = data.frame(x = 9.5, y = 2),
+             size = 6, color = "blue", shape = 1, stroke = 2) +
+  labs(
+    title = "С влиятельным наблюдением",
+    subtitle = sprintf("b₁ = %.2f", coef(mod_outlier)[2]),
+    x = "Предиктор X", y = "Отклик Y"
+  ) +
+  ylim(0, 20) +
+  theme_bw(base_size = 18)
+
+plot_grid(p1, p2, nrow = 1)
+```
+
+*Слева — данные без выброса, линия регрессии устойчива. Справа — та же выборка плюс одна точка (синий кружок) с экстремальным значением X и большим остатком. Линия регрессии сильно «просела»: угловой коэффициент изменился, хотя все остальные точки остались на месте.*
+
 ## 3. Распределение зависимой переменной
 
-Простая линейная регрессия часто не подходит для моделирования некоторых величин (например для счетных данных).
+Простая линейная регрессия часто не подходит для моделирования некоторых величин (например для счётных данных).
+
+```{r}
+#| echo: false
+#| purl: false
+#| fig.width: 13
+#| fig.height: 5
+
+set.seed(42)
+n <- 60
+x <- runif(n, 0, 10)
+
+# Счётные данные: пуассоновское распределение
+y_count <- rpois(n, lambda = exp(0.5 + 0.3 * x))
+
+dat_count <- data.frame(x = x, y = y_count)
+
+# Наивная линейная модель
+mod_lm <- lm(y ~ x, data = dat_count)
+
+# График 1: данные и линейная регрессия
+p1 <- ggplot(dat_count, aes(x = x, y = y)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "red", fill = "red", alpha = 0.15) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
+  labs(
+    title = "Линейная регрессия на счётных данных",
+    subtitle = "Красная линия — предсказания; пунктир — ноль",
+    x = "Предиктор X", y = "Счётный отклик Y"
+  ) +
+  theme_bw(base_size = 18)
+
+# График 2: остатки vs предсказанные — видно, что модель плохая
+dat_diag <- fortify(mod_lm)
+
+p2 <- ggplot(dat_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
+  geom_smooth(method = "loess", se = FALSE, color = "blue", alpha = 0.5) +
+  labs(
+    title = "Остатки линейной модели",
+    subtitle = "Нелинейный паттерн — модель не подходит",
+    x = "Предсказанные значения", y = "Стандартизованные остатки"
+  ) +
+  theme_bw(base_size = 18)
+
+plot_grid(p1, p2, nrow = 1)
+```
+
+*Слева — линейная регрессия на счётных данных. Справа — остатки этой модели: виден нелинейный паттерн и «раздувание» дисперсии. Линейная модель не подходит: она предполагает непрерывный отклик с постоянной дисперсией, а здесь отклик счётный, дисперсия растёт с x, и предсказания могут быть отрицательными.*
 
 ## 4. Характер связи между зависимой переменной и предикторами
 
@@ -308,6 +450,54 @@ plot_grid(p_resid_naive, p_resid_grouped, nrow = 1)
 Если выявляются нелинейные зависимости, то нужно правильно выбрать тип модели.
 
 Не все зависимости можно моделировать с помощью простых регрессионных моделей.
+
+```{r}
+#| echo: false
+#| purl: false
+#| fig.width: 13
+#| fig.height: 5
+
+set.seed(42)
+n <- 80
+x <- runif(n, 0, 10)
+
+# Нелинейная связь: парабола + шум
+y <- 2 + 3 * x - 0.3 * x^2 + rnorm(n, 0, 2)
+
+dat <- data.frame(x = x, y = y)
+
+# Наивная линейная модель
+mod_lm <- lm(y ~ x, data = dat)
+
+# График 1: данные и линейная регрессия
+p1 <- ggplot(dat, aes(x = x, y = y)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "red", fill = "red", alpha = 0.15) +
+  labs(
+    title = "ЛР на нелинейных данных",
+    subtitle = "Красная линия — предсказания ЛМ",
+    x = "Предиктор X", y = "Отклик Y"
+  ) +
+  theme_bw(base_size = 18)
+
+# График 2: остатки vs предсказанные — виден нелинейный паттерн
+dat_diag <- fortify(mod_lm)
+
+p2 <- ggplot(dat_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
+  geom_smooth(method = "loess", se = FALSE, color = "blue", alpha = 0.6) +
+  labs(
+    title = "Остатки линейной модели",
+    subtitle = "Нелинейный паттерн",
+    x = "Предсказанные значения", y = "Стандартизованные остатки"
+  ) +
+  theme_bw(base_size = 18)
+
+plot_grid(p1, p2, nrow = 1)
+```
+
+*Слева — нелинейная связь (парабола) и линейная регрессия. В середине она занижает, по краям — завышает. Справа — остатки этой модели: виден характерный нелинейный паттерн («горб»). Это сигнал, что линейная модель не подходит.*
 
 ## 5. Независимость предикторов
 
@@ -366,6 +556,7 @@ bird$logLDIST <- log(bird$LDIST)
 ::: {.columns}
 ::: {.column width="50%"}
 ```{r}
+#| echo: true
 #| fig.width: 5
 
 ggplot(bird, aes(y = 1:nrow(bird), x = ABUND)) +
@@ -381,6 +572,7 @@ ggplot(bird, aes(y = 1:nrow(bird), x = ABUND)) +
 ::: {.columns}
 ::: {.column width="50%"}
 ```{r}
+#| echo: true
 #| fig.width: 4
 
 ggplot(bird, aes(y = 1:nrow(bird), x = AREA)) +
@@ -392,6 +584,7 @@ ggplot(bird, aes(y = 1:nrow(bird), x = AREA)) +
 
 ::: {.column width="50%"}
 ```{r}
+#| echo: true
 #| fig.width: 4
 
 ggplot(bird, aes(y = 1:nrow(bird), x = logAREA)) +
@@ -424,6 +617,7 @@ plot_grid(Pl1, Pl2, Pl3, Pl4, Pl5, Pl6,
 ## Ищем отскоки: код для графика
 
 ```{r}
+#| echo: true
 #| eval: false
 #| purl: true
 
@@ -530,6 +724,7 @@ $$\begin{aligned}{ABUND}_i &= b_0 + b_1 \cdot logAREA_i + b_2 \cdot YRISOL_i + \
 Дополните код:
 
 ```{r}
+#| echo: true
 #| eval: false
 #| purl: true
 
@@ -540,6 +735,7 @@ vif()
 ## Решение
 
 ```{r}
+#| echo: true
 # Строим модель
 mod1 <- lm(formula = ABUND ~ logAREA + YRISOL + logDIST + logLDIST + GRAZE + ALT,
            data = bird)
@@ -554,6 +750,7 @@ vif(mod1)
 ## Удалим из модели избыточный предиктор
 
 ```{r}
+#| echo: true
 mod2 <- update(mod1, . ~ . -GRAZE)
 vif(mod2)
 ```
@@ -573,6 +770,7 @@ $$\begin{aligned}{ABUND}_i &= b_0 + b_1 \cdot logAREA_i + b_2 \cdot YRISOL_i + \
 Мы подобрали коэффициенты и можем записать уравнение модели.
 
 ```{r}
+#| echo: true
 coef(mod2)
 ```
 
@@ -590,11 +788,46 @@ $$
 \mathbf{Y} = \mathbf{Xb} + \mathbf{e}
 $$
 
-Отличие лишь в форме модельной матрицы
+Отличие лишь в форме модельной матрицы.
+
+Для модели `ABUND ~ logAREA + YRISOL` с $n$ наблюдениями:
+
+$$
+\begin{pmatrix} 
+ABUND_1 \\ 
+ABUND_2 \\ 
+\vdots \\ 
+ABUND_n 
+\end{pmatrix}_{n \times 1}
+= 
+\begin{pmatrix}
+1 & logAREA_1 & YRISOL_1 \\
+1 & logAREA_2 & YRISOL_2 \\
+\vdots & \vdots & \vdots \\
+1 & logAREA_n & YRISOL_n
+\end{pmatrix}_{n \times 3}
+\begin{pmatrix} 
+b_0 \\ 
+b_1 \\ 
+b_2 
+\end{pmatrix}_{3 \times 1}
++ 
+\begin{pmatrix} 
+e_1 \\ 
+e_2 \\ 
+\vdots \\ 
+e_n 
+\end{pmatrix}_{n \times 1}
+$$
+
+- **Строки** — наблюдения (лесные участки)
+- **Столбцы** — параметры: единицы для $b_0$, затем предикторы
+- **Первый столбец единиц** — чтобы $b_0$ вошёл в умножение
 
 ## Модельная матрица в множественной регрессии
 
 ```{r}
+#| echo: true
 X <- model.matrix(mod2)
 
 head(X)
@@ -620,6 +853,7 @@ summary(mod2)
 Проверьте, выполняются ли условия применимости для модели `mod2`. Дополните код:
 
 ```{r}
+#| echo: true
 #| eval: false
 #| purl: true
 
@@ -651,6 +885,7 @@ qq
 - Выбросов нет
 
 ```{r}
+#| echo: true
 #| fig.show: hold
 #| purl: false
 #| fig.width: 11
@@ -670,6 +905,7 @@ ggplot(data = mod2_diag, aes(x = 1:nrow(mod2_diag), y = .cooksd)) +
 - Два наблюдения с очень большими предсказанными значениями и большими остатками. Хорошо бы проверить их.
 
 ```{r}
+#| echo: true
 #| fig.show: hold
 #| purl: false
 #| fig.width: 11
@@ -728,6 +964,7 @@ grid.arrange(res_1, res_2, res_3, res_4,
 - Отклонения от нормального распределения остатков незначительны
 
 ```{r}
+#| echo: true
 #| purl: false
 #| fig.width: 5
 #| fig.height: 5
@@ -742,6 +979,7 @@ qqPlot(mod2)
 ## Какой из предикторов оказывает наиболее сильное влияние? {.smaller}
 
 ```{r}
+#| echo: true
 coef(summary(mod2))
 ```
 
@@ -754,6 +992,7 @@ coef(summary(mod2))
 Для стандартизации используем функцию `scale()`
 
 ```{r}
+#| echo: true
 mod2_scaled <- lm(ABUND ~ scale(logAREA) + scale(YRISOL) + scale(logDIST) +
                           scale(logLDIST) + scale(ALT), data = bird)
 ```
@@ -761,6 +1000,7 @@ mod2_scaled <- lm(ABUND ~ scale(logAREA) + scale(YRISOL) + scale(logDIST) +
 ## Какой из предикторов оказывает наиболее сильное влияние на обилие птиц?
 
 ```{r}
+#| echo: true
 coef(summary(mod2_scaled))
 ```
 
@@ -787,6 +1027,7 @@ $$\begin{aligned}\widehat{ABUND}_i = &-226.00 + 3.69 \cdot logAREA_i + 0.12 \cdo
 <br/>
 
 ```{r}
+#| echo: true
 coef(mod2_scaled)
 ```
 
@@ -822,9 +1063,10 @@ Pl_predict <- ggplot(MyData, aes(x = logAREA, y = fit)) +
 Pl_predict
 ```
 
-## График предсказаний модели "как есть" — код
+## График предсказаний модели "как есть"
 
 ```{r}
+#| echo: true
 #| purl: false
 #| eval: false
 
@@ -854,7 +1096,7 @@ $$\begin{aligned}\widehat{ABUND}_i = &-226.00 + 3.69 \cdot logAREA_i + 0.12 \cdo
 Для удобства восприятия лучше сделать обратную трансформацию предикторов.
 
 ```{r}
-#| echo: false
+#| echo: true
 
 # Обратная трансформация предиктора, который будем изображать
 MyData$AREA <- exp(MyData$logAREA)
@@ -865,9 +1107,10 @@ Pl_predict <- ggplot(MyData, aes(x = AREA, y = fit)) +
 Pl_predict
 ```
 
-## График предсказаний после обратной трансформации — код
+## График предсказаний после обратной трансформации
 
 ```{r}
+#| echo: true
 #| purl: false
 #| eval: false
 

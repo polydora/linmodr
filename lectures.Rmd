@@ -110,27 +110,26 @@ install.packages("cowplot")
 
 ### 08 Множественная линейная регрессия. Выбор оптимальной модели
 
-<!-- Часть 1. Множественная линейная регрессия -->
+Часть 1. Множественная линейная регрессия
 
 ```{r eval=FALSE}
 install.packages("gridExtra")
 install.packages("ISwR")
 ```
 
-<!-- - Презентация: [08.1_multiple_LM.html](08.1_multiple_LM.html) -->
+<!-- - Презентация: [08_ML_multiple_regression_2026.html](08_ML_multiple_regression_2026.html) -->
 
-<!-- - Код: [08.1_multiple_LM_code.R](08.1_multiple_LM_code.R)
-- Данные: [loyn.csv](data/loyn.csv) -->
+ - Код: [08.1_multiple_LM_code.R](08.1_multiple_LM_code.R)
+- Данные: [loyn.csv](data/loyn.csv)
 
 <!--  Часть 2. Выбор оптимальной модели -->
 
-<!-- - Презентация: [08.2_model_selection.html](08.2_model_selection.html) -->
+<!-- - Презентация: [08.2_ML_model_selection_2026.html](08.2_ML_model_selection_2026.html) -->
 
-
-<!-- - Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_model_selection_theory.html](08.3_model_selection_theory.html)
+<!-- - Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_ML_multiple_regression_2026.html](08.3_ML_multiple_regression_2026.html) -->
 
 - Код: [08.2_model_selection_code.R](08.2_model_selection_code.R)
-- Данные: [loyn.csv](data/loyn.csv) -->
+- Данные: [loyn.csv](data/loyn.csv) 
 
 ## Общие линейные модели
 

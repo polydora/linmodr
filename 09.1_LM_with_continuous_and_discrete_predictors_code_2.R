@@ -109,6 +109,14 @@ library(car)
 # Визуализация модели  #
 ########################
 
+gg_goat <- ggplot(data = goat, aes(y = Wt, x = Stw, colour = Treatment)) +
+  geom_point()  +
+  labs(x = 'Начальный вес, кг', y = 'Привес, кг') +
+  scale_colour_discrete('Способ обработки',
+                        breaks = c('intensive', 'standard'),
+                        labels = c('Интенсивный', 'Стандартный'))
+gg_goat
+
 # Используем технику конвейерной обработки данных
 library(dplyr)
 new_data <- goat %>% group_by(Treatment)%>%
@@ -116,6 +124,7 @@ new_data <- goat %>% group_by(Treatment)%>%
 
 new_data$fit = predict(Mod_goat_reduced, newdata = new_data)
 
+gg_goat + geom_ (data = new_data, aes(x = , y = , colour = ))
 # Задание
 # Постройте график модели, используя приемы матричной алгебры
 
@@ -126,9 +135,32 @@ new_data$fit = predict(Mod_goat_reduced, newdata = new_data)
 # Постройте доверительные области для линий регрессии, используя приемы матричной алгебры
 # При этом вычислите точные значения критических значений t для 95% доверительной области (At! значение 1.96, которое мы использовали в предыдущих случаях,было лишь приблизительным)
 
+# Находим вариационно-ковариационную матрицу для модели Mod_goat_reduced
+VC <- (Mod_goat_reduced)
+
+# Модельная матрица
+X <- model.matrix(~ Stw + Treatment, data = new_data)
+
+# Стандартные ошибки
+new_data$se <- sqrt(diag(X %*% VC %*% t(X)))
+
+# t для расчета 95% доверительного интервала 
+t_crit <- qt(0.975, df = nrow(goat) - length(coef(Mod_goat_reduced))) 
+# t для расчета доверит. интервала 
+
+# Границы доверительных интервалов
+new_data$upr <- new_data$fit + t_crit * new_data$se
+new_data$lwr <- new_data$fit 
 
 
 
+gg_goat + geom_line(data = new_data, aes(x = Stw, y = fit, colour = Treatment)) + 
+  geom_ribbon(data = new_data, 
+              aes(x = Stw, y = fit, ymin = lwr, ymax = upr, 
+                  fill = Treatment), alpha = 0.3, size = 0) + 
+  scale_fill_discrete('Способ обработки',
+                      breaks = c('intensive', 'standard'),
+                      labels = c('Интенсивный', 'Стандартный'))
 
 
 #################

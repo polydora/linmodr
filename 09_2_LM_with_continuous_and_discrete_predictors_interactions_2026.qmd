@@ -1,0 +1,642 @@
+---
+title: "Взаимодействие дискретных и непрерывных предикторов"
+subtitle: "Линейные модели..."
+author: Наталья\ Арбузова, Вадим\ Хайтов, Валентина\ Домашкина, Анастасия\ Лянгузова, Юта\ Тамберг, Марина\ Варфоломеева
+institute: "Кафедра Зоологии беспозвоночных, СПбГУ"
+format:
+  revealjs:
+    width: 1600
+    height: 1080
+    code-block-height: 800px
+    embed-resources: true
+    slide-number: true
+    code-line-numbers: true
+    incremental: false
+    title-slide-attributes:
+      data-background-color: "#7ea9b9"
+      data-state: "inverse"
+    df-print: default
+    logo: assets/Linmod_logo.gif
+    theme: default
+    css:
+      - assets/my_styles_2026.css
+---
+
+```{r setup}
+#| include: false
+#| cache: false
+#| purl: false
+# output options
+options(width = 70, scipen = 6, digits = 3)
+library(knitr)
+# chunk default options
+opts_chunk$set(fig.align='center', tidy = FALSE, fig.width = 7, fig.height = 3, warning = FALSE)
+```
+
+## Мы рассмотрим
+
++ Линейные модели c непрерывными и дискретными предикторами
++ Взаимодействие дискретных и непрерывных предикторов
+
+## Геометрическая интерпретация коэффициентов регрессии
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 10
+#| fig-height: 5
+library(gridExtra); library(ggplot2)
+n <- 100
+a1 <- 50; a2 <- 45; a3 <- 5
+b1 <- 2; b2 <- 1
+sig1 <- 20; sig2 <- 30
+
+set.seed(329882)
+x <- runif(n * 2 , 0, 50)
+y1 <- a1 + b1 * x[1:n] + rnorm(n, 0, sig1)
+# small difference of intercept, compared to y1
+y2 <- a2 + b1 * x[(n + 1):(n * 2)] + rnorm(n, 0, sig1)
+# larger difference of intercept, compared to y1
+y3 <- a3 + b1 * x[(n + 1):(n * 2)] + rnorm(n, 0, sig1)
+# same intercept, different slope, compared to y1
+y4 <- a1 + b2 * x[(n + 1):(n * 2)] + rnorm(n, 0, sig1)
+# different intercept, different slope, compared to y1
+y5 <- a3 + b2 * x[(n + 1):(n * 2)] + rnorm(n, 0, sig1)
+
+
+# 1 line
+Group <- c(rep("Group1",n), rep("Group2", n))
+df1 <- data.frame(x = x,
+                  y = c(y1, y2),
+                  Group = Group)
+gg_1 <- ggplot(data = df1, aes(x = x, y = y)) + geom_point(aes(colour = Group)) + xlab("Independent (X)") + ylab("Dependent (Y)") + guides(color=F) + geom_smooth(method = "lm", alpha = 0.7) + ylim(0, 160) + scale_colour_brewer(palette = "Dark2") + theme_classic()
+
+# 2 lines, substantial difference of intercepts
+Group <- c(rep("Group1",n), rep("Group2", n))
+df2 <- data.frame(x = x,
+                  y = c(y1, y3),
+                  Group = Group)
+
+# 2 lines, similar intercept, different slope
+Group <- c(rep("Group1",n), rep("Group2", n))
+df3 <- data.frame(x = x,
+                  y = c(y1, y4),
+                  Group = Group)
+# 2 lines, different intercept, different slope
+Group <- c(rep("Group1",n), rep("Group2", n))
+df4 <- data.frame(x = x,
+                  y = c(y1, y5),
+                  Group = Group)
+
+grid.arrange(
+gg_1 + ggtitle("One intercept\nOne slope"), 
+gg_1 + aes(colour = Group) + ggtitle("Similar intercepts \nSimilar slopes"),
+gg_1 %+% df2 + aes(colour = Group) + ggtitle("Different intercepts\nSimilar slopes"),
+  nrow = 1)
+```
+
+
+## Но ведь может быть еще и так
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 10
+#| fig-height: 3
+grid.arrange(
+gg_1 %+% df3 + aes(colour = Group) + ggtitle("Similar intercepts\nDifferent slopes"),
+gg_1 %+% df4 + aes(colour = Group) + ggtitle("Different intercepts\nDifferent slopes"),
+  nrow = 1)
+```
+
+::: {.incremental}
+- Как все эти изменения закодировать в уравнении линейной модели?
+:::
+
+
+## Похожий интерсепт, похожий угол наклона
+
+Если зависимости для обеих групп выглядят одинаково, то мы можем пользоваться общей линейной регрессией, не учитывать группу
+
+$Y = b_0 + b_1X$
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 5
+#| fig-height: 3
+grid.arrange(
+gg_1 + ggtitle("One intercept\nOne slope"),
+gg_1 + aes(colour = Group) + ggtitle("Similar intercepts \nSimilar slopes"),
+nrow = 1)
+```
+
+## Разный интерсепт, похожий угол наклона
+
+$Y = b_0 + b_1X + b_2 I_{Group2}$
+
+$I_{Group2} = 1$ если наблюдение из группы 2, и $I_{Group2} = 0$ в остальных случаях
+
+Уравнение для группы 1: $Y = b_0 + b_1X + b_2\cdot0$
+
+Уравнение для группы 2: $Y = b_0 + b_1X + b_2\cdot1 =(b_0 + b_2) + b_1X$
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 3
+#| fig-height: 3
+gg_1 %+% df2 + aes(colour = Group) + ggtitle("Different intercepts\nSimilar slopes")
+```
+
+## Похожий интерсепт, разный угол наклона
+
+$Y = b_0 + b_1X + b_2X\cdot I_{Group2}$
+
+$I_{Group2}$ если наблюдение из группы 2, и $I_{Group2} = 0$ в остальных случаях
+
+Уравнение для группы 1: $Y = b_0 + b_1X + b_2X \cdot 0 = b_0 + b_1X$
+
+Уравнение для группы 2: $Y = b_0 + b_1X + b_2X \cdot 1 = b_0 + (b_1 + b_2)X$
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 3
+#| fig-height: 3
+gg_1 %+% df3 + aes(colour = Group) + ggtitle("Similar intercepts\nDifferent slopes")
+```
+
+## Разный интерсепт и разный угол наклона
+
+$Y = b_0 + b_1X + b_2 \cdot I_{Group2} + b_3X \cdot I_{Group2}$
+
+$I_{Group2} = 1$ если наблюдение из группы 2, и $I_{Group2} = 0$ в остальных случаях
+
+Уравнение для группы 1: $Y = b_0 + b_1X + b_2 \cdot 0 + b_3X \cdot 0 = b_0 + b_1X$
+
+Уравнение для группы 2: $Y = b_0 + b_1X + b_2 \cdot 1 + b_3X \cdot 1 = (b_0 + b_2) + (b_1 + b_3)X$
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 3
+#| fig-height: 3
+gg_1 %+% df4 + aes(colour = Group) + ggtitle("Different intercepts\nDifferent slopes")
+```
+
+## Физический смысл взаимодействия факторов
+
+Не называйте взаимодействие факторов "корреляцией" или "связью"!
+
+Взаимодействие предикторов означает, что для разных значений одного из факторов зависимость от другого предиктора выглядит по-разному.
+
+Т.е. в данном случае можно сказать: "Для группы 1 и группы 2 зависимость Y от Х выглядит по-разному"
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 3
+grid.arrange(
+  gg_1 %+% df3 + aes(colour = Group) + ggtitle("Similar intercepts\nDifferent slopes"),
+  gg_1 %+% df4 + aes(colour = Group) + ggtitle("Different intercepts\nDifferent slopes"),
+  nrow = 1)
+```
+
+##  Если у дискретного предиктора становится больше уровней...
+
+$$y_i = b_0 + b_1x_i + \big(b_2I_{2i} + ... + b_k I_{ki}\big) + \big(b_{k+1}I_{2i}x_i + ... + b_{2k-1} I_{ki} x_i\big) + e_i$$
+
+
+В случае, __если у дискретного фактора $k$ градаций__, уравнение полной модели будет включать несколько групп коэффициентов:
+\vspace{-0.5\baselineskip}
+
+- $b_0$ --- значение свободного члена для базового уровня дискретного фактора
+- $b_1$ --- коэффициент угла наклона для базового уровня дискретного фактора
+
+Поправки для свободного члена:
+\vspace{-0.5\baselineskip}
+
+- $b_2, ..., b_k$ --- коррекция свободного члена для других уровней (всего их $k - 1$)
+
+Поправки для угла наклона:
+\vspace{-0.5\baselineskip}
+
+- $b_{k+1}, ..., b_{2k - 1}$ --- коррекция коэффициентов угла наклона для других уровней (всего их $k - 1$)
+
+
+```{r}
+#| echo: false
+#| purl: false
+lm_equation <- function(fit, strict = TRUE, rnd = 2){
+#   extracting call formula 
+  frml <- as.character(fit$call)[2]
+#   extract signs
+    sign <- ifelse(grepl("-", coef(fit)[-1]), " - ", " + ")
+  # extract coefficients
+  coeffs <- format(round(abs(coef(fit)), rnd), digits = 2, nsmall = rnd, trim = TRUE)
+  if(strict == TRUE){
+    i <- 1:(length(coeffs) - 1)
+    vars <- c("Y", paste0(" X", i))
+    
+  } else {
+# extract vector of variable names
+  vars <- c(all.vars(formula(fit))[1], names(fit$coefficients)[-1])
+# combine everything
+  }
+  start <- ifelse(coef(fit)[1] > 0, paste(vars[1], coeffs[1], sep = " = "), paste(vars[1], coeffs[1], sep = " = - "))
+  end <- paste(sign, coeffs[-1], vars[-1], sep = "", collapse = "")
+  return(paste0(start, end, sep = ""))
+}
+```
+
+
+# Модель со взаимодействием на примере данных о весе новорожденных
+
+## Вес новорожденных и курение
+
+Как вес новорожденных зависит от возраста матери и того, курит ли она
+
+- `age` --- возраст матери
+- `lwt` --- вес матери до беременности
+- `race` --- раса (1-белые, 2-черные, 3-другие)
+- `smoke` --- курение во время беременности (1-да,2-нет)
+- `ptl` --- число предыдущих преждевременных родов
+- `ht` --- гипертензия
+- `ui` --- гипертонус матки
+- `ftv` --- число визитов к врачу в последний триместр
+- `bwt` --- вес новорожденного, г
+
+```{r echo=TRUE}
+wt <- read.table("data/birthwt.csv", header = TRUE, sep = ";")
+```
+
+## Преобразуем значения перменных
+
+```{r echo=TRUE}
+wt$smoke[wt$smoke == 1] <- 'Smoker'
+wt$smoke[wt$smoke == 0] <- 'Non smoker'
+wt$smoke <- factor(wt$smoke)
+```
+
+
+## Задание
+
+- Исследуйте данные о весе новорожденных
+- Постройте модель зависимости веса новорожденных от возраста матери, того курит она или нет и взаимодействия предикторов
+- Проверьте условия применимости этой модели
+- Упростите модель, если это возможно
+- Напишите общее уравнение и отдельные уравнения модели
+- Постройте график предсказаний модели
+
+## Решение
+
+```{r echo=TRUE}
+str(wt)
+colSums(is.na(wt))
+```
+
+## Решение
+
+```{r echo=TRUE}
+table(wt$smoke, wt$age)
+table(wt$smoke, wt$race)
+table(wt$smoke, wt$ui)
+```
+
+
+## Решение
+
+```{r echo=TRUE}
+wt$race <- factor(wt$race)
+wt$smoke <- factor(wt$smoke)
+wt$ptl <- factor(wt$ptl)
+wt$ht <- factor(wt$ht)
+wt$ui <- factor(wt$ui)
+wt$ftv <- factor(wt$ftv)
+
+```
+
+
+## Решение
+
+```{r echo=TRUE}
+#| fig.show: hold
+#| fig-height: 2.5
+gg_dot <- ggplot(wt, aes(y = 1:nrow(wt))) + geom_point()
+gg_dot + aes(x = age)
+```
+
+## Решение {.smaller}
+
+```{r echo=TRUE}
+#| fig.show: hold
+#| fig-height: 2.5
+gg_dot + aes(x = bwt)
+```
+
+
+## Решение
+
+### Проверка на колинеарность
+
+```{r echo=TRUE}
+wt_mod_1 <- lm(bwt ~ age+smoke, data = wt)
+library(car)
+vif(wt_mod_1)
+```
+
+::: {.incremental}
+- Колинеарности нет
+:::
+
+
+## Проверка на гомогенность углов наклона
+
+Подберем полную модель.
+
+```{r echo=TRUE}
+wt_mod_2 <- lm(bwt ~ age*smoke, data = wt)
+drop1(wt_mod_2, test = "F")
+```
+
+::: {.incremental}
+- От исключения взаимодействия модель становится значительно хуже. Оставляем
+:::
+
+## Решение {.smaller}
+
+```{r echo=TRUE}
+# Данные для графиков остатков
+wt_mod_2_diag <- fortify(wt_mod_2)
+wt_mod_2_diag <- data.frame(
+  wt_mod_2_diag, 
+  wt[, c("lwt", "race", "smoke", "ptl", "ht", "ui", "ftv")])
+```
+
+### График расстояния Кука
+
+```{r echo=TRUE}
+ggplot(wt_mod_2_diag, aes(x = 1:nrow(wt_mod_2_diag), y = .cooksd)) +
+  geom_bar(stat = "identity")
+```
+
+## Решение
+
+### График остатков от предсказанных значений
+```{r echo=TRUE}
+gg_resid <- ggplot(data = wt_mod_2_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0) + geom_smooth()
+gg_resid
+```
+
+
+## Решение
+
+### Графики остатков от предикторов в модели и не в модели
+
+```{r echo=TRUE}
+#| fig-width: 10
+library(gridExtra)
+grid.arrange(gg_resid + aes(x = age), 
+             gg_resid + aes(x = lwt), 
+             nrow = 1)
+```
+
+## Решение
+
+```{r echo=TRUE}
+#| fig-width: 10
+gg_box <- ggplot(data = wt_mod_2_diag, aes(x = smoke, y = .stdresid)) +
+  geom_boxplot() + geom_hline(yintercept = 0)
+
+grid.arrange(gg_box + aes(x = smoke), 
+             gg_box + aes(x = ftv),
+             gg_box + aes(x = race),
+             gg_box + aes(x = ht),
+             gg_box + aes(x = ui),
+             nrow = 2)
+```
+
+
+## Решение
+
+### Квантильный график остатков
+```{r echo=TRUE}
+#| fig-height: 4
+qqPlot(wt_mod_2)
+```
+
+## Проверяем значимость коэффициентов {.smaller}
+
+Подумайте, что означают эти коэффициенты
+
+```{r echo=TRUE}
+summary(wt_mod_2)
+```
+
+<!-- ## Записываем уравнение модели -->
+
+<!-- ```{r} -->
+<!-- coef(wt_mod_2) -->
+<!-- ``` -->
+
+<!-- Общее уравнение:  -->
+
+<!-- `r lm_equation(wt_mod_2, strict = FALSE)` -->
+
+<!-- - Для некурящих: $N = 2406.06 + 27.73 * age$ -->
+<!-- - Для курящих: $N = 3204.23 - -18.84 * age$ -->
+
+## Таблица дисперсионного анализа
+
+```{r echo=TRUE}
+Anova(wt_mod_2, type = 3)
+```
+
+
+# Анатомируем модель {.center background-color="#7ea9b9" data-state="inverse"}
+
+## Результаты подбора модели
+
+```{r echo=TRUE}
+
+summary(wt_mod_2)
+```
+
+
+## Можем ли мы избавиться от взаимодействия?
+
+```{r echo=TRUE}
+drop1(wt_mod_2, test = 'F')
+```
+
+Если удалить взаимодействия, то модель значимо изменится.
+
+В этой системе присутствует взаимодействие!
+
+## Модельная матрица при наличии взаимодействий дискретного и непрерывного предиктора
+
+```{r echo=TRUE}
+X <- model.matrix(wt_mod_2)
+
+head(X, 10)
+```
+
+
+В колонке `(Intercept)` --- как всегда единицы.
+
+В колонке `age` --- возраст матери
+
+Базовый уровень  `smoke` = `Non smoker`, в колонке `smokeSmoker` стоят единицы, если мать курящая, если она не курит, то стоят нули.
+
+Колонка `age:smokeSmoker` описывает взаимодействие: если мать курит (`Smoker`), то в этой колонке стоит ее возраст, если мать не курит (`Non smoker`), то стоит ноль.
+
+
+## Вектор коэффициентов
+
+```{r}
+#| echo: false
+#| purl: true
+options(digits = 6)
+```
+
+```{r echo=TRUE}
+b <- coefficients(wt_mod_2)
+b
+```
+
+## Предсказанные значения в матричном виде
+$$
+\widehat{\textbf{y}} =  \textbf{X} \textbf{b}
+$$
+
+```{r echo=TRUE}
+as.numeric(fitted(wt_mod_2)[1])
+(X %*% b) [1]
+```
+
+## Предсказанное значение для объекта, относящегося к базовому уровню
+
+```{r echo=TRUE}
+X[1,] # Первая строка в модельной матрице
+```
+
+
+```{r echo=TRUE}
+b
+```
+
+Что происходит при матричном умножении
+
+```{r echo=TRUE}
+1 * 2406.0580 + 19.0 * 27.7314  + 0 * 798.1749 + 0 * -46.5719
+
+```
+
+## Общий вид формулы предсказанного значения для базового уровня
+
+
+$$
+\widehat{bwt_i} = 2406.0580 + 27.7314 age_i
+$$
+
+
+## Предсказанное значение для объекта, не относящегося к базовому уровню
+
+
+```{r echo=TRUE}
+as.numeric(fitted(wt_mod_2)[3])
+X[3,] # Третья строка в модельной матрице
+b # Коэффциенты
+```
+
+Что происходит при матричном умножении
+
+```{r echo=TRUE}
+1 * 2406.0580 + 20 * 27.7314  + 1 * 798.1749 + 20 * -46.5719
+```
+
+## Общий вид формулы предсказанного значения для объектов, не относящихся к базовому уровню
+
+$$
+\widehat{bwt}_i = 2406.0580 + 27.7314 age_i + 798.1749 + (-46.5719) age_i
+$$
+
+$$
+\widehat{bwt}_i = (2406.0580 + 798.1749) + (27.7314 - 46.5719) age_i  = 3204.23 +(-18.8405)age_i
+$$
+
+
+# Визуализация модели
+
+## Сложные модели лучше по возможности изображать в виде графика {.smaller}
+
+### Данные для графика
+```{r echo=TRUE}
+# Диапазон возрастов разный для курящих и некурящих, поэтому...
+library(dplyr)
+new_data <- wt %>% group_by(smoke)%>%
+  do(data.frame(age = seq(min(.$age), max(.$age), length.out = 100)))
+
+# Предсказанные значения
+Predictions <- predict(wt_mod_2, newdata = new_data, se.fit = TRUE)
+new_data$fit <- Predictions$fit
+
+# Стандартные ошибки
+new_data$se <- Predictions$se.fit
+# Критические значения t
+t_crit <- qt(0.975, df = nrow(wt) - length(coef(wt_mod_2)))
+# Доверительный интервал
+new_data$upr <- new_data$fit + t_crit * new_data$se
+new_data$lwr <- new_data$fit - t_crit * new_data$se
+```
+
+
+## Рисуем график предсказаний
+
+```{r echo=TRUE}
+Pl_smoke <- ggplot(new_data, aes(x = age, y = fit)) +
+  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr, group = smoke)) +
+  geom_line(aes(colour = smoke))
+Pl_smoke
+```
+
+## На графике предсказаний можно показать исходные значения
+
+```{r echo=TRUE}
+Pl_final <- Pl_smoke +
+  geom_point(data = wt, aes(x = age, y = bwt, colour = smoke)) +
+  scale_colour_discrete('Курила ли мать', labels = c('Не курила', 'Курила')) +
+  labs(x = 'Возраст матери', y = 'Вес новорожденного')
+Pl_final
+```
+
+## О чем говорят результаты
+
+1. Наличие значимого взаимодействия говорит о том, что связь веса новорожденного и возраста матери выглядит по-разному у курящих и некурящих матерей.
+2. Мы не можем судить о влиянии каждого из предикторов по отдельности (main effects), так как они взаимодействуют.
+3. При визуализации модели становится видно, что у некурящих матерей есть тенденция с увеличением возраста рожать более крупных детей, у курящих матерей эта связь не выражена.
+4. У курящих женщин с возрастом более 25 лет  есть тенденция рожать более легких детей.
+
+
+## Take home messages
+
+- У дискретных и непрерывных факторов могут быть взаимодействия, поэтому анализ нужно начинать с более полной модели (чтобы можно было  протестировать и исключить недостоверные взаимодействия)
+
+## Что почитать
+
++ <span style="color:red">Must read paper!</span> Zuur, A.F. and Ieno, E.N., 2016. A protocol for conducting and presenting results of regression‐type analyses. Methods in Ecology and Evolution, 7(6), pp.636-645.
+
++ Кабаков Р.И. R в действии. Анализ и визуализация данных на языке R. М.: ДМК Пресс, 2014
++ Zuur, A., Ieno, E.N. and Smith, G.M., 2007. Analyzing ecological data. Springer Science & Business Media.
++ Quinn G.P., Keough M.J. 2002. Experimental design and data analysis for biologists
++ Logan M. 2010. Biostatistical Design and Analysis Using R. A Practical Guide

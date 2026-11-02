@@ -126,7 +126,7 @@ install.packages("ISwR")
 
 - Презентация: [08.2_ML_model_selection_2026.html](08.2_ML_model_selection_2026.html)
 
-<!-- - Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_ML_multiple_regression_2026.html](08.3_ML_multiple_regression_2026.html) -->
+- Дополнительная презентация "Теоретические основы выбора оптимальной модели": [08.3_ML_multiple_regression_2026.html](08.3_ML_multiple_regression_2026.html)
 
 - Код: [08.2_model_selection_code.R](08.2_model_selection_code.R)
 - Данные: [loyn.csv](data/loyn.csv) 
@@ -143,7 +143,7 @@ install.packages("dplyr")
 
 Часть 1. Модели с разными значениями свободного члена (intercept) для групп
 
-<!-- - Презентация: [09.1_LM_with_continuous_and_discrete_predictors_2.html](09.1_LM_with_continuous_and_discrete_predictors_2.html) -->
+- Презентация: [09.1_LM_with_continuous_and_discrete_predictors_2.html](09.1_LM_with_continuous_and_discrete_predictors_2026.html)
 
 - Код: [09.1_LM_with_continuous_and_discrete_predictors_code_2.R](09.1_LM_with_continuous_and_discrete_predictors_code_2.R)
 
@@ -158,7 +158,7 @@ install.packages("dplyr")
 
 Часть 2. Модели с разными значениями углового коэффициента для групп
 
-<!-- - Презентация: [09.2_LM_with_continuous_and_discrete_predictors_interactions.html](09.2_LM_with_continuous_and_discrete_predictors_interactions.html) -->
+- Презентация: [09.2_LM_with_continuous_and_discrete_predictors_interactions.html](09.2_LM_with_continuous_and_discrete_predictors_interactions_2026.html)
 
 - Код:
     + [09.2_LM_with_continuous_and_discrete_predictors_interactions.R](09.2_LM_with_continuous_and_discrete_predictors_interactions.R)

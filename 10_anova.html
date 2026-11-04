@@ -1,91 +1,177 @@
 <!DOCTYPE html>
-<html lang="" xml:lang="">
-  <head>
-    <title>Линейные модели с дискретными предикторами</title>
-    <meta charset="utf-8" />
-    <meta name="author" content="Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова" />
-<<<<<<< Updated upstream
-    <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
-=======
-    <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
->>>>>>> Stashed changes
-    <link href="site_libs/remark-css-0.0.1/ninjutsu.css" rel="stylesheet" />
-    <link href="site_libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
-    <script src="site_libs/tile-view-0.2.6/tile-view.js"></script>
-    <script src="site_libs/fabric-4.3.1/fabric.min.js"></script>
-    <link href="site_libs/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
-    <script src="site_libs/xaringanExtra-scribble-0.0.1/scribble.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
-    <script src="site_libs/mark.js-8.11.1/mark.min.js"></script>
-    <link href="site_libs/xaringanExtra-search-0.0.1/search.css" rel="stylesheet" />
-    <script src="site_libs/xaringanExtra-search-0.0.1/search.js"></script>
-    <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":true}) })</script>
-    <script src="site_libs/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
-    <script src="site_libs/freezeframe-5.0.2/freezeframe.min.js"></script>
-    <script src="site_libs/xaringanExtra-freezeframe-0.0.1/freezeframe-init.js"></script>
-    <script id="xaringanExtra-freezeframe-options" type="application/json">{"selector":"img[src$=\"gif\"]","trigger":"click","overlay":false,"responsive":true,"warnings":true}</script>
-    <link href="site_libs/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
-    <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
-    <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
-    <!-- https://github.com/fnaufel/xaringan-smartify-->
-    <script
-    			  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-    			  integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
-    			  crossorigin="anonymous">
-    </script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/fnaufel/xaringan-smartify/smartify.min.js"></script>
-    <link rel="stylesheet" href="assets/xaringan-themer.css" type="text/css" />
-    <link rel="stylesheet" href="assets/xaringan.css" type="text/css" />
-  </head>
-  <body>
-    <textarea id="source">
-class: middle, left, inverse, title-slide
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
-.title[
-# Линейные модели с дискретными предикторами
-]
-.subtitle[
-## Линейные модели…
-]
-.author[
-### Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова
-]
-.date[
-### Осень 2025
-]
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>anova</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="10_anova_files/libs/clipboard/clipboard.min.js"></script>
+<script src="10_anova_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="10_anova_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="10_anova_files/libs/quarto-html/popper.min.js"></script>
+<script src="10_anova_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="10_anova_files/libs/quarto-html/anchor.min.js"></script>
+<link href="10_anova_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="10_anova_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="10_anova_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="10_anova_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="10_anova_files/libs/bootstrap/bootstrap-917079515d91bccb85b543faf8aa8bb6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="10_anova_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="10_anova_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="презентация-линейные-модели-с-дискретными-предикторами-anova" class="level1">
+<h1>Презентация: Линейные модели с дискретными предикторами (ANOVA)</h1>
+<p>Ниже — переработанная презентация из <code>.Rmd</code> (xaringan) в <code>.qmd</code> (Quarto revealjs), с использованием стилей второго файла (<code>format: revealjs</code>, <code>embed-resources</code>, <code>self-contained-math</code>, <code>code-line-numbers</code>, кастомный CSS и т.д.).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">"Линейные модели с дискретными предикторами"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">subtitle</span><span class="kw">:</span><span class="at"> </span><span class="st">"Дисперсионный анализ"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">author</span><span class="kw">:</span><span class="at"> </span><span class="st">"Марина Варфоломеева, Вадим Хайтов, Анастасия Лянгузова"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">institute</span><span class="kw">:</span><span class="at"> </span><span class="st">"Кафедра Зоологии беспозвоночных, СПбГУ"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">date</span><span class="kw">:</span><span class="at"> today</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">format</span><span class="kw">:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">revealjs</span><span class="kw">:</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">width</span><span class="kw">:</span><span class="at"> </span><span class="dv">1600</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">height</span><span class="kw">:</span><span class="at"> </span><span class="dv">1080</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">code-block-height</span><span class="kw">:</span><span class="at"> 700px</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">embed-resources</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">self-contained-math</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">slide-number</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">code-line-numbers</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">incremental</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">title-slide-attributes</span><span class="kw">:</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">data-background-color</span><span class="kw">:</span><span class="at"> </span><span class="st">"#7ea9b9"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">data-state</span><span class="kw">:</span><span class="at"> </span><span class="st">"inverse"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">df-print</span><span class="kw">:</span><span class="at"> default</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">logo</span><span class="kw">:</span><span class="at"> assets/Linmod_logo.gif</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">theme</span><span class="kw">:</span><span class="at"> default</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">css</span><span class="kw">:</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> assets/my_styles_2026.css</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">execute</span><span class="kw">:</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">cache</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<pre><code>
 ---
 
+## Цели занятия {.center .middle .inverse}
 
-
-
-
-
-
-
-
-# Линейные модели с дискретными предикторами (дисперсионный анализ)
-
-## Вы сможете
-
-- Объяснить, в чем опасность множественных сравнений, и как с ними можно бороться;
-- Рассказать, как в дисперсионном анализе моделируются значения зависимой переменной;
-- Интерпретировать и описать результаты, записанные в таблице дисперсионного анализа;
-- Перечислить и проверить условия применимости дисперсионного анализа;
-- Провести множественные попарные сравнения при помощи post hoc теста Тьюки, представить и описать их результаты;
-- Построить график результатов дисперсионного анализа.
+- Объяснить, в чём опасность множественных сравнений, и как с ними можно бороться
+- Рассказать, как в дисперсионном анализе моделируются значения зависимой переменной
+- Интерпретировать и описать результаты, записанные в таблице дисперсионного анализа
+- Перечислить и проверить условия применимости дисперсионного анализа
+- Провести множественные попарные сравнения при помощи post hoc теста Тьюки, представить и описать их результаты
+- Построить график результатов дисперсионного анализа
 
 ---
 
 ## Дисперсионный анализ (Analysis Of Variance, ANOVA)
 
-__Дисперсионный анализ в широком смысле__ --- анализ изменений непрерывной зависимой переменной в связи с разными источниками изменчивости (предикторами). 
+**Дисперсионный анализ в широком смысле** — анализ изменений непрерывной зависимой переменной в связи с разными источниками изменчивости (предикторами).
 
 Мы использовали его для тестирования значимости предикторов в линейных моделях.
 
---
-
-__Дисперсионный анализ в узком смысле__ --- это частный случай, когда в линейной модели используются только дискретные предикторы (факторы). 
+**Дисперсионный анализ в узком смысле** — это частный случай, когда в линейной модели используются только дискретные предикторы (факторы).
 
 Он используется для сравнения средних значений зависимой переменной в дискретных группах, заданных факторами.
 
@@ -93,952 +179,833 @@ __Дисперсионный анализ в узком смысле__ --- эт�
 
 ## Пример: яйца кукушек
 
-Различаются ли размеры яиц кукушек в гнездах разных птиц-хозяев?
+Различаются ли размеры яиц кукушек в гнёздах разных птиц-хозяев?
 
 Датасет `cuckoos` из пакета `DAAG`:
 
-- `species`  --- вид птиц-хозяев (фактор);
-- `length` --- длина яиц кукушек в гнездах хозяев (зависимая переменная).
+- `species` — вид птиц-хозяев (фактор);
+- `length` — длина яиц кукушек в гнёздах хозяев (зависимая переменная).
 
-.small[Данные: Latter, 1902; источник: Tippett, 1931]
+&lt;small&gt;Данные: Latter, 1902; источник: Tippett, 1931&lt;/small&gt;
 
 ---
 
 ## Открываем данные
 
 
-```r
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
 library(DAAG)
 data("cuckoos")
-# Положим данные в переменную с коротким названием, чтобы меньше печатать
 eggs &lt;- cuckoos
-head(eggs, 3)
-```
-
-```
-  length breadth      species id
+head(eggs, 3)</code></pre>
+<div class="cell-output cell-output-stdout">
+<pre><code>  length breadth      species id
 1   21.7    16.1 meadow.pipit 21
 2   22.6    17.0 meadow.pipit 22
-3   20.9    16.2 meadow.pipit 23
-```
-
-```r
-# Сократим названия переменных
-colnames(eggs) &lt;- c('len', 'br', 'sp', 'id')
-```
-
----
-
-## Изменим названия уровней фактора, чтобы было легче понять о каких птицах речь
-
-
-```r
-levels(eggs$sp)
-```
-
-```
-[1] "hedge.sparrow" "meadow.pipit"  "pied.wagtail"  "robin"         "tree.pipit"   
-[6] "wren"         
-```
-
-```r
-levels(eggs$sp) &lt;- c("ЛесЗав", "ЛугКон", "БелТряс", 
-                        "Малин", "ЛесКон", "Крапив")
-```
-
----
-
-## Исследуем данные
-
-
-```r
-# Пропущенных значений нет
-colSums(is.na(eggs))
-```
-
-```
-len  br  sp  id 
-  0   0   0   0 
-```
-
-```r
-# Данные не сбалансированы (размеры групп разные)
-table(eggs$sp)
-```
-
-```
-
+3   20.9    16.2 meadow.pipit 23</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(eggs) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"len"</span>, <span class="st">"br"</span>, <span class="st">"sp"</span>, <span class="st">"id"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>:::</p>
+<hr>
+<section id="изменим-названия-уровней-фактора" class="level2">
+<h2 class="anchored" data-anchor-id="изменим-названия-уровней-фактора">Изменим названия уровней фактора</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(eggs<span class="sc">$</span>sp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hedge.sparrow" "meadow.pipit"  "pied.wagtail"  "robin"        
+[5] "tree.pipit"    "wren"         </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(eggs<span class="sc">$</span>sp) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ЛесЗав"</span>, <span class="st">"ЛугКон"</span>, <span class="st">"БелТряс"</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Малин"</span>, <span class="st">"ЛесКон"</span>, <span class="st">"Крапив"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="исследуем-данные" class="level2">
+<h2 class="anchored" data-anchor-id="исследуем-данные">Исследуем данные</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Пропущенных значений нет</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(eggs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>len  br  sp  id 
+  0   0   0   0 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Данные не сбалансированы (размеры групп разные)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(eggs<span class="sc">$</span>sp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
  ЛесЗав  ЛугКон БелТряс   Малин  ЛесКон  Крапив 
-     14      45      15      16      15      15 
-```
-
----
-
-## Задание 1
-
-Дополните код, чтобы построить график зависимости размера яиц кукушек (`len`) от вида птиц-хозяев (`sp`), в гнездах которых были обнаружены яйца. На графике должны быть изображены средние значения и их 95% доверительные интервалы, а цвет должен соответствовать виду птиц-хозяев.
-
-
-```r
-library()
-theme_set( )
-# График средних с 95% доверительными интервалами
-ggplot(data = , aes()) + 
-  stat_summary(geom = , fun.data = )
-```
-
-![](10_anova_files/figure-html/gg-mean-conf-limit-task-1.png)&lt;!-- --&gt;
-
----
-
-## Решение 1
-
-
-
-```r
-library(ggplot2)
-theme_set(theme_bw())
-```
-
-
-```r
-# График средних с 95% доверительными интервалами
-ggplot(data = eggs, aes(x = sp, y = len, colour = sp)) + 
-  stat_summary(geom = "pointrange", fun.data = mean_cl_normal)
-```
-
-![](10_anova_files/figure-html/gg-mean-conf-limit-solution-1.png)&lt;!-- --&gt;
-
----
-
-## "Некрасивый" порядок уровней на графике
-
-На этом графике некрасивый порядок уровней: средние для разных уровней фактора `eggs$sp` расположены, как кажется, хаотично.
-
-Порядок групп на графике определяется порядком уровней фактора.
-
-
-```r
-# "старый" порядок уровней
-levels(eggs$sp)
-```
-
-```
-[1] "ЛесЗав"  "ЛугКон"  "БелТряс" "Малин"   "ЛесКон"  "Крапив" 
-```
-
-
-
----
-
-## Меняем порядок уровней
-
-Давайте изменим порядок уровней в факторе `eggs$sp` так, чтобы он соответствовал возрастанию средних значений длины яиц `eggs$len`.
-
-
-```r
-# "старый" порядок уровней
-levels(eggs$sp)
-```
-
-```
-[1] "ЛесЗав"  "ЛугКон"  "БелТряс" "Малин"   "ЛесКон"  "Крапив" 
-```
-
-```r
-# переставляем уровни в порядке следования средних значений 
-eggs$sp &lt;- reorder(eggs$sp, eggs$len, FUN = mean)
-# "новый" порядок уровней стал таким
-levels(eggs$sp)
-```
-
-```
-[1] "Крапив"  "ЛугКон"  "Малин"   "БелТряс" "ЛесКон"  "ЛесЗав" 
-```
-
----
-
-## График с новым порядком уровней
-
-С новым порядком уровней нам легче визуально сравнивать друг с другом категории.
-
-Поскольку, изменив порядок уровней, мы внесли изменения в исходные данные, придется полностью обновить график (т.к. `ggplot()` хранит данные внутри графика).
-
-
-```r
-ggplot(data = eggs, aes(x = sp, y = len, colour = sp)) + 
-  stat_summary(geom = "pointrange", fun.data = mean_cl_normal)
-```
-
-![](10_anova_files/figure-html/gg-new-levels-1.png)&lt;!-- --&gt;
-
----
-
-## Понравившийся график, если понадобится, можно в любой момент довести до ума, а остальные удалить
-
-
-```r
-gg_means &lt;- ggplot(data = eggs, aes(x = sp, y = len, colour = sp)) + 
-  stat_summary(geom = "pointrange", fun.data = mean_cl_normal, size = 1) +
-  labs(x = "Вид хозяев", y = "Длина яиц кукушек, мм") + 
-  scale_colour_brewer(name = "Вид \nхозяев", palette = "Dark2") + 
-  theme(legend.position = "none")
-gg_means
-```
-
-![](10_anova_files/figure-html/gg-mean-conf-limit-coloured-labs-1.png)&lt;!-- --&gt;
-
----
-
-class: middle, center, inverse
-
-# Множественные сравнения
-
----
-
-## Множественные сравнения
-
-Мы могли бы сравнить длину яиц в гнездах разных хозяев при помощи t-критерия. 
-
-У нас всего 6 групп. Сколько возможно между ними попарных сравнений?
-
-.pull-left[
-
-![](10_anova_files/figure-html/gg-mean-conf-limit-coloured-labs-1.png)&lt;!-- --&gt;
-
-]
-
---
-
-.pull-right[
-
-Всего возможно 15 сравнений.
-
-Если для каждого сравнения вероятность ошибки первого рода будет `\(\alpha_{per\ comparison} = 0.05\)`, то для группы из 15 сравнений --- ?
-
-]
-
---
-
-Если предположить, что сравнения независимы (это не так), то `\(\alpha_{family\ wise} = 1 - (1 - 0.05) ^ {15} = 0.54\)`. Мы рискуем найти различия там где их нет с 54% вероятностью!
-
-Для зависимых сравнений вероятность будет немного меньше, но все равно значительно больше `\(0.05\)`.
-
----
-
-## Поправка Бонферрони --- очень жесткий способ коррекции.
-
-Если нужно много сравнений, можно снизить `\(\alpha _{per\ comparison}\)` до общепринятого уровня
-
-`$$\alpha _{per\ comparison} = \frac{\alpha _{family\ wise}}{n}$$`
-
---
-
-Например, если хотим зафиксировать `\(\alpha _{family\ wise} = 0.05\)`
-
-С поправкой Бонферрони `\(\alpha _{per\ comparison} = 0.05 / 15 = 0.003\)`
-
-Это очень жесткая поправка! Мы рискуем не найти достоверных различий, даже там, где они есть...
-
-Но есть выход. Вместо множества попарных сравнений можно использовать один тест --- дисперсионный анализ (analysis of variation, ANOVA).
-
-
----
-
-class: middle, center, inverse
-
-# Дисперсионный анализ
-
-
-
----
-
-## Общая изменчивость
-
-![](10_anova_files/figure-html/gg-tot-1.png)&lt;!-- --&gt;
-
-Общая изменчивость `\(SS_t\)` --- это сумма квадратов отклонений наблюдаемых значений `\(y_i\)` от общего среднего `\(\bar y\)`
-
----
-
-## Отклонения от общего среднего
-
-.pull-left[
-**Межгрупповые отклонения** --- отклонения внутригрупповых средних от общего среднего ("эффекты" групп) --- факторная изменчивость. 
-![](10_anova_files/figure-html/gg-between-1.png)&lt;!-- --&gt;
-]
-
-.pull-right[
-**Внутригрупповые отклонения** --- отклонения наблюдаемых значений от внутригрупповых средних --- случайная изменчивость.
-
-&lt;br&gt;
-![](10_anova_files/figure-html/gg-inner-1.png)&lt;!-- --&gt;
-
-]
-
-Отклонения внутригрупповых средних от общего среднего в генеральной совокупности --- это эффект фактора `\(\alpha_j = \mu_j - \mu\)`, где `\(j = 1, 2, ..., p\)` --- это одна из `\(p\)` групп. 
-
-Мы оцениваем эффект фактора по реальным данным `\(\bar{y}_j-\bar{y}\)`.
-
----
-
-## Структура общей изменчивости
-
-`$$SS_t = SS_x + SS_e$$`
-
-
-![](10_anova_files/figure-html/gg-ss-1.png)&lt;!-- --&gt;
-
-Общая изменчивость | Факторная изменчивость | Остаточная изменчивость
----- |----|----
-`\(SS_{t}= \sum\sum{(\bar{y}-y_{ij})^2}\)` | `\(SS_{x}=\sum{n_j(\bar{y}_j-\bar{y})^2}\)` | `\(SS_{e}= \sum\sum{(\bar{y}_{j}-y_{ij})^2}\)`
-`\(df_{t} = n - 1\)` | `\(df_{x} = p - 1\)` |  `\(df_{e} = n - p\)`
-
----
-
-## От изменчивостей к дисперсиям
-
-
-`$$SS_t = SS_x + SS_e \qquad MS_t \ne MS_x + MS_e$$`
-
-
-![](10_anova_files/figure-html/gg-ss-1.png)&lt;!-- --&gt;
-
-Общая дисперсия | Факторная дисперсия | Остаточная дисперсия
----- |----|----
-`\(SS_{t}= \sum\sum{(\bar{y}-y_{ij})^2}\)` | `\(SS_{x}=\sum{n_j(\bar{y}_j-\bar{y})^2}\)` | `\(SS_{e}= \sum\sum{(\bar{y}_{j}-y_{ij})^2}\)`
-`\(df_{t} = n - 1\)` | `\(df_{x} = p - 1\)` |  `\(df_{e} = n - p\)` 
-`\(MS_{t} = \frac {SS_{t}}{df_{t}}\)` | `\(MS_{x} = \frac {SS_{x}}{df_{x}}\)` | `\(MS_{e} = \frac{SS_{e}}{df_{e}}\)`
-
-???
-
-Они не зависят от числа наблюдений в выборке, в отличие от `\(SSx\)` и `\(SS_e\)`
-С их помощью можно проверить гипотезу о наличии связи между предиктором и откликом
-
-
----
-
-## `\(MS_x\)` и `\(MS_e\)` &lt;br/&gt; помогают тестировать значимость фактора
-
-Если дисперсии остатков в группах равны и фактор имеет фиксированное число градаций:
-
-`\(E(MS_x) = \sigma^2 +  \sum n_i \frac{(\mu_i - \mu)^2}{p - 1} = \sigma^2 +  \sigma^2_x\)`
-
-`\(E(MS_e) = \sigma^2\)`
-
---
-
-Если зависимости нет, то `\(\mu_1 = \ldots = \mu_p\)` --- средние равны во всех `\(p\)` группах, и тогда `\(MS_x \sim MS_e\)`.
-
---
-
-- `\(H_0: \mu_1 = \ldots = \mu_p\)` --- средние во всех `\(p\)` группах равны.
-- `\(H_A: \exists\; i, j: \mu_i \ne \mu_j\)` --- __хотя бы одно__ среднее отличается от общего среднего.
-
-`$$F_{df_x, df_e} = \frac{MS _{x}}{MS_{e}}$$`
-
----
-
-## Тестирование значимости фактора при помощи F-критерия
-
-- `\(H_0: \mu_1 = \ldots = \mu_p\)` --- средние во всех `\(p\)` группах равны.
-- `\(H_A: \exists\; i, j: \mu_i \ne \mu_j\)` --- __хотя бы одно__ среднее отличается от общего среднего.
-
-`$$F_{df_x, df_e} = \frac{MS _{x}}{MS_{e}}$$`
-
-В однофакторном дисперсионном анализе `\(df_{x} = p - 1\)` и `\(df_{e} = n - p\)`.
-
-![](10_anova_files/figure-html/f-distribution-1.png)&lt;!-- --&gt;
-
-
----
-
-## Результаты дисперсионного анализа часто представляют в виде таблицы
-
-Источник изменчивости|SS|df|MS|F
------ | ----- | ----- | ----- | ----- 
-Название фактора | `\(SS_{x}=\sum{n_j(\bar{y}_j-\bar{y})^2}\)` | `\(df _x = p - 1\)` | `\(MS _x = \frac{SS _x}{df _x}\)` | `\(F _{df _x df _e} = \frac{MS _x}{MS _e}\)`
-Случайная | `\(SS_{e}= \sum\sum{(\bar{y}_j-y_{ij})^2}\)` | `\(df _e = n - p\)` | `\(MS _e = \frac{SS _e}{df _e}\)` |
-Общая | `\(SS_{t}= \sum\sum{(\bar{y}-y_{ij})^2}\)` | `\(df _t = n - 1\)` |  
-
-
-Минимальное описание результатов в тексте должно содержать `\(F _{df _x, df _e}\)` и `\(p\)`.
-
----
-
-## Делаем дисперсионный анализ в R
-
-В R есть много функций для дисперсионного анализа. Мы рекомендуем `Anova()` (__с большой буквы__) из пакета `car`. 
-
-Зачем? Эта функция умеет тестировать влияние факторов в определенном порядке. Когда факторов будет больше одного, это станет важно для результатов.
-
-
-```r
-library(car)
-eggs_anova &lt;- Anova(mod_treatment)
-eggs_anova
-```
-
-```
-Anova Table (Type II tests)
+     14      45      15      16      15      15 </code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="задание-1" class="level2">
+<h2 class="anchored" data-anchor-id="задание-1">Задание 1</h2>
+<p>Дополните код, чтобы построить график зависимости размера яиц кукушек (<code>len</code>) от вида птиц-хозяев (<code>sp</code>), в гнёздах которых были обнаружены яйца. На графике должны быть изображены средние значения и их 95% доверительные интервалы, а цвет должен соответствовать виду птиц-хозяев.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>()</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>( )</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> , <span class="fu">aes</span>()) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">geom =</span> , <span class="at">fun.data =</span> )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="решение-1" class="level2">
+<h2 class="anchored" data-anchor-id="решение-1">Решение 1</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_bw</span>())</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> eggs, <span class="fu">aes</span>(<span class="at">x =</span> sp, <span class="at">y =</span> len, <span class="at">colour =</span> sp)) <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">geom =</span> <span class="st">"pointrange"</span>, <span class="at">fun.data =</span> mean_cl_normal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="некрасивый-порядок-уровней-на-графике" class="level2">
+<h2 class="anchored" data-anchor-id="некрасивый-порядок-уровней-на-графике">«Некрасивый» порядок уровней на графике</h2>
+<p>На этом графике некрасивый порядок уровней: средние для разных уровней фактора <code>eggs$sp</code> расположены, как кажется, хаотично.</p>
+<p>Порядок групп на графике определяется порядком уровней фактора.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(eggs<span class="sc">$</span>sp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "ЛесЗав"  "ЛугКон"  "БелТряс" "Малин"   "ЛесКон"  "Крапив" </code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="меняем-порядок-уровней" class="level2">
+<h2 class="anchored" data-anchor-id="меняем-порядок-уровней">Меняем порядок уровней</h2>
+<p>Давайте изменим порядок уровней в факторе <code>eggs$sp</code> так, чтобы он соответствовал возрастанию средних значений длины яиц <code>eggs$len</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(eggs<span class="sc">$</span>sp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "ЛесЗав"  "ЛугКон"  "БелТряс" "Малин"   "ЛесКон"  "Крапив" </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>eggs<span class="sc">$</span>sp <span class="ot">&lt;-</span> <span class="fu">reorder</span>(eggs<span class="sc">$</span>sp, eggs<span class="sc">$</span>len, <span class="at">FUN =</span> mean)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(eggs<span class="sc">$</span>sp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Крапив"  "ЛугКон"  "Малин"   "БелТряс" "ЛесКон"  "ЛесЗав" </code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="график-с-новым-порядком-уровней" class="level2">
+<h2 class="anchored" data-anchor-id="график-с-новым-порядком-уровней">График с новым порядком уровней</h2>
+<p>С новым порядком уровней нам легче визуально сравнивать друг с другом категории.</p>
+<p>Поскольку, изменив порядок уровней, мы внесли изменения в исходные данные, придётся полностью обновить график (т.к. <code>ggplot()</code> хранит данные внутри графика).</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> eggs, <span class="fu">aes</span>(<span class="at">x =</span> sp, <span class="at">y =</span> len, <span class="at">colour =</span> sp)) <span class="sc">+</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">geom =</span> <span class="st">"pointrange"</span>, <span class="at">fun.data =</span> mean_cl_normal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="понравившийся-график" class="level2">
+<h2 class="anchored" data-anchor-id="понравившийся-график">Понравившийся график</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>gg_means <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> eggs, <span class="fu">aes</span>(<span class="at">x =</span> sp, <span class="at">y =</span> len, <span class="at">colour =</span> sp)) <span class="sc">+</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">geom =</span> <span class="st">"pointrange"</span>, <span class="at">fun.data =</span> mean_cl_normal, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Вид хозяев"</span>, <span class="at">y =</span> <span class="st">"Длина яиц кукушек, мм"</span>) <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">name =</span> <span class="st">"Вид </span><span class="sc">\n</span><span class="st">хозяев"</span>, <span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>gg_means</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="множественные-сравнения" class="level2 center middle inverse">
+<h2 class="center middle inverse anchored" data-anchor-id="множественные-сравнения">Множественные сравнения</h2>
+<hr>
+</section>
+<section id="множественные-сравнения-1" class="level2">
+<h2 class="anchored" data-anchor-id="множественные-сравнения-1">Множественные сравнения</h2>
+<p>Мы могли бы сравнить длину яиц в гнёздах разных хозяев при помощи t-критерия.</p>
+<p>У нас всего 6 групп. Сколько возможно между ними попарных сравнений?</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:50%;">
+<p>Всего возможно 15 сравнений.</p>
+<p>Если для каждого сравнения вероятность ошибки первого рода будет <span class="math inline">\(\alpha_{per\ comparison} = 0.05\)</span>, то для группы из 15 сравнений — ?</p>
+<p>Если предположить, что сравнения независимы (это не так), то <span class="math inline">\(\alpha_{family\ wise} = 1 - (1 - 0.05)^{15} = 0.54\)</span>. Мы рискуем найти различия там, где их нет с 54% вероятностью!</p>
+<p>Для зависимых сравнений вероятность будет немного меньше, но всё равно значительно больше <span class="math inline">\(0.05\)</span>.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="поправка-бонферрони-очень-жёсткий-способ-коррекции" class="level2">
+<h2 class="anchored" data-anchor-id="поправка-бонферрони-очень-жёсткий-способ-коррекции">Поправка Бонферрони — очень жёсткий способ коррекции</h2>
+<p>Если нужно много сравнений, можно снизить <span class="math inline">\(\alpha_{per\ comparison}\)</span> до общепринятого уровня</p>
+<p><span class="math display">\[\alpha_{per\ comparison} = \frac{\alpha_{family\ wise}}{n}\]</span></p>
+<p>Например, если хотим зафиксировать <span class="math inline">\(\alpha_{family\ wise} = 0.05\)</span></p>
+<p>С поправкой Бонферрони <span class="math inline">\(\alpha_{per\ comparison} = 0.05 / 15 = 0.003\)</span></p>
+<p>Это очень жёсткая поправка! Мы рискуем не найти достоверных различий, даже там, где они есть…</p>
+<p>Но есть выход. Вместо множества попарных сравнений можно использовать один тест — дисперсионный анализ (analysis of variation, ANOVA).</p>
+<hr>
+</section>
+<section id="дисперсионный-анализ" class="level2 center middle inverse">
+<h2 class="center middle inverse anchored" data-anchor-id="дисперсионный-анализ">Дисперсионный анализ</h2>
+<hr>
+</section>
+<section id="общая-изменчивость" class="level2">
+<h2 class="anchored" data-anchor-id="общая-изменчивость">Общая изменчивость</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Общая изменчивость <span class="math inline">\(SS_t\)</span> — это сумма квадратов отклонений наблюдаемых значений <span class="math inline">\(y_i\)</span> от общего среднего <span class="math inline">\(\bar y\)</span></p>
+<hr>
+</section>
+<section id="отклонения-от-общего-среднего" class="level2">
+<h2 class="anchored" data-anchor-id="отклонения-от-общего-среднего">Отклонения от общего среднего</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Межгрупповые отклонения</strong> — отклонения внутригрупповых средних от общего среднего («эффекты» групп) — факторная изменчивость.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:50%;">
+<p><strong>Внутригрупповые отклонения</strong> — отклонения наблюдаемых значений от внутригрупповых средних — случайная изменчивость.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Отклонения внутригрупповых средних от общего среднего в генеральной совокупности — это эффект фактора <span class="math inline">\(\alpha_j = \mu_j - \mu\)</span>, где <span class="math inline">\(j = 1, 2, ..., p\)</span> — это одна из <span class="math inline">\(p\)</span> групп.</p>
+<hr>
+</section>
+<section id="структура-общей-изменчивости" class="level2">
+<h2 class="anchored" data-anchor-id="структура-общей-изменчивости">Структура общей изменчивости</h2>
+<p><span class="math display">\[SS_t = SS_x + SS_e\]</span></p>
+<div class="columns">
+<div class="column" style="width:33%;">
+<p><strong>Общая изменчивость</strong></p>
+<p><span class="math inline">\(SS_{t}= \sum\sum{(\bar{y}-y_{ij})^2}\)</span></p>
+<p><span class="math inline">\(df_{t} = n - 1\)</span></p>
+</div><div class="column" style="width:33%;">
+<p><strong>Факторная изменчивость</strong></p>
+<p><span class="math inline">\(SS_{x}=\sum{n_j(\bar{y}_j-\bar{y})^2}\)</span></p>
+<p><span class="math inline">\(df_{x} = p - 1\)</span></p>
+</div><div class="column" style="width:33%;">
+<p><strong>Остаточная изменчивость</strong></p>
+<p><span class="math inline">\(SS_{e}= \sum\sum{(\bar{y}_{j}-y_{ij})^2}\)</span></p>
+<p><span class="math inline">\(df_{e} = n - p\)</span></p>
+</div>
+</div>
+<hr>
+</section>
+<section id="от-изменчивостей-к-дисперсиям" class="level2">
+<h2 class="anchored" data-anchor-id="от-изменчивостей-к-дисперсиям">От изменчивостей к дисперсиям</h2>
+<p><span class="math display">\[SS_t = SS_x + SS_e \qquad MS_t \ne MS_x + MS_e\]</span></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Общая дисперсия</th>
+<th>Факторная дисперсия</th>
+<th>Остаточная дисперсия</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(MS_{t} = \frac{SS_{t}}{df_{t}}\)</span></td>
+<td><span class="math inline">\(MS_{x} = \frac{SS_{x}}{df_{x}}\)</span></td>
+<td><span class="math inline">\(MS_{e} = \frac{SS_{e}}{df_{e}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Они не зависят от числа наблюдений в выборке, в отличие от <span class="math inline">\(SS_x\)</span> и <span class="math inline">\(SS_e\)</span>. С их помощью можно проверить гипотезу о наличии связи между предиктором и откликом.</p>
+<hr>
+</section>
+<section id="ms_x-и-ms_e-помогают-тестировать-значимость-фактора" class="level2">
+<h2 class="anchored" data-anchor-id="ms_x-и-ms_e-помогают-тестировать-значимость-фактора"><span class="math inline">\(MS_x\)</span> и <span class="math inline">\(MS_e\)</span> помогают тестировать значимость фактора</h2>
+<p>Если дисперсии остатков в группах равны и фактор имеет фиксированное число градаций:</p>
+<p><span class="math display">\[E(MS_x) = \sigma^2 + \sum n_i \frac{(\mu_i - \mu)^2}{p - 1} = \sigma^2 + \sigma^2_x\]</span></p>
+<p><span class="math display">\[E(MS_e) = \sigma^2\]</span></p>
+<p>Если зависимости нет, то <span class="math inline">\(\mu_1 = \ldots = \mu_p\)</span> — средние равны во всех <span class="math inline">\(p\)</span> группах, и тогда <span class="math inline">\(MS_x \sim MS_e\)</span>.</p>
+<ul>
+<li><span class="math inline">\(H_0: \mu_1 = \ldots = \mu_p\)</span> — средние во всех <span class="math inline">\(p\)</span> группах равны.</li>
+<li><span class="math inline">\(H_A: \exists\; i, j: \mu_i \ne \mu_j\)</span> — <strong>хотя бы одно</strong> среднее отличается от общего среднего.</li>
+</ul>
+<p><span class="math display">\[F_{df_x, df_e} = \frac{MS_{x}}{MS_{e}}\]</span></p>
+<hr>
+</section>
+<section id="тестирование-значимости-фактора-при-помощи-f-критерия" class="level2">
+<h2 class="anchored" data-anchor-id="тестирование-значимости-фактора-при-помощи-f-критерия">Тестирование значимости фактора при помощи F-критерия</h2>
+<p>В однофакторном дисперсионном анализе <span class="math inline">\(df_{x} = p - 1\)</span> и <span class="math inline">\(df_{e} = n - p\)</span>.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="результаты-дисперсионного-анализа-в-виде-таблицы" class="level2">
+<h2 class="anchored" data-anchor-id="результаты-дисперсионного-анализа-в-виде-таблицы">Результаты дисперсионного анализа в виде таблицы</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Источник изменчивости</th>
+<th>SS</th>
+<th>df</th>
+<th>MS</th>
+<th>F</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Название фактора</td>
+<td><span class="math inline">\(SS_{x}=\sum{n_j(\bar{y}_j-\bar{y})^2}\)</span></td>
+<td><span class="math inline">\(df_x = p - 1\)</span></td>
+<td><span class="math inline">\(MS_x = \frac{SS_x}{df_x}\)</span></td>
+<td><span class="math inline">\(F_{df_x df_e} = \frac{MS_x}{MS_e}\)</span></td>
+</tr>
+<tr class="even">
+<td>Случайная</td>
+<td><span class="math inline">\(SS_{e}= \sum\sum{(\bar{y}_j-y_{ij})^2}\)</span></td>
+<td><span class="math inline">\(df_e = n - p\)</span></td>
+<td><span class="math inline">\(MS_e = \frac{SS_e}{df_e}\)</span></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Общая</td>
+<td><span class="math inline">\(SS_{t}= \sum\sum{(\bar{y}-y_{ij})^2}\)</span></td>
+<td><span class="math inline">\(df_t = n - 1\)</span></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Минимальное описание результатов в тексте должно содержать <span class="math inline">\(F_{df_x, df_e}\)</span> и <span class="math inline">\(p\)</span>.</p>
+<hr>
+</section>
+<section id="делаем-дисперсионный-анализ-в-r" class="level2">
+<h2 class="anchored" data-anchor-id="делаем-дисперсионный-анализ-в-r">Делаем дисперсионный анализ в R</h2>
+<p>В R есть много функций для дисперсионного анализа. Мы рекомендуем <code>Anova()</code> (<strong>с большой буквы</strong>) из пакета <code>car</code>.</p>
+<p>Зачем? Эта функция умеет тестировать влияние факторов в определённом порядке. Когда факторов будет больше одного, это станет важно для результатов.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>eggs_anova <span class="ot">&lt;-</span> <span class="fu">Anova</span>(mod_treatment)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>eggs_anova</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Anova Table (Type II tests)
 
 Response: len
           Sum Sq  Df F value      Pr(&gt;F)    
 sp          42.8   5    10.4 0.000000029 ***
 Residuals   93.4 114                        
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-
----
-
-## Результаты дисперсионного анализа
-
-- Можно описать в тексте:
-
-
-
-Длина яиц кукушек в гнездах разных птиц-хозяев значимо различается &lt;br/&gt; ( `\(F _{ 5,114} = 10.45\)`, `\(p &lt; 0.01\)`).
-
-- Можно представить в виде таблицы:
-
-Длина яиц кукушек значимо различалась в гнездах разных птиц-хозяев (Табл. 1).
-
-&lt;table class="table" style="margin-left: auto; margin-right: auto;"&gt;
-&lt;caption&gt;Табл. 1. Результаты дисперсионного анализа длины яиц кукушек в гнездах разных птиц-хозяев. SS --- суммы квадратов отклонений, df --- число степеней свободы, F --- значение F-критерия, P --- уровень значимости.&lt;/caption&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:left;"&gt; Источник изменчивости &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; SS &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; df &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; F &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; P &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Хозяин &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; 42.8 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; 10.4 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &amp;lt;0.01 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Остаточная &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; 93.4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 114 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
----
-
-class: middle, center, inverse
-
-# Условия примененимости дисперсионного анализа
-
----
-
-## Результатам тестов можно верить, если выполняются условия применимости
-
-Условия применимости дисперсионного анализа:
-
---
-
-- Случайность и независимость  наблюдений внутри групп;
-- Нормальное распределение остатков;
-- Гомогенность дисперсий остатков;
-- Отсутствие коллинеарности факторов (независимость групп).
-
---
-
-### Другие ограничения:
-
-- Лучше работает, если размеры групп примерно одинаковы (т. наз. сбалансированный дисперсионный комплекс);
-- Устойчив к отклонениям от нормального распределения (при равных объемах групп или при больших выборках).
-
----
-
-## Проверяем выполнение условий применимости
-
-
-```r
-# Данные для графиков остатков
-mod_diag &lt;- fortify(mod_treatment)
-```
-
---
-
-### 1) График расстояния Кука
-
-
-```r
-ggplot(mod_diag, aes(x = 1:nrow(mod_diag), y = .cooksd)) +
-  geom_bar(stat = "identity")
-```
-
-![](10_anova_files/figure-html/gg-cooksd-1.png)&lt;!-- --&gt;
-
---
-
-- Выбросов нет
-
----
-
-## 2) График остатков от предсказанных значений
-
-
-```r
-ggplot(mod_diag, aes(x = .fitted, y = .stdresid)) + geom_jitter()
-```
-
---
-
-Но у нас один единственный дискретный предиктор, поэтому удобнее сразу боксплот остатков в зависимости от дискретного предиктора
-
-### 3) Графики остатков от предикторов в модели и не в модели
-
-
-```r
-ggplot(mod_diag, aes(x = sp, y = .stdresid)) + geom_boxplot()
-```
-
-![](10_anova_files/figure-html/gg-resid-in-model-1.png)&lt;!-- --&gt;
-
---
-
-- Дисперсии почти одинаковые. Может быть, в одной из групп чуть больше
-
----
-
-## 4) Квантильный график остатков
-
-
-```r
-library(car)
-qqPlot(mod_treatment, id = FALSE)
-```
-
-![](10_anova_files/figure-html/qq-plot-1.png)&lt;!-- --&gt;
-
---
-
-- Распределение остатков немного отличается от нормального
-
----
-
-class: middle, center, inverse
-
-# График предсказаний модели
-
----
-
-## Данные для графика при помощи `predict()`
-
-
-```r
-MyData &lt;- data.frame(sp = factor(levels(eggs$sp), levels = levels(eggs$sp)))
-
-MyData &lt;- data.frame(
-  MyData, 
-  predict(mod_treatment, newdata = MyData, interval = "confidence"))
-
-MyData
-```
-
-```
-       sp   fit   lwr   upr
-1  Крапив 21.12 20.66 21.58
-2  ЛугКон 22.29 22.03 22.56
-3   Малин 22.56 22.11 23.00
-4 БелТряс 22.89 22.42 23.35
-5  ЛесКон 23.08 22.62 23.54
-6  ЛесЗав 23.11 22.64 23.59
-```
-
----
-
-## Задание 2
-
-Создайте MyData вручную:
-
-- предсказанные значения 
-- стандартные ошибки
-- верхнюю и нижнюю границы доверительных интервалов
-
-
-```r
-MyData &lt;- data.frame(sp = factor(levels(eggs$sp), 
-                                 levels = levels(eggs$sp)))
-
-X &lt;- model.matrix()
-betas &lt;- 
-MyData$fit &lt;-  %*% 
-MyData$se &lt;- sqrt(diag(X %*% vcov(mod_treatment) %*% t(X)))
-t_crit &lt;- qt(p = , df = nrow() - length(coef()))
-MyData$lwr &lt;- MyData$ -  * MyData$
-MyData$upr &lt;- MyData$ +  * MyData$
-```
-
----
-
-## Решение 2
-
-
-```r
-MyData &lt;- data.frame(sp = factor(levels(eggs$sp), 
-                                 levels = levels(eggs$sp)))
-X &lt;- model.matrix(~sp, data = MyData)
-betas &lt;- coef(mod_treatment)
-MyData$fit &lt;- X %*% betas
-MyData$se &lt;- sqrt(diag(X %*% vcov(mod_treatment) %*% t(X)))
-t_crit &lt;- qt(p = 0.975, df = nrow(eggs) - length(coef(mod_treatment)))
-MyData$lwr &lt;- MyData$fit - t_crit * MyData$se
-MyData$upr &lt;- MyData$fit + t_crit * MyData$se
-MyData
-```
-
-```
-       sp   fit     se   lwr   upr
-1  Крапив 21.12 0.2337 20.66 21.58
-2  ЛугКон 22.29 0.1349 22.03 22.56
-3   Малин 22.56 0.2263 22.11 23.00
-4 БелТряс 22.89 0.2337 22.42 23.35
-5  ЛесКон 23.08 0.2337 22.62 23.54
-6  ЛесЗав 23.11 0.2419 22.64 23.59
-```
-
----
-
-## Задание 3
-
-Дополните код, чтобы получить столбчатый график с предсказаниями линейной модели.
-Заливкой покажите вид птиц-хозяев. Подпишите оси. Спрячьте легенду.
-
-
-```r
-gg_bars &lt;- ggplot(data = , aes(x = , y = )) +
-  geom_col(aes(), width = 0.5) +
-  geom_errorbar(aes(ymin = , ymax = ), width = 0.1) +
-  labs( = "Вид хозяев",  = "Длина яиц кукушек, мм") +
-  scale_fill_brewer(name = "Вид \nхозяев", palette = "Dark2") +
-  theme(  = "none")
-gg_bars
-```
-
-![](10_anova_files/figure-html/bar-plot-1.png)&lt;!-- --&gt;
-
----
-
-## Решение 3
-
-Столбчатый график
-
-
-```r
-gg_bars &lt;- ggplot(data = MyData, aes(x = sp, y = fit)) + 
-  geom_col(aes(fill = sp), width = 0.5) +
-  geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.1) + 
-  labs(x = "Вид хозяев", y = "Длина яиц кукушек, мм") +
-  scale_fill_brewer(name = "Вид \nхозяев", palette = "Dark2") + 
-  theme(legend.position = "none")
-gg_bars
-```
-
-![](10_anova_files/figure-html/bar-plot-1.png)&lt;!-- --&gt;
-
---
-
-Но какие именно из этих средних значений значимо различаются?
-
----
-
-class: middle, center, inverse
-
-# Пост хок тесты
-
----
-
-## Как понять, какие именно группы различаются
-
-Дисперсионный анализ говорит нам только, есть ли влияние фактора, но не говорит, какие именно группы различаются.
-
-Коэффициенты линейной модели в `summary(mod_treatment)` содержат лишь часть ответа --- сравнение средних значений всех групп со средним на базовом уровне.
-
-Если нас интересуют другие возможные попарные сравнения, нужно сделать пост хок тест.
-
----
-
-## Есть два способа понять, какие именно группы различаются
-
-
-.pull-left[
-
-.center[__Линейные контрасты__ (linear contrasts)]
-
-- Гипотезы о межгрупповых различиях тестируются при помощи комбинаций из коэффициентов линейной модели.
-- Набор гипотез (и сравнений) должен быть определен заранее.
-- Делать можно вне зависимости от результатов дисперсионного анализа.
-]
-
---
-
-.pull-right[
-.center[__Post hoc__ тесты]
-
-- Сравниваются все возможные группы.
-- Нет четких заранее сформулированных гипотез.
-- Делать можно, только если влияние соответствующего фактора оказалось значимым.
-]
-
----
-
-
-## Типы поправок на множественное сравнение
-
-FWER (Family-wise error rate)
-- групповая вероятность ошибки первого рода.
-
-Виды:
-- Поправка Бонферрони (Bonferroni correction)
-- Поправка Сидака (Šidák's correction)
-- Поправка Холма-Бонферрони (Holm-Bonferroni correction)
-
-FDR (False discovery rate) 
-- средняя доля ложных отклонений гипотез (среди всех отклонений).
-
-Виды:
-- Поправка Бенджамини-Хохберга (Benjamini-Hochberg correction)
-- Поправка Бенжамини-Екутели (Benjamini-Hochberg-Yekutieli correction)
-
----
-
-## Разновидности пост хок тестов
-
-Тесты без поправки на число сравнений:
-
-- Наименьшая значимая разница Фишера (Fisher's Least Significant Difference)
-
---
-
-Тесты с поправкой для уровня значимости `\(\alpha\)`:
-
-- Поправка Бонферрони (Bonferroni correction)
-- Поправка Сидака (Šidák's correction)
-
---
-
-Тесты, основанные на распределении стьюдентизированного размаха:
-
-- Тест Тьюки (Tukey's Honest Significant Difference, HSD)
-- Тест Стьюдента-Ньюмена-Кьюлса (Student-Newman-Kewls test, SNK)
-- Тест Даннета (Dunnet's test) --- используется для сравнения с контрольной группой.
-
---
-
-Тесты, основанные на F-тестах:
-
-- Критерий Дункана (Dunkan's test)
-- Тест Шеффе (Scheffe's test)
-
----
-
-## Наименьшая значимая разница Фишера &lt;br/&gt; Fisher's Least Significant Difference
-
-Используется t-критерий с `\(df = df_e = n - p\)`:
-
-&lt;br/&gt;
-
-`$$t = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \large(\frac{1}{n_i} + \frac{1}{n_j}\large)}}$$`
---
-
-- Подразумевается равенство дисперсий в сравниваемых группах
-
-- Не вносится поправка для уровня значимости, учитывающая множественность сравнений. Не подходит для большого количества групп сравнений. 
-
-
-&lt;!-- __Осторожно!__ Этот тест слишком мягок, высока вероятность появления ошибок I рода (т.е. тест находит различия там, где их нет). --&gt;
-
----
-
-## После ANOVA часто приходится сравнивать несколько групп
-
-Фактор в дисперсионном анализе может задавать больше двух групп. (Например, фактор вид птицы-хозяина в нашем примере).
-
---
-
-На самом деле __t-распределение__ не годится для случая, когда приходится сравнивать больше, чем две группы одновременно.
-
-Вспомните, __t-распределение__ --- это распределение стандартизованной разницы &lt;br/&gt; средних значений __из двух выборок__, взятых из одной генеральной совокупности.
-
---
-
-&lt;br/&gt;
-
-Нужен способ описать __более сложное распределение --- для любого числа выборок__.
-
----
-
-## Три выборки
-
-Представьте, что мы берем из одной и той же генеральной совокупности три выборки.
-
-Средние значения `\(\bar y_1\)`, `\(\bar y_2\)` и `\(\bar y_3\)` в каждой из этих выборок скорее всего окажутся разными и не будут похожи на генеральное среднее `\(\mu\)`.
-
-Как оценить, какой может быть эта разница? Нужно построить распределение. Но какое?
-
---
-
-&lt;br/&gt;
-
-1.Возьмем `\(m\)` выборок из одной генеральной совокупности
-
---
-
-2.Отсортируем выборочные средние: `\(\bar y_{1} \ge \bar y_2 \ge \ldots \ge \bar y_{m}\)`
-
-Это можно записать как `\(\bar y_{max} \ge \bar y_2 \ge \ldots \ge \bar y_{min}\)`
-
---
-
-3.Вычислим разницу максимального и минимального средних `\(\bar y_{max} - \bar y_{min}\)`  
-
---
-
-Если повторить 1--3 много раз, то получится распределение, которое показывает, чему может быть равна разница средних значений в выборках из одной генеральной совокупности. 
-
-Такое распределение можно построить для любого числа выборок `\(m\)`.
-
----
-
-## Распределение стьюдентизированного размаха &lt;br/&gt; Studentized range distribution
-
-Это распределение стандартизованной разницы минимального и максимального средних __для любого числа выборок__ из одной генеральной совокупности (форма зависит от `\(df\)` и от числа выборок `\(m\)`).
-
-.pull-left[
-
-![](10_anova_files/figure-html/gg-tukey-distr-1.png)&lt;!-- --&gt;
-
-
-]
-.pull-right[
-
-Формула для случая равных дисперсий и разных объемов групп:
-
-`$$q = \frac{\bar{y}_{max} - \bar{y}_{min}}{\sqrt{MS_{e}\frac{1}{2} \large(\frac{1}{n_i} + \frac{1}{n_j}\large)}}$$`
-
-]
-
----
-
-## Cтьюдентизированный t-критерий консервативнее обычного
-
-.pull-left[
-
-.center[Обычный t-критерий]
-
-`$$t = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \large(\frac{1}{n_i} + \frac{1}{n_j}\large)}}$$`
-]
-.pull-right[
-.center[Стьюдентизированный t-критерий]
-
-`$$q = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \;\frac{1}{2}  \; \large(\frac{1}{n_i} + \frac{1}{n_j}\large)}}$$`
-
-&lt;!-- `$$q = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \;\tikzmarkin&lt;2&gt;{factor} \frac{1}{2} \tikzmarkend{factor} \; \large(\frac{1}{n_i} + \frac{1}{n_j}\large)}}$$`--&gt;
-При этом `\(\bar{y}_i &gt; \bar{y}_j\)`, т.е. вычитается из большего меньшее среднее.
-
-]
-
---
-
-&lt;br/&gt;
-
-.center[Значение `\(q\)` будет в 1.414 раз больше, чем `\(t\)`.
-
-`$$q = \frac{t}{\sqrt{\; \frac{1}{2}}} = \sqrt{2} \cdot t = 1.414 \cdot t$$`
-
-]
-
----
-
-## Тест Тьюки (Tukey's Honest Significant Difference)
-
-Используется стьюдентизированный t-критерий  
-с `\(df = df_e = n - p\)` и `\(m = p\)` (общее число групп):
-
-`$$q = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e\frac{1}{2} \large(\frac{1}{n_i} + \frac{1}{n_j}\large)}}$$`
-
-Требуется равенство дисперсий.
-
----
-
-## Тест Даннета (Dunnett’s test)
-
-Используется, когда хотим сравнить контрольную группу с экспериментальными. Лучше подходит для тех случаев, когда мы не хотим сравнить все группы со всеми, а нам нужны только определённые. Основан также на стьюдентизированном t-критерии. 
-
-q-статистика считается так же, как в случае теста Тьюки; по-другому расчитывается _критическое_ значение q, с которым сравниваем наблюдаемое.
-
----
-
-## Пост хок тесты различаются по степени консервативности
-
-Если посмотреть на критические значения t при сравнении средних при `\(\alpha = 0.05\)` `\((m = 4\)` группы по 6 наблюдений, `\(df_e = 20\)`), становится понятно, что тест Тьюки --- разумный компромисс среди пост хок тестов.
-
-.pull-left[
-![](10_anova_files/figure-html/gg-tukey-distr-1.png)&lt;!-- --&gt;
-]
-
-.pull-right[
-
-
-
-Тест | Критическое значение
----- | -----
-Шеффе&lt;sup&gt;a&lt;/sup&gt; | 3.05
-Бонферрони (4 группы) |  2.93
-Тьюки (HSD)&lt;sup&gt;b&lt;/sup&gt; |  2.80
-Бонферрони (3 группы) |  2.63
-Даннет&lt;sup&gt;b&lt;sup/&gt; |  2.54
-Дункан&lt;sup&gt;a, b&lt;/sup&gt; |  2.22
-Фишер (LSD) |  2.09
-]
-
-&lt;sup&gt;a&lt;/sup&gt; --- Значение `\(t\)` соответствующее `\(F\)`.
-
-&lt;sup&gt;b&lt;/sup&gt; --- Для сопоставимости внесена поправка `\(\sqrt{2}\)`. 
-
----
-
-## Пост хок тест Тьюки в R
-
-- `glht()` --- "general linear hypotheses testing"
-- `linfct` --- аргумент, задающий гипотезу для тестирования
-
-- `mcp()` --- функция, чтобы задавать множественные сравнения (обычные пост хоки)
-- `sp` = "Tukey" --- тест Тьюки по фактору `sp`
-
-
-```r
-library(multcomp)
-eggs_posthoc &lt;- glht(mod_treatment, linfct = mcp(sp = "Tukey"))
-```
-
----
-
-## Результаты попарных сравнений (тест Тьюки)
-
-Таблица результатов пост хок теста практически нечитабельна.
-
-
-```r
-summary(eggs_posthoc)
-```
-
-```
-
-	 Simultaneous Tests for General Linear Hypotheses
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="результаты-дисперсионного-анализа" class="level2">
+<h2 class="anchored" data-anchor-id="результаты-дисперсионного-анализа">Результаты дисперсионного анализа</h2>
+<ul>
+<li>Можно описать в тексте:</li>
+</ul>
+<p>Длина яиц кукушек в гнёздах разных птиц-хозяев значимо различается (<span class="math inline">\(F_{5,114} = 10.45\)</span>, <span class="math inline">\(p &lt; 0.01\)</span>).</p>
+<ul>
+<li>Можно представить в виде таблицы:</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small">
+<caption>Табл. 1. Результаты дисперсионного анализа длины яиц кукушек в гнёздах разных птиц-хозяев.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Источник изменчивости</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Sum Sq</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Df</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">F value</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Pr(&gt;F)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">sp</td>
+<td style="text-align: right;">42.8</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">10.4</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residuals</td>
+<td style="text-align: right;">93.4</td>
+<td style="text-align: right;">114</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+</section>
+<section id="условия-применимости-дисперсионного-анализа" class="level2 center middle inverse">
+<h2 class="center middle inverse anchored" data-anchor-id="условия-применимости-дисперсионного-анализа">Условия применимости дисперсионного анализа</h2>
+<hr>
+</section>
+<section id="результатам-тестов-можно-верить-если-выполняются-условия-применимости" class="level2">
+<h2 class="anchored" data-anchor-id="результатам-тестов-можно-верить-если-выполняются-условия-применимости">Результатам тестов можно верить, если выполняются условия применимости</h2>
+<p>Условия применимости дисперсионного анализа:</p>
+<ul>
+<li>Случайность и независимость наблюдений внутри групп;</li>
+<li>Нормальное распределение остатков;</li>
+<li>Гомогенность дисперсий остатков;</li>
+<li>Отсутствие коллинеарности факторов (независимость групп).</li>
+</ul>
+<section id="другие-ограничения" class="level3">
+<h3 class="anchored" data-anchor-id="другие-ограничения">Другие ограничения:</h3>
+<ul>
+<li>Лучше работает, если размеры групп примерно одинаковы (т. наз. сбалансированный дисперсионный комплекс);</li>
+<li>Устойчив к отклонениям от нормального распределения (при равных объёмах групп или при больших выборках).</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="проверяем-выполнение-условий-применимости" class="level2">
+<h2 class="anchored" data-anchor-id="проверяем-выполнение-условий-применимости">Проверяем выполнение условий применимости</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>mod_diag <span class="ot">&lt;-</span> <span class="fu">fortify</span>(mod_treatment)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="график-расстояния-кука" class="level3">
+<h3 class="anchored" data-anchor-id="график-расстояния-кука">1) График расстояния Кука</h3>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mod_diag, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(mod_diag), <span class="at">y =</span> .cooksd)) <span class="sc">+</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>Выбросов нет</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="график-остатков-от-предсказанных-значений" class="level2">
+<h2 class="anchored" data-anchor-id="график-остатков-от-предсказанных-значений">2) График остатков от предсказанных значений</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Но у нас один единственный дискретный предиктор, поэтому удобнее сразу боксплот остатков в зависимости от дискретного предиктора.</p>
+<section id="графики-остатков-от-предикторов-в-модели-и-не-в-модели" class="level3">
+<h3 class="anchored" data-anchor-id="графики-остатков-от-предикторов-в-модели-и-не-в-модели">3) Графики остатков от предикторов в модели и не в модели</h3>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mod_diag, <span class="fu">aes</span>(<span class="at">x =</span> sp, <span class="at">y =</span> .stdresid)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>Дисперсии почти одинаковые. Может быть, в одной из групп чуть больше</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="квантильный-график-остатков" class="level2">
+<h2 class="anchored" data-anchor-id="квантильный-график-остатков">4) Квантильный график остатков</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqPlot</span>(mod_treatment, <span class="at">id =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>Распределение остатков немного отличается от нормального</li>
+</ul>
+<hr>
+</section>
+<section id="график-предсказаний-модели" class="level2 center middle inverse">
+<h2 class="center middle inverse anchored" data-anchor-id="график-предсказаний-модели">График предсказаний модели</h2>
+<hr>
+</section>
+<section id="данные-для-графика-при-помощи-predict" class="level2">
+<h2 class="anchored" data-anchor-id="данные-для-графика-при-помощи-predict">Данные для графика при помощи <code>predict()</code></h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>MyData <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sp =</span> <span class="fu">factor</span>(<span class="fu">levels</span>(eggs<span class="sc">$</span>sp), <span class="at">levels =</span> <span class="fu">levels</span>(eggs<span class="sc">$</span>sp)))</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>MyData <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  MyData,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(mod_treatment, <span class="at">newdata =</span> MyData, <span class="at">interval =</span> <span class="st">"confidence"</span>))</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>MyData</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       sp  fit  lwr  upr
+1  Крапив 21.1 20.7 21.6
+2  ЛугКон 22.3 22.0 22.6
+3   Малин 22.6 22.1 23.0
+4 БелТряс 22.9 22.4 23.3
+5  ЛесКон 23.1 22.6 23.5
+6  ЛесЗав 23.1 22.6 23.6</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="задание-2" class="level2">
+<h2 class="anchored" data-anchor-id="задание-2">Задание 2</h2>
+<p>Создайте MyData вручную:</p>
+<ul>
+<li>предсказанные значения</li>
+<li>стандартные ошибки</li>
+<li>верхнюю и нижнюю границы доверительных интервалов</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>MyData <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sp =</span> <span class="fu">factor</span>(<span class="fu">levels</span>(eggs<span class="sc">$</span>sp),</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">levels =</span> <span class="fu">levels</span>(eggs<span class="sc">$</span>sp)))</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>()</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> </span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>fit <span class="ot">&lt;-</span>  <span class="sc">%*%</span> </span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(X <span class="sc">%*%</span> <span class="fu">vcov</span>(mod_treatment) <span class="sc">%*%</span> <span class="fu">t</span>(X)))</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>t_crit <span class="ot">&lt;-</span> <span class="fu">qt</span>(<span class="at">p =</span> , <span class="at">df =</span> <span class="fu">nrow</span>() <span class="sc">-</span> <span class="fu">length</span>(<span class="fu">coef</span>()))</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>lwr <span class="ot">&lt;-</span> MyData<span class="sc">$</span> <span class="sc">-</span>  <span class="er">*</span> MyData<span class="sc">$</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>upr <span class="ot">&lt;-</span> MyData<span class="sc">$</span> <span class="sc">+</span>  <span class="er">*</span> MyData<span class="sc">$</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="решение-2" class="level2">
+<h2 class="anchored" data-anchor-id="решение-2">Решение 2</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>MyData <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sp =</span> <span class="fu">factor</span>(<span class="fu">levels</span>(eggs<span class="sc">$</span>sp),</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">levels =</span> <span class="fu">levels</span>(eggs<span class="sc">$</span>sp)))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span>sp, <span class="at">data =</span> MyData)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">coef</span>(mod_treatment)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>fit <span class="ot">&lt;-</span> X <span class="sc">%*%</span> betas</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(X <span class="sc">%*%</span> <span class="fu">vcov</span>(mod_treatment) <span class="sc">%*%</span> <span class="fu">t</span>(X)))</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>t_crit <span class="ot">&lt;-</span> <span class="fu">qt</span>(<span class="at">p =</span> <span class="fl">0.975</span>, <span class="at">df =</span> <span class="fu">nrow</span>(eggs) <span class="sc">-</span> <span class="fu">length</span>(<span class="fu">coef</span>(mod_treatment)))</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>lwr <span class="ot">&lt;-</span> MyData<span class="sc">$</span>fit <span class="sc">-</span> t_crit <span class="sc">*</span> MyData<span class="sc">$</span>se</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>MyData<span class="sc">$</span>upr <span class="ot">&lt;-</span> MyData<span class="sc">$</span>fit <span class="sc">+</span> t_crit <span class="sc">*</span> MyData<span class="sc">$</span>se</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>MyData</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       sp  fit    se  lwr  upr
+1  Крапив 21.1 0.234 20.7 21.6
+2  ЛугКон 22.3 0.135 22.0 22.6
+3   Малин 22.6 0.226 22.1 23.0
+4 БелТряс 22.9 0.234 22.4 23.3
+5  ЛесКон 23.1 0.234 22.6 23.5
+6  ЛесЗав 23.1 0.242 22.6 23.6</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="задание-3" class="level2">
+<h2 class="anchored" data-anchor-id="задание-3">Задание 3</h2>
+<p>Дополните код, чтобы получить столбчатый график с предсказаниями линейной модели. Заливкой покажите вид птиц-хозяев. Подпишите оси. Спрячьте легенду.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>gg_bars <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> , <span class="fu">aes</span>(<span class="at">x =</span> , <span class="at">y =</span> )) <span class="sc">+</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="fu">aes</span>(), <span class="at">width =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> , <span class="at">ymax =</span> ), <span class="at">width =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>( <span class="ot">=</span> <span class="st">"Вид хозяев"</span>,  <span class="ot">=</span> <span class="st">"Длина яиц кукушек, мм"</span>) <span class="sc">+</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">name =</span> <span class="st">"Вид </span><span class="sc">\n</span><span class="st">хозяев"</span>, <span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(  <span class="ot">=</span> <span class="st">"none"</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>gg_bars</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="решение-3" class="level2">
+<h2 class="anchored" data-anchor-id="решение-3">Решение 3</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>gg_bars <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> MyData, <span class="fu">aes</span>(<span class="at">x =</span> sp, <span class="at">y =</span> fit)) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="fu">aes</span>(<span class="at">fill =</span> sp), <span class="at">width =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lwr, <span class="at">ymax =</span> upr), <span class="at">width =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Вид хозяев"</span>, <span class="at">y =</span> <span class="st">"Длина яиц кукушек, мм"</span>) <span class="sc">+</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">name =</span> <span class="st">"Вид </span><span class="sc">\n</span><span class="st">хозяев"</span>, <span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>gg_bars</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Но какие именно из этих средних значений значимо различаются?</p>
+<hr>
+</section>
+<section id="пост-хок-тесты" class="level2 center middle inverse">
+<h2 class="center middle inverse anchored" data-anchor-id="пост-хок-тесты">Пост хок тесты</h2>
+<hr>
+</section>
+<section id="как-понять-какие-именно-группы-различаются" class="level2">
+<h2 class="anchored" data-anchor-id="как-понять-какие-именно-группы-различаются">Как понять, какие именно группы различаются</h2>
+<p>Дисперсионный анализ говорит нам только, есть ли влияние фактора, но не говорит, какие именно группы различаются.</p>
+<p>Коэффициенты линейной модели в <code>summary(mod_treatment)</code> содержат лишь часть ответа — сравнение средних значений всех групп со средним на базовом уровне.</p>
+<p>Если нас интересуют другие возможные попарные сравнения, нужно сделать пост хок тест.</p>
+<hr>
+</section>
+<section id="есть-два-способа-понять-какие-именно-группы-различаются" class="level2">
+<h2 class="anchored" data-anchor-id="есть-два-способа-понять-какие-именно-группы-различаются">Есть два способа понять, какие именно группы различаются</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Линейные контрасты</strong> (linear contrasts)</p>
+<ul>
+<li>Гипотезы о межгрупповых различиях тестируются при помощи комбинаций из коэффициентов линейной модели.</li>
+<li>Набор гипотез (и сравнений) должен быть определён заранее.</li>
+<li>Делать можно вне зависимости от результатов дисперсионного анализа.</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Post hoc тесты</strong></p>
+<ul>
+<li>Сравниваются все возможные группы.</li>
+<li>Нет чётких заранее сформулированных гипотез.</li>
+<li>Делать можно, только если влияние соответствующего фактора оказалось значимым.</li>
+</ul>
+</div>
+</div>
+<hr>
+</section>
+<section id="типы-поправок-на-множественное-сравнение" class="level2">
+<h2 class="anchored" data-anchor-id="типы-поправок-на-множественное-сравнение">Типы поправок на множественное сравнение</h2>
+<p><strong>FWER (Family-wise error rate)</strong> — групповая вероятность ошибки первого рода.</p>
+<p>Виды: - Поправка Бонферрони (Bonferroni correction) - Поправка Сидака (Šidák’s correction) - Поправка Холма-Бонферрони (Holm-Bonferroni correction)</p>
+<p><strong>FDR (False discovery rate)</strong> — средняя доля ложных отклонений гипотез (среди всех отклонений).</p>
+<p>Виды: - Поправка Бенджамини-Хохберга (Benjamini-Hochberg correction) - Поправка Бенджамини-Екутели (Benjamini-Hochberg-Yekutieli correction)</p>
+<hr>
+</section>
+<section id="разновидности-пост-хок-тестов" class="level2">
+<h2 class="anchored" data-anchor-id="разновидности-пост-хок-тестов">Разновидности пост хок тестов</h2>
+<p>Тесты без поправки на число сравнений:</p>
+<ul>
+<li>Наименьшая значимая разница Фишера (Fisher’s Least Significant Difference)</li>
+</ul>
+<p>Тесты с поправкой для уровня значимости <span class="math inline">\(\alpha\)</span>:</p>
+<ul>
+<li>Поправка Бонферрони (Bonferroni correction)</li>
+<li>Поправка Сидака (Šidák’s correction)</li>
+</ul>
+<p>Тесты, основанные на распределении стьюдентизированного размаха:</p>
+<ul>
+<li>Тест Тьюки (Tukey’s Honest Significant Difference, HSD)</li>
+<li>Тест Стьюдента-Ньюмена-Кьюлса (Student-Newman-Kewls test, SNK)</li>
+<li>Тест Даннета (Dunnet’s test) — используется для сравнения с контрольной группой.</li>
+</ul>
+<p>Тесты, основанные на F-тестах:</p>
+<ul>
+<li>Критерий Дункана (Dunkan’s test)</li>
+<li>Тест Шеффе (Scheffe’s test)</li>
+</ul>
+<hr>
+</section>
+<section id="наименьшая-значимая-разница-фишера" class="level2">
+<h2 class="anchored" data-anchor-id="наименьшая-значимая-разница-фишера">Наименьшая значимая разница Фишера</h2>
+<p>Используется t-критерий с <span class="math inline">\(df = df_e = n - p\)</span>:</p>
+<p><span class="math display">\[t = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}\]</span></p>
+<ul>
+<li>Подразумевается равенство дисперсий в сравниваемых группах</li>
+<li>Не вносится поправка для уровня значимости, учитывающая множественность сравнений. Не подходит для большого количества групп сравнений.</li>
+</ul>
+<hr>
+</section>
+<section id="три-выборки" class="level2">
+<h2 class="anchored" data-anchor-id="три-выборки">Три выборки</h2>
+<p>Представьте, что мы берём из одной и той же генеральной совокупности три выборки.</p>
+<p>Средние значения <span class="math inline">\(\bar y_1\)</span>, <span class="math inline">\(\bar y_2\)</span> и <span class="math inline">\(\bar y_3\)</span> в каждой из этих выборок скорее всего окажутся разными и не будут похожи на генеральное среднее <span class="math inline">\(\mu\)</span>.</p>
+<ol type="1">
+<li>Возьмём <span class="math inline">\(m\)</span> выборок из одной генеральной совокупности</li>
+<li>Отсортируем выборочные средние: <span class="math inline">\(\bar y_{1} \ge \bar y_2 \ge \ldots \ge \bar y_{m}\)</span></li>
+<li>Вычислим разницу максимального и минимального средних <span class="math inline">\(\bar y_{max} - \bar y_{min}\)</span></li>
+</ol>
+<p>Если повторить 1–3 много раз, то получится распределение, которое показывает, чему может быть равна разница средних значений в выборках из одной генеральной совокупности.</p>
+<hr>
+</section>
+<section id="распределение-стьюдентизированного-размаха" class="level2">
+<h2 class="anchored" data-anchor-id="распределение-стьюдентизированного-размаха">Распределение стьюдентизированного размаха</h2>
+<p>Это распределение стандартизованной разницы минимального и максимального средних <strong>для любого числа выборок</strong> из одной генеральной совокупности (форма зависит от <span class="math inline">\(df\)</span> и от числа выборок <span class="math inline">\(m\)</span>).</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:50%;">
+<p>Формула для случая равных дисперсий и разных объёмов групп:</p>
+<p><span class="math display">\[q = \frac{\bar{y}_{max} - \bar{y}_{min}}{\sqrt{MS_{e}\frac{1}{2} \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}\]</span></p>
+</div>
+</div>
+<hr>
+</section>
+<section id="стьюдентизированный-t-критерий-консервативнее-обычного" class="level2">
+<h2 class="anchored" data-anchor-id="стьюдентизированный-t-критерий-консервативнее-обычного">Стьюдентизированный t-критерий консервативнее обычного</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Обычный t-критерий</strong></p>
+<p><span class="math display">\[t = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}\]</span></p>
+</div><div class="column" style="width:50%;">
+<p><strong>Стьюдентизированный t-критерий</strong></p>
+<p><span class="math display">\[q = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e \;\frac{1}{2} \; \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}\]</span></p>
+<p>При этом <span class="math inline">\(\bar{y}_i &gt; \bar{y}_j\)</span>, т.е. вычитается из большего меньшее среднее.</p>
+</div>
+</div>
+<p>Значение <span class="math inline">\(q\)</span> будет в 1.414 раз больше, чем <span class="math inline">\(t\)</span>.</p>
+<p><span class="math display">\[q = \frac{t}{\sqrt{\; \frac{1}{2}}} = \sqrt{2} \cdot t = 1.414 \cdot t\]</span></p>
+<hr>
+</section>
+<section id="тест-тьюки-tukeys-honest-significant-difference" class="level2">
+<h2 class="anchored" data-anchor-id="тест-тьюки-tukeys-honest-significant-difference">Тест Тьюки (Tukey’s Honest Significant Difference)</h2>
+<p>Используется стьюдентизированный t-критерий с <span class="math inline">\(df = df_e = n - p\)</span> и <span class="math inline">\(m = p\)</span> (общее число групп):</p>
+<p><span class="math display">\[q = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{MS_e\frac{1}{2} \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}\]</span></p>
+<p>Требуется равенство дисперсий.</p>
+<hr>
+</section>
+<section id="тест-даннета-dunnetts-test" class="level2">
+<h2 class="anchored" data-anchor-id="тест-даннета-dunnetts-test">Тест Даннета (Dunnett’s test)</h2>
+<p>Используется, когда хотим сравнить контрольную группу с экспериментальными. Лучше подходит для тех случаев, когда мы не хотим сравнить все группы со всеми, а нам нужны только определённые. Основан также на стьюдентизированном t-критерии.</p>
+<p>q-статистика считается так же, как в случае теста Тьюки; по-другому рассчитывается <em>критическое</em> значение q, с которым сравниваем наблюдаемое.</p>
+<hr>
+</section>
+<section id="пост-хок-тесты-различаются-по-степени-консервативности" class="level2">
+<h2 class="anchored" data-anchor-id="пост-хок-тесты-различаются-по-степени-консервативности">Пост хок тесты различаются по степени консервативности</h2>
+<p>Если посмотреть на критические значения t при сравнении средних при <span class="math inline">\(\alpha = 0.05\)</span> (<span class="math inline">\(m = 4\)</span> группы по 6 наблюдений, <span class="math inline">\(df_e = 20\)</span>), становится понятно, что тест Тьюки — разумный компромисс среди пост хок тестов.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Тест</th>
+<th>Критическое значение</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Шеффе<sup>a</sup></td>
+<td>3.05</td>
+</tr>
+<tr class="even">
+<td>Бонферрони (4 группы)</td>
+<td>2.93</td>
+</tr>
+<tr class="odd">
+<td>Тьюки (HSD)<sup>b</sup></td>
+<td>2.80</td>
+</tr>
+<tr class="even">
+<td>Бонферрони (3 группы)</td>
+<td>2.63</td>
+</tr>
+<tr class="odd">
+<td>Даннет<sup>b</sup></td>
+<td>2.54</td>
+</tr>
+<tr class="even">
+<td>Дункан<sup>a, b</sup></td>
+<td>2.22</td>
+</tr>
+<tr class="odd">
+<td>Фишер (LSD)</td>
+<td>2.09</td>
+</tr>
+</tbody>
+</table>
+<p><sup>a</sup> — Значение <span class="math inline">\(t\)</span>, соответствующее <span class="math inline">\(F\)</span>.</p>
+<p><sup>b</sup> — Для сопоставимости внесена поправка <span class="math inline">\(\sqrt{2}\)</span>.</p>
+<hr>
+</section>
+<section id="пост-хок-тест-тьюки-в-r" class="level2">
+<h2 class="anchored" data-anchor-id="пост-хок-тест-тьюки-в-r">Пост хок тест Тьюки в R</h2>
+<ul>
+<li><code>glht()</code> — «general linear hypotheses testing»</li>
+<li><code>linfct</code> — аргумент, задающий гипотезу для тестирования</li>
+<li><code>mcp()</code> — функция, чтобы задавать множественные сравнения (обычные пост хоки)</li>
+<li><code>sp = "Tukey"</code> — тест Тьюки по фактору <code>sp</code></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(multcomp)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>eggs_posthoc <span class="ot">&lt;-</span> <span class="fu">glht</span>(mod_treatment, <span class="at">linfct =</span> <span class="fu">mcp</span>(<span class="at">sp =</span> <span class="st">"Tukey"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="результаты-попарных-сравнений-тест-тьюки" class="level2">
+<h2 class="anchored" data-anchor-id="результаты-попарных-сравнений-тест-тьюки">Результаты попарных сравнений (тест Тьюки)</h2>
+<p>Таблица результатов пост хок теста практически нечитабельна.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(eggs_posthoc)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+     Simultaneous Tests for General Linear Hypotheses
 
 Multiple Comparisons of Means: Tukey Contrasts
 
@@ -1064,203 +1031,471 @@ Linear Hypotheses:
 ЛесЗав - ЛесКон == 0    0.0343     0.3364    0.10    1.000    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-(Adjusted p values reported -- single-step method)
-```
+(Adjusted p values reported -- single-step method)</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="результаты-пост-хок-теста" class="level2">
+<h2 class="anchored" data-anchor-id="результаты-пост-хок-теста">Результаты пост хок теста</h2>
+<p>Результаты пост хок теста можно привести в виде текста…</p>
+<ul>
+<li>Размер яиц кукушек в гнёздах крапивника значимо меньше, чем в гнёздах лугового конька (тест Тьюки, <span class="math inline">\(p &lt; 0.01\)</span>). Размер яиц кукушек в гнёздах лесной завирушки, белой трясогузки, малиновки и лесного конька не различается, но яйца кукушек в гнёздах этих хозяев крупнее, чем в гнёздах у лугового конька или крапивника (тест Тьюки, от <span class="math inline">\(p &lt; 0.01\)</span> до <span class="math inline">\(0.05\)</span>).</li>
+</ul>
+<p>…или построить график</p>
+<hr>
+</section>
+<section id="можно-привести-результаты-пост-хок-теста-на-столбчатом-графике" class="level2">
+<h2 class="anchored" data-anchor-id="можно-привести-результаты-пост-хок-теста-на-столбчатом-графике">Можно привести результаты пост хок теста на столбчатом графике</h2>
+<p>Значимо различающиеся группы обозначим разными буквами</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>gg_bars_coded <span class="ot">&lt;-</span> gg_bars <span class="sc">+</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="dv">30</span>, <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"BC"</span>, <span class="st">"BC"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>)),</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="dv">5</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>gg_bars_coded</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="10_anova_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="take-home-messages" class="level2">
+<h2 class="anchored" data-anchor-id="take-home-messages">Take home messages</h2>
+<ul>
+<li>Дисперсионный анализ — линейная модель с дискретными предикторами, существует в нескольких параметризациях, которые отличаются трактовками коэффициентов.</li>
+<li>При помощи дисперсионного анализа можно проверить гипотезу о равенстве средних значений в группах.</li>
+<li>Условия применимости дисперсионного анализа:
+<ul>
+<li>Случайность и независимость групп и наблюдений внутри групп</li>
+<li>Нормальное распределение в группах</li>
+<li>Гомогенность дисперсий в группах</li>
+</ul></li>
+<li>При множественных попарных сравнениях увеличивается вероятность ошибки первого рода, поэтому нужно вносить поправку для уровня значимости</li>
+<li>Post hoc тесты — это попарные сравнения после дисперсионного анализа, которые позволяют сказать, какие именно средние различаются</li>
+</ul>
+<hr>
+</section>
+<section id="дополнительные-ресурсы" class="level2">
+<h2 class="anchored" data-anchor-id="дополнительные-ресурсы">Дополнительные ресурсы</h2>
+<ul>
+<li>Quinn, Keough, 2002, pp.&nbsp;173–207</li>
+<li>Logan, 2010, pp.&nbsp;254–282</li>
+<li><a href="http://www.openintro.org/stat/">Open Intro to Statistics</a>, pp.&nbsp;236–246</li>
+<li>Sokal, Rohlf, 1995, pp.&nbsp;179–260</li>
+<li>Zar, 2010, pp.&nbsp;189–207 ```</li>
+</ul>
+</section>
+</section>
 
----
-
-## Результаты пост хок теста
-
-Результаты пост хок теста можно привести в виде текста...
-
-- Размер яиц кукушек в гнездах крапивника значимо меньше, чем в гнездах лугового конька (тест Тьюки, `\(p &lt; 0.01\)`). Размер яиц кукушек в гнездах лесной завирушки, белой трясогузки, малиновки и лесного конька не различается, но яйца кукушек в гнездах этих хозяев крупнее, чем в гнездах у лугового конька или крапивника (тест Тьюки, от `\(p &lt; 0.01\)` до `\(0.05\)`).
-
-...или построить график
-
-
----
-
-## Можно привести результаты пост хок теста на столбчатом графике
-
-Значимо различающиеся группы обозначим разными буквами
-
-
-```r
-gg_bars_coded &lt;- gg_bars +
-  geom_text(aes(y = 30,  label = c("A", "B", "BC", "BC", "C", "C")),
-            colour = "black", size = 5)
-gg_bars_coded
-```
-
-![](10_anova_files/figure-html/gg-coded-bars-1.png)&lt;!-- --&gt;
-
-
----
-
-## Take home messages
-
-- Дисперсионный анализ --- линейная модель с дискретными предикторами, существует в нескольких параметризациях, которые отличаются трактовками коэффициентов.
-- При помощи дисперсионного анализа можно проверить гипотезу о равенстве средних значений в группах.
-
---
-
-- Условия применимости дисперсионного анализа
-    - Случайность и независимость групп и наблюдений внутри групп
-    - Нормальное распределение в группах
-    - Гомогенность дисперсий в группах
-
---
-
-- При множественных попарных сравнениях увеличивается вероятность ошибки первого рода, поэтому нужно вносить поправку для уровня значимости
-- Post hoc тесты --- это попарные сравнения после дисперсионного анализа, которые позволяют сказать, какие именно средние различаются
-
----
-
-## Дополнительные ресурсы
-
-- Quinn, Keough, 2002, pp. 173--207
-- Logan, 2010, pp. 254--282
-- [Open Intro to Statistics](http://www.openintro.org/stat/), pp.236--246 
-- Sokal, Rohlf, 1995, pp. 179--260
-- Zar, 2010, pp. 189-207
-    </textarea>
-<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
-<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
-<script src="assets/macros.js"></script>
-<script>var slideshow = remark.create({
-  "highlightStyle": "googlecode",
-  "highlightLines": true,
-  "countIncrementalSlides": false
-});
-if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
-  window.dispatchEvent(new Event('resize'));
-});
-(function(d) {
-  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
-  if (!r) return;
-  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
-  d.head.appendChild(s);
-})(document);
-
-(function(d) {
-  var el = d.getElementsByClassName("remark-slides-area");
-  if (!el) return;
-  var slide, slides = slideshow.getSlides(), els = el[0].children;
-  for (var i = 1; i < slides.length; i++) {
-    slide = slides[i];
-    if (slide.properties.continued === "true" || slide.properties.count === "false") {
-      els[i - 1].className += ' has-continuation';
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
     }
-  }
-  var s = d.createElement("style");
-  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
-  d.head.appendChild(s);
-})(document);
-// delete the temporary CSS (for displaying all slides initially) when the user
-// starts to view slides
-(function() {
-  var deleted = false;
-  slideshow.on('beforeShowSlide', function(slide) {
-    if (deleted) return;
-    var sheets = document.styleSheets, node;
-    for (var i = 0; i < sheets.length; i++) {
-      node = sheets[i].ownerNode;
-      if (node.dataset["target"] !== "print-only") continue;
-      node.parentNode.removeChild(node);
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
     }
-    deleted = true;
-  });
-})();
-// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
-// screen reader (see PR #262)
-(function(d) {
-  let res = {};
-  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
-    const t = tr.querySelector('td:nth-child(2)').innerText;
-    tr.querySelectorAll('td:first-child .key').forEach(key => {
-      const k = key.innerText;
-      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
     });
-  });
-  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
-})(document);
-(function() {
-  "use strict"
-  // Replace <script> tags in slides area to make them executable
-  var scripts = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container script'
-  );
-  if (!scripts.length) return;
-  for (var i = 0; i < scripts.length; i++) {
-    var s = document.createElement('script');
-    var code = document.createTextNode(scripts[i].textContent);
-    s.appendChild(code);
-    var scriptAttrs = scripts[i].attributes;
-    for (var j = 0; j < scriptAttrs.length; j++) {
-      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
     }
-    scripts[i].parentElement.replaceChild(s, scripts[i]);
-  }
-})();
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
     }
-  }
-})();
-// adds .remark-code-has-line-highlighted class to <pre> parent elements
-// of code chunks containing highlighted lines with class .remark-code-line-highlighted
-(function(d) {
-  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
-  const preParents = [];
-  const findPreParent = function(line, p = 0) {
-    if (p > 1) return null; // traverse up no further than grandparent
-    const el = line.parentElement;
-    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
-  };
-
-  for (let line of hlines) {
-    let pre = findPreParent(line);
-    if (pre && !preParents.includes(pre)) preParents.push(pre);
-  }
-  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
-})(document);</script>
-<!-- https://github.com/fnaufel/xaringan-smartify-->
-<script type="text/javascript">
-  smartify();
-</script>
-
-<script>
-slideshow._releaseMath = function(el) {
-  var i, text, code, codes = el.getElementsByTagName('code');
-  for (i = 0; i < codes.length;) {
-    code = codes[i];
-    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
-      text = code.textContent;
-      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
-          /^\$\$(.|\s)+\$\$$/.test(text) ||
-          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
-        code.outerHTML = code.innerHTML;  // remove <code></code>
-        continue;
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
       }
     }
-    i++;
-  }
-};
-slideshow._releaseMath(document);
-</script>
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-(function () {
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
-  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
-    script.src  = script.src.replace(/^https?:/, '');
-  document.getElementsByTagName('head')[0].appendChild(script);
-})();
-</script>
-  </body>
-</html>
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

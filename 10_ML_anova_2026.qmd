@@ -78,6 +78,61 @@ theme_set(theme_bw(base_size = 20))
 
 <small>Данные: Latter, 1902; источник: Tippett, 1931</small>
 
+## Птицы-хозяева {.center}
+<div style="margin-top: -40px;"></div>
+
+::: {.columns}
+::: {.column width="33%"}
+<div style="height: 280px; overflow: hidden;">
+![](images/leszav.jpg){width=100% height=280px style="object-fit: cover; object-position: center;"}
+</div>
+
+<small>Лесная завирушка<br/>фото: snod33 (iNaturalist)</small>
+:::
+
+::: {.column width="33%"}
+<div style="height: 280px; overflow: hidden;">
+![](images/lugkon.jpg){width=100% height=280px style="object-fit: cover; object-position: center;"}
+</div>
+
+<small>Луговой конёк<br/>фото: fabriceprugnaud (iNaturalist)</small>
+:::
+
+::: {.column width="33%"}
+<div style="height: 280px; overflow: hidden;">
+![](images/beltryas.jpg){width=100% height=280px style="object-fit: cover; object-position: center;"}
+</div>
+
+<small>Белая трясогузка<br/>фото: fromfran (iNaturalist)</small>
+:::
+:::
+
+::: {.columns}
+::: {.column width="33%"}
+<div style="height: 280px; overflow: hidden;">
+![](images/malin.jpg){width=100% height=280px style="object-fit: cover; object-position: center;"}
+</div>
+
+<small>Малиновка<br/>фото: brightcrayons (iNaturalist)</small>
+:::
+
+::: {.column width="33%"}
+<div style="height: 280px; overflow: hidden;">
+![](images/leskon.jpg){width=100% height=280px style="object-fit: cover; object-position: center;"}
+</div>
+
+<small>Лесной конёк<br/>фото: alexander_naumov (iNaturalist)</small>
+:::
+
+::: {.column width="33%"}
+<div style="height: 280px; overflow: hidden;">
+![](images/krapiv.jpg){width=100% height=280px style="object-fit: cover; object-position: center;"}
+</div>
+
+<small>Крапивник<br/>фото: a_rover (iNaturalist)</small>
+:::
+:::
+
 ## Открываем данные
 
 ```{r}
@@ -98,6 +153,8 @@ colnames(eggs) <- c("len", "br", "sp", "id")
 levels(eggs$sp)
 levels(eggs$sp) <- c("ЛесЗав", "ЛугКон", "БелТряс",
                      "Малин", "ЛесКон", "Крапив")
+
+
 ```
 
 ## Исследуем данные
@@ -229,7 +286,7 @@ gg_means
 
 ## Поправка Бонферрони
 
-Если нужно много сравнений, можно снизить $\alpha_{per\ comparison}$ до общепринятого уровня
+Если нужно много сравнений, можно снизить $\alpha_{\text{per comparison}}$ до общепринятого уровня
 
 $$\alpha_{per\ comparison} = \frac{\alpha_{family\ wise}}{n}$$
 

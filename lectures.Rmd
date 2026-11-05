@@ -182,13 +182,13 @@ install.packages(c("DAAG", "multcomp"))
 ```
 
 <!-- - Презентация: [10_anova.html](10_anova.html) -->
-<!-- - Код:
+- Код:
     + [10_anova_code.R](10_anova_code.R)
     + [10_anova_practice_chicks.R](10_anova_practice_chicks.R)
     + [10_anova_practice_tomato.R](10_anova_practice_tomato.R)
 - Данные:
     + [chickwts.csv](data/chickwts.csv)
-    + [tomato.csv](data/tomato.csv) -->
+    + [tomato.csv](data/tomato.csv)
 
 ### 11 Многофакторный дисперсионный анализ
 

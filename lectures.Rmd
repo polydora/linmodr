@@ -181,7 +181,8 @@ install.packages("dplyr")
 install.packages(c("DAAG", "multcomp"))
 ```
 
-<!-- - Презентация: [10_anova.html](10_anova.html) -->
+- Презентация: [10_ML_anova_2026.html](10_ML_anova_2026.html)
+
 - Код:
     + [10_anova_code.R](10_anova_code.R)
     + [10_anova_practice_chicks.R](10_anova_practice_chicks.R)

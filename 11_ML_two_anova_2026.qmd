@@ -139,30 +139,66 @@ theme_set(theme_bw())
 
 Таким образом, получаем матрицу следующего вида:
 
-\[
-\begin{array}{cc} &
-\begin{vmatrix}
+$$
+\begin{pmatrix}
 1 & 0 \\
 1 & -1
-\end{vmatrix}\end{array}
-\]
+\end{pmatrix}
+$$
+Строка в матрице контрастов — это список команд.
+
+1 = взять эту птицу.
+
+-1 = вычесть эту птицу.
+
+0 = не обращать внимания на эту птицу.
+
 
 ## Линейные контрасты
 
-Так же, как в случае записи модельной матрицы, такая полная запись несколько излишня, поскольку нас интересует только та часть матрицы, которая соответствует **сравнению** между двумя группами. Т.е. БелТряс — ЛугКон =
+Такая полная запись излишня. Нас интересует только разница между группами. Для **сравнения** БелТряс и ЛугКон достаточно записать вектор разности:
 
-\[
-\begin{array}{cc} &
-\begin{vmatrix}
+Т.е. БелТряс — ЛугКон =
+
+$$
+\begin{pmatrix}
 1 & -1
-\end{vmatrix}\end{array}
-\]
+\end{pmatrix}
+$$
 
 **НО!** В нашем датасете гораздо больше групп сравнения, и нас может интересовать большее количество групп. Например, хотим ещё сравнить размер лугового конька с лесной завирушкой.
 
 Уравнение для данного случая можно записать следующим образом:
-$$ \textit{БелТряс} - \textit{ЛугКон} = 0$$
-$$ \textit{ЛесЗав} - \textit{ЛугКон} = 0$$
+
+$$ \text{БелТряс} - \text{ЛугКон} = 0 $$
+
+$$ \text{ЛесЗав} - \text{ЛугКон} = 0 $$
+
+## Запись матрицы контрастов с несколькими группами сравнения
+
+В наших данных несколько видов птиц. Чтобы вычесть одну группу из другой, сначала нужно записать уравнение модели для каждой из них.
+
+**Шаг 1.** Записываем уравнения для средних значений (через коэффициенты модели):
+
+$$Y_{\text{БелТряс}} = 1 \cdot b_0 + 0 \cdot b_{\text{ЛугКон}} + 0 \cdot b_{\text{Малин}} + 1 \cdot b_{\text{БелТряс}} + \ldots$$
+
+$$Y_{\text{ЛугКон}} = 1 \cdot b_0 + 1 \cdot b_{\text{ЛугКон}} + 0 \cdot b_{\text{Малин}} + 0 \cdot b_{\text{БелТряс}} + \ldots$$
+
+. . .
+
+**Шаг 2.** Вычитаем одно уравнение из другого (БелТряс — ЛугКон):
+
+$$(1 - 1) \cdot b_0 + (0 - 1) \cdot b_{\text{ЛугКон}} + (0 - 0) \cdot b_{\text{Малин}} + (1 - 0) \cdot b_{\text{БелТряс}} + \ldots$$
+
+. . .
+
+**Шаг 3.** Упрощаем и получаем вектор весов (контраст):
+
+$$0 \cdot b_0 - 1 \cdot b_{\text{ЛугКон}} + 0 \cdot b_{\text{Малин}} + 1 \cdot b_{\text{БелТряс}} + \ldots$$
+
+Отбрасываем нули, остается:
+$$1 \cdot b_{\text{БелТряс}} - 1 \cdot b_{\text{ЛугКон}}$$
+
 
 ## Запись линейных контрастов текстом в R
 
@@ -207,17 +243,17 @@ $$ЛесЗав - ЛугКон = 0 * b_0 - 1 * b_{ЛугКон} + 0 * b_{Мали
 
 ## Запись матрицы контрастов в R
 
-В случае, когда у нас, например, две группы сравнения: $\textit{БелТряс} - \textit{ЛугКон}$ и $\textit{ЛесЗав} - \textit{ЛугКон}$, матрица контрастов будет выглядеть на наших данных следующим образом.
+В случае, когда у нас, например, две группы сравнения: БелТряс — ЛугКон и ЛесЗав — ЛугКон, матрица контрастов будет выглядеть на наших данных следующим образом.
 
-\[
-\begin{array}{cc} &
-\begin{vmatrix}
+$$
+\begin{pmatrix}
 0 & -1 & 0 & 1 & 0 & 0 \\
 0 & -1 & 0 & 0 & 0 & 1
-\end{vmatrix}\end{array}
-\]
+\end{pmatrix}
+$$
 
 Код будет выглядеть следующим образом:
+
 ```{r}
 #| echo: true
 
@@ -292,33 +328,35 @@ summary(eggs_contrmat)
 
 Уровень "Крапив" будет базовым: для его кодирования не нужна отдельная переменная.
 
-## Коэффициенты модели в параметризации индикаторов
+## Коэффициенты модели в параметризации индикаторов {.smaller}
 
 ::: {.columns}
-::: {.column width="50%"}
+::: {.column width="55%"}
+
 Фрагмент модельной матрицы:
 
-| sp | spЛугКон <br/> $x_1$ | spМалин <br/> $x_2$ | spБелТряс <br/> $x_3$ | spЛесКон <br/> $x_4$ | spЛесЗав <br/> $x_5$ |
-|---|---|---|---|---|---|
-| Крапив | 0 | 0 | 0 | 0 | 0 |
-| ЛугКон | 1 | 0 | 0 | 0 | 0 |
-| Малин | 0 | 1 | 0 | 0 | 0 |
+| sp | spЛугКон <br> \(x_1\) | spМалин <br> \(x_2\) | spБелТряс <br> \(x_3\) | spЛесКон <br> \(x_4\) | spЛесЗав <br> \(x_5\) |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| Крапив  | 0 | 0 | 0 | 0 | 0 |
+| ЛугКон  | 1 | 0 | 0 | 0 | 0 |
+| Малин   | 0 | 1 | 0 | 0 | 0 |
 | БелТряс | 0 | 0 | 1 | 0 | 0 |
-| ЛесКон | 0 | 0 | 0 | 1 | 0 |
-| ЛесЗав | 0 | 0 | 0 | 0 | 1 |
+| ЛесКон  | 0 | 0 | 0 | 1 | 0 |
+| ЛесЗав  | 0 | 0 | 0 | 0 | 1 |
+
+Модель:
+$$y_{i} = b_0 + b_1 x_{1i} + \ldots + b_5 x_{5i} + e_{i}$$
 :::
 
-::: {.column width="50%"}
+::: {.column width="45%"}
+
 ```{r}
 #| echo: false
+#| fig.width: 6
+#| fig.height: 6
 #| purl: false
 
 mod_treatment <- lm(len ~ sp, data = eggs)
-```
-
-```{r}
-#| echo: false
-#| purl: false
 
 gg_means <- ggplot(data = eggs, aes(x = sp, y = len, colour = sp)) + 
   stat_summary(geom = "pointrange", fun.data = mean_cl_normal, size = 1) +
@@ -328,38 +366,26 @@ gg_means <- ggplot(data = eggs, aes(x = sp, y = len, colour = sp)) +
 
 cft <- round(coef(mod_treatment), 2)
 ar <- arrow(angle = 15, length = unit(3, "mm"), ends = "both", type = "closed")
-art <- arrow(angle = 15, length = unit(3, "mm"), ends = "last", type = "closed")
+art <-  arrow(angle = 15, length = unit(3, "mm"), ends = "last", type = "closed")
+
 gg_means +
   geom_hline(yintercept = cft[1], linetype = "dashed") +
-  annotate("segment", x = 0.75, y = -Inf, 
-           xend = 0.75, yend = cft[1], arrow = art) +
-  annotate("text", x = 0.75, y = cft[1], label = "b[0]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 1.75, y = cft[1], 
-           xend = 1.75, yend = cft[1] + cft[2], arrow = ar) +
-  annotate("text", x = 1.75, y = cft[1] + cft[2], label = "b[1]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 2.75, y = cft[1], 
-           xend = 2.75, yend = cft[1] + cft[3], arrow = ar) +
-  annotate("text", x = 2.75, y = cft[1]+ cft[3], label = "b[2]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 3.75, y = cft[1], 
-           xend = 3.75, yend = cft[1] + cft[4], arrow = ar) +
-  annotate("text", x = 3.75, y = cft[1]+ cft[4], label = "b[3]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 4.75, y = cft[1], 
-           xend = 4.75, yend = cft[1] + cft[5], arrow = ar)+
-  annotate("text", x = 4.75, y = cft[1]+ cft[5], label = "b[4]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 5.75, y = cft[1], 
-           xend = 5.75, yend = cft[1] + cft[6], arrow = ar) +
-  annotate("text", x = 5.75, y = cft[1]+ cft[6], label = "b[5]", 
-           vjust = 0, parse = T, size = 7)
+  annotate("segment", x = 0.75, y = -Inf, xend = 0.75, yend = cft[1], arrow = art) +
+  annotate("text", x = 0.75, y = cft[1], label = "b[0]", vjust = 0, parse = T, size = 5) +
+  annotate("segment", x = 1.75, y = cft[1], xend = 1.75, yend = cft[1] + cft[2], arrow = ar) +
+  annotate("text", x = 1.75, y = cft[1] + cft[2], label = "b[1]", vjust = 0, parse = T, size = 5) +
+  annotate("segment", x = 2.75, y = cft[1], xend = 2.75, yend = cft[1] + cft[3], arrow = ar) +
+  annotate("text", x = 2.75, y = cft[1]+ cft[3], label = "b[2]", vjust = 0, parse = T, size = 5) +
+  annotate("segment", x = 3.75, y = cft[1], xend = 3.75, yend = cft[1] + cft[4], arrow = ar) +
+  annotate("text", x = 3.75, y = cft[1]+ cft[4], label = "b[3]", vjust = 0, parse = T, size = 5) +
+  annotate("segment", x = 4.75, y = cft[1], xend = 4.75, yend = cft[1] + cft[5], arrow = ar) +
+  annotate("text", x = 4.75, y = cft[1]+ cft[5], label = "b[4]", vjust = 0, parse = T, size = 5) +
+  annotate("segment", x = 5.75, y = cft[1], xend = 5.75, yend = cft[1] + cft[6], arrow = ar) +
+  annotate("text", x = 5.75, y = cft[1]+ cft[6], label = "b[5]", vjust = 0, parse = T, size = 5) +
+  coord_flip()
 ```
 :::
 :::
-
-$$y_{i} = b_0 + b_1 x_{1i} + \ldots + b_5 x_{5i} + e_{i}$$
 
 - $b_0$ — это среднее значение отклика для базового уровня фактора.
 - $b_1, ..., b_5$ — это отклонения от базового уровня для средних с другими уровнями фактора.
@@ -373,7 +399,7 @@ mod_treatment <- lm(len ~ sp, data = eggs)
 round(coef(mod_treatment), 2)
 ```
 
-$$\widehat{len}_i = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} + 1.44 sp_{\text{Малин}\ i} + 1.77 sp_{\text{БелТряс}\ i} + 1.96 sp_{\text{ЛесКон}\ i} + 1.99 sp_{\text{ЛесЗав}\ i}$$
+$$\widehat{len}_i = 23.11 - 0.82 sp_{\text{ЛугКон}\ i} - 0.23  sp_{\text{Малин}\ i} - 0.56 sp_{\text{БелТряс}\ i} - 0.03 sp_{\text{ЛесКон}\ i} - 1.99 sp_{\text{ЛесЗав}\ i}$$
 
 ## Уравнение модели в параметризации индикаторов
 

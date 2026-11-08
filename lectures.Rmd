@@ -195,6 +195,8 @@ install.packages(c("DAAG", "multcomp"))
 
 ```{r eval=FALSE}
 install.packages("palmerpenguins")
+install.packages("emmeans")
+
 ```
 
 <!-- - Презентация: [11_two-way_anova_and_interactions.html](11_two-way_anova_and_interactions.html)-->

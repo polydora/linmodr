@@ -121,7 +121,8 @@ drop1(mod_no_int, test = 'Chi')
 # Дополните код:
 
 library()
-New_Data <- %>%
+New_Data <-
+  %>%
   group_by() %>%
   do(data.frame( = seq(min(.$Age), )
 head(New_Data)
@@ -131,9 +132,9 @@ head(New_Data)
 Predictions <- predict(mod, newdata = New_Data, se.fit = TRUE)
 New_Data$fit <- Predictions$fit  # Предсказанные значения
 New_Data$se <- Predictions$se.fit # Стандартные ошибки
-t_crit <- qt(0.975, df = nrow(FishEggs) - length(coef(mod)) - 1) # t для дов. инт.
-New_Data$lwr <- New_Data$fit - t_crit * New_Data$se
-New_Data$upr <- New_Data$fit + t_crit * New_Data$se
+t_crit <- qt(0.975, df = ) # t для дов. инт.
+New_Data$lwr <- New_Data$fit -  * New_Data$se
+New_Data$upr <- New_Data$fit +  * New_Data$se
 
 head(New_Data)
 
@@ -142,11 +143,11 @@ head(New_Data)
 X <- model.matrix() # Модельная матрица
 betas <-  # Коэффициенты
 New_Data$fit <-   # Предсказанные значения
-New_Data$se <- sqrt((X %*% vcov() %*% t(X))) # Стандартные ошибки
-degrees_of_freedom <- nrow() - length(coef(mod))
+New_Data$se <- sqrt(( %*% vcov() %*% )) # Стандартные ошибки
+degrees_of_freedom <-
 t_crit <- qt(0.975, df = degrees_of_freedom) # t для дов. инт.
-New_Data$lwr <- New_Data$fit - t_crit * New_Data$se
-New_Data$upr <- New_Data$fit + t_crit * New_Data$se
+New_Data$lwr <- New_Data$fit -  * New_Data$se
+New_Data$upr <- New_Data$fit +  * New_Data$se
 
 head(New_Data)
 
@@ -162,8 +163,8 @@ Plot_egg
 # ## Подбор "оптимальной" модели ##########################################
 
 # ## Пытаемся сократить модель
-mod_no_int <- update(mod, . ~ . -Age:Month)
-drop1(mod_no_int, test = 'Chi')
+mod_no_int <- update()
+drop1(, test = )
 
 
 # ## Уравнение сокращенной модели
@@ -175,7 +176,8 @@ sigma(mod_no_int)
 
 # ## Как рассчитать AIC в GLM?
 
-(p <- length(coef(mod_no_int)) + 1) # число параметров
+p <- length(coef(mod_no_int)) +  # число параметров
+
 logLik(mod_no_int)         # Логарифм правдоподобия
 
 as.numeric(-2 * logLik(mod_no_int) + 2 * p)

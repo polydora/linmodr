@@ -727,8 +727,8 @@ class: middle, center, inverse
 ## Открываем данные
 
 ```{r}
-library(Stat2Data)
-data(FishEggs)
+FishEggs <- read.table(file = "data/FishEggs.csv", sep = ";")
+
 ```
 
 Все ли правильно открылось?

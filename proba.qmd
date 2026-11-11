@@ -1,7 +1,7 @@
 ---
-title: "Дисперсионный анализ, часть 2"
+title: "Обобщенные линейные модели с нормальным распределением остатков"
 subtitle: "Линейные модели..."
-author: Валентина\ Домашкина, Вадим\ Хайтов, Анастасия\ Лянгузова, Наталья\ Арбузова, Юта\ Тамберг, Марина\ Варфоломеева
+author: Вадим\ Хайтов, Валентина\ Домашкина,  Анастасия\ Лянгузова, Наталья\ Арбузова, Юта\ Тамберг, Марина\ Варфоломеева
 institute: "Кафедра Зоологии беспозвоночных, СПбГУ"
 format:
   revealjs:
@@ -25,1144 +25,1217 @@ execute:
   cache: true
 ---
 
+
+```{r setup, include = FALSE, cache = FALSE, purl = FALSE, fig.showtext = TRUE}
+library(knitr)
+options(knitr.kable.NA = '')
+
+
+```
+
 ```{r libs, include=FALSE, warning=FALSE}
 library(tidyverse)
 library(cowplot)
-library(ggplot2)
 theme_set(theme_bw(base_size = 20))
-```
-
-```{r setup1, include = FALSE, cache = FALSE, purl = FALSE}
-options(knitr.kable.NA = '')
-```
-
-## Многофакторный дисперсионный анализ
-
-- Модель многофакторного дисперсионного анализа;
-- Взаимодействие факторов;
-- Несбалансированные данные, типы сумм квадратов;
-- Многофакторный дисперсионный анализ в R;
-- Дисперсионный анализ в матричном виде.
-
-### Вы сможете
-
-- Проводить многофакторный дисперсионный анализ и интерпретировать его результаты с учётом взаимодействия факторов.
-
-## One Way ANOVA Update: Линейные контрасты {.center .middle .inverse}
-
-## Открываем данные
-
-```{r data-eggs}
-library(DAAG)
-data("cuckoos")
-# Положим данные в переменную с коротким названием, чтобы меньше печатать
-eggs <- cuckoos
-head(eggs, 3)
-# Сократим названия переменных
-colnames(eggs) <- c('len', 'br', 'sp', 'id')
-```
-
-## Изменим названия уровней фактора, чтобы было легче понять о каких птицах речь
-
-```{r tidy=FALSE}
-levels(eggs$sp)
-levels(eggs$sp) <- c("ЛесЗав", "ЛугКон", "БелТряс", 
-                        "Малин", "ЛесКон", "Крапив")
-```
-
-```{r echo=FALSE, eval=FALSE}
 library(ggplot2)
-theme_set(theme_bw())
 ```
 
-## Как понять, какие именно группы различаются
+## Общая линейная модель --- удобный инструмент описания связей
 
-Дисперсионный анализ говорит нам только, есть ли влияние фактора, но не говорит, какие именно группы различаются.
+$y_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i} + \varepsilon_i$,
 
-Коэффициенты линейной модели в `summary(mod_treatment)` содержат лишь часть ответа --- сравнение средних значених всех групп со средним на базовом уровне.
+где $\varepsilon_i \sim N(0, \sigma)$.
 
-Если нас интересуют другие возможные попарные сравнения, нужно сделать пост хок тест.
+Предикторы в такой модели могут быть дискретными и непрерывными.
 
-## Есть два способа понять, какие именно группы различаются
+```{r glm, echo=FALSE, purl=FALSE}
+library(ggplot2)
+theme_set(theme_bw(base_size = 14))
+N <- 100
+set.seed(3829)
+x <- rnorm(N, 5, 3)
+dat <- data.frame(x = x, y = 5 + 0.8 * x + rnorm(N, 0, 1.7))
+ggplot(data = dat, aes(x = x, y = y)) + geom_point(colour = 'grey20', position = position_jitter(width = 0.05)) + geom_smooth(method = 'lm')
+```
+
+## Применимость общих линейных моделей ограничена
+
+$y_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i} + \varepsilon_i$,
+
+где $\varepsilon_i \sim N(0, \sigma)$.
+
+
+Т.е. на самом деле мы имеем ввиду, что переменная-отклик подчиняется нормальному распределению:
+
+$y_i \sim N(\mu_i, \sigma)$
+
+$E(y_i) = \mu_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}$
+
+
+
+Но если отклик подчиняется другому распределению, такие модели не годятся.
+
+Далее мы будем использовать именно этот способ записи модели (распределение отклика и линейный предиктор) мы будем использовать дальше.
+
+## Обобщенные линейные модели
+
+Обобщенные линейные модели (Generalized Linear Models, GLM, GLZ, GLIM) позволяют моделировать зависимости не только для нормально-распределенных величин, но и для других распределений.
+
+Не путайте обобщенные линейные модели с общими (General Linear Models, тоже сокращаются как GLM).
+
+# Зоопарк статистических распределений
+
+## Важнейшие распределения из семейства экспоненциальных
 
 ::: {.columns}
 ::: {.column width="50%"}
-::: {.center}
-**Post hoc** тесты
-:::
+Для непрерывных величин
 
-- Сравниваются все возможные группы.
-- Нет четких заранее сформулированных гипотез.
-- Делать можно, только если влияние соответствующего фактора оказалось значимым.
-
-Этот способ мы уже обсуждали на предыдущей лекции.
+- Нормальное распределение
+- Гамма распределение
+- Бета распределение (не будем рассматривать)
 :::
 ::: {.column width="50%"}
-::: {.center}
-**Линейные контрасты** (linear contrasts)
-:::
+Для дискретных величин
 
-- Гипотезы о межгрупповых различиях тестируются при помощи комбинаций из коэффициентов линейной модели.
-- Набор гипотез (и сравнений) **должен быть определен заранее**.
-- Делать можно вне зависимости от результатов дисперсионного анализа.
-
-Этот способ за рамками курса. Однако в некоторых отраслях это важно, мы обсудим лишь общую суть линейных контрастов.
+- Биномиальное распределение
+- Распределение Пуассона
+- Отрицательное биномиальное распределение
 :::
 :::
 
-## Применение линейных контрастов
-
-Когда нам нужны только какие-то определённые группы сравнения, а не все группы со всеми сразу. Модель сравнения записывается в форме модельной матрицы. Для начала разберёмся со сравнением двуx групп в модели, заданной параметризацией индикаторов.
-
-Допустим, мы хотим сравнить лугового конька с белой трясогузкой. Возьмём лугового конька в качестве референсной группы. В таком случае можно оценить контраст для неё как: $L_1 = 1 * b_{ЛугКон} = 1 * b_{ЛугКон} + 0 * b_{БелТряс}$. Данное значение будет идентично интерсепту в R.
-
-Контраст для второй группы сравнения можно записать как разница между средним значением в ней и референсным значением: $L_2 = 1 * b_{БелТряс} - 1 * b_{ЛугКон}$.
-
-Таким образом, получаем матрицу следующего вида:
-
-$$
-\begin{array}{cc} &
-\begin{vmatrix}
-1 & 0 \\
-1 & -1
-\end{vmatrix}\end{array}
-$$
-
-## Линейные контрасты
-
-Так же, как в случае записи модельной матрицы, такая полная запись несколько излишня, поскольку нас интересует только та часть матрицы, которая соответствует __сравнению__ между двумя группами. Т.е. БелТряс --- ЛугКон =
-
-$$
-\begin{array}{cc} &
-\begin{vmatrix}
-1 & -1
-\end{vmatrix}\end{array}
-$$
-
-__НО!__ В нашем датасете гораздо больше групп сравнения, и нас может интересовать большее количество групп. Например, хотим ещё сравнить размер лугового конька с лесной завирушкой.
-
-Уравнение для данного случая можно записать следующим образом:
- $$\textit{БелТряс} - \textit{ЛугКон} = 0$$
-
- $$\textit{ЛесЗав} - \textit{ЛугКон} = 0$$
-
-## Запись линейных контрастов текстом в R
-
-```{r linear-contr-text}
-mod_treatment <- lm(len ~ sp, data = eggs)
-
-library(multcomp)
-
-eggs_contrtext <- glht(mod_treatment,
-                    linfct = mcp(sp = c("БелТряс - ЛугКон = 0",
-                                        "ЛесЗав - ЛугКон = 0")))
-
-summary(eggs_contrtext)
-```
-
-## Запись матрицы контрастов с несколькими группами сравнения
-
-В нашиx данныx несколько видов птиц, сначала нужно записать уравнение с учётом каждого значения фактора.
-
-Уравнение для длины яиц в гнездах белой трясогузки:
-$$Y_{БелТряс} = 1 * b_0       + 0 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 1 * b_{БелТряс} + 0 * b_{ЛесКон} + 0 * b_{ЛесЗав}$$
-в гнездах лугового конька:
-$$Y_{ЛугКон}  = 1 * b_0       + 1 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 0 * b_{БелТряс} + 0 * b_{ЛесКон} + 0 * b_{ЛесЗав}$$
-в гнездах лесной завирушки:
-$$Y_{ЛесЗав}  = 1 * b_0       + 0 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 0 * b_{БелТряс} + 0 * b_{ЛесКон} + 1 * b_{ЛесЗав}$$
-
-Для сравнения групп так же вычитаем члены одного уравнения из другого.
-
-## Запись матрицы контрастов с несколькими группами сравнения
-
-Например, для сравнения белой трясогузки и лугового конька.
-
-$$БелТряс - ЛугКон = 0 * b_0 - 1 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 1 * b_{БелТряс} + 0 * b_{ЛесКон} + 0 * b_{ЛесЗав}$$
-
-Лесной завирушки и лугового конька:
-
-$$ЛесЗав - ЛугКон = 0 * b_0 - 1 * b_{ЛугКон} + 0 * b_{Малин} + \\ + 0 * b_{БелТряс} + 0 * b_{ЛесКон} + 1 * b_{ЛесЗав}$$
-
-## Запись матрицы контрастов в R
-
-В случае когда у нас, например, две группы сравнения: $\textit{БелТряс} - \textit{ЛугКон}$ и $\textit{ЛесЗав} - \textit{ЛугКон}$, матрица контрастов будет выглядеть на наших данных следующим образом.
-
-$$
-\begin{array}{cc} &
-\begin{vmatrix}
-0 & -1 & 0 & 1 & 0 & 0 \\
-0 & -1 & 0 & 0 & 0 & 1
-\end{vmatrix}\end{array}
-$$
-
-Код будет выглядеть следующим образом:
-```{r matrix-linear-contr}
-contr <- rbind("БелТряс - ЛугКон" = c(0, -1, 0, 1, 0, 0),
-               "ЛесЗав - ЛугКон" = c(0, -1, 0, 0, 0, 1))
-eggs_contrmat <- glht(mod_treatment, linfct = contr)
-summary(eggs_contrmat)
-```
-
-## One Way ANOVA Update: параметризация модели {.center .middle .inverse}
-
-## Для кодирования дискретных факторов в R используются две параметризации {.smaller}
+## Нормальное распределение
 
 ::: {.columns}
 ::: {.column width="50%"}
-**Параметризация индикаторных переменных**
+```{r norm-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
+library(ggplot2)
+mu1 <- 0
+mu2 <- 10
+sigma1 <- 3
+sigma2 <- 7
+y <- seq(-20, 40, length.out = 100)
+pi <- data.frame(y = rep(y, 4), pi = c(dnorm(y, mu1, sigma1), dnorm(y, mu1, sigma2), dnorm(y, mu2, sigma1), dnorm(y, mu2, sigma2)), mu = rep(c(mu1, mu2), each = 2*length(y)), sigma = rep(c(sigma1, sigma2, sigma1, sigma2), each = length(y)) )
 
-Так же известна как
+ggplot(pi, aes(x = y, y = pi)) + geom_line(stat = "identity", colour = 'grey20', size = 1) + facet_grid(mu~sigma, labeller = label_both) + 
+  ylab("f(y)")
+```
+:::
+::: {.column width="50%"}
+$$f(y)= \frac {1}{\sqrt{2 \pi \sigma^2}} \cdot e^{-\frac{1}{2 \sigma^2} (y - \mu)^2}$$
+Параметры:
 
-- dummy coding
-- treatment parametrisation
-- reference cell model
+- $\mu$ -- среднее;  
+- $\sigma$ -- стандартное отклонение.
 
 <br/>
 
-- В R обозначается **contr.treatment**.
+Свойства:
 
-С ней вы уже знакомы. 
+- $E(y)  = \mu$ -- мат. ожидание;
+- $var(y) = \sigma^2$ -- дисперсия;
+- $-\infty \le y \le +\infty$,  $y \in \mathbb R$ -- значения.
+:::
+:::
 
-Используется по умолчанию в R.
+## Гамма-распределение
+
+::: {.columns}
+::: {.column width="50%"}
+```{r gamma-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
+mu1 <- 3
+mu2 <- 1
+nu1 <- 0.1
+nu2 <- 2
+y <- seq(0, 10, length.out = 100)
+
+pi <- data.frame(
+  y = rep(y, 4), 
+  mu = rep(c(mu1, mu2), each = 2*length(y)), 
+  nu = rep(c(nu1, nu2, nu1, nu2), each = length(y)) )
+pi$pi = dgamma(pi$y, pi$nu, pi$mu)
+
+ggplot(pi, aes(x = y, y = pi)) + 
+  geom_line(stat = "identity", colour = 'grey20', size = 1) + 
+  facet_grid(mu ~ nu, labeller = label_both) + 
+  ylab("f(y)")
+```
 :::
 ::: {.column width="50%"}
-**Параметризация эффектов** <br/><br/>
+$f(y) = \frac{1}{\Gamma(\nu)}\cdot (\frac{\nu}{\mu})^{\nu} \cdot y^{\nu-1} \cdot e^{\cfrac{y \cdot \nu}{\mu}}$
+Параметры:
 
-Так же известна как
+- $\mu$ -- среднее;
+- $\nu$ -- определяет степень избыточности дисперсии.
 
-- effects coding
-- sum-to-zero parameterisation
+<br/>
 
-- В R обозначается **contr.sum**.
+Свойства:
 
-"Классическая" параметризация для дисперсионного анализа. 
-
-Нужна, если изначально предполагается, что факторы взаимодействуют и взаимодействия мы удалять не собираемся. В этой ситуации придется использовать III тип сумм квадратов.
-
-- SS(A | B, AB) для фактора A. 
-- SS(B | A, AB) для фактора B
-- SS(AB | B, A) для взаимодействия
+- $E(y) = \mu$ -- мат. ожидание;
+- $var(y) = \frac {\mu^2}{\nu}$ -- дисперсия;
+- $0 < y \le +\infty$, $y \in \mathbb R$ -- значения.
 :::
 :::
 
-## Параметризация индикаторных переменных {.center .middle .inverse}
+## Биномиальное распределение
 
-## Переменные-индикаторы
+::: {.columns}
+::: {.column width="50%"}
+```{r binomial-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
+mu1 <- 0.1
+mu2 <- 0.5
+N1 <- 10
+N2 <- 50
+y <-seq(0, 35, by = 1)
+dfr <- data.frame(y = rep(y, 4), p = c(dbinom(y, size = N1, prob = mu1), dbinom(y,  size = N2, prob = mu1), dbinom(y,  size = N1, prob = mu2), dbinom(y,  size = N2, prob = mu2)),  pi = rep(c(mu1, mu2), each = 2*length(y)), n = rep(c(N1, N2, N1, N2), each = length(y)))
 
-Фрагмент модельной матрицы:
+ggplot(dfr, aes(x = y, y = p)) + geom_bar(stat = "identity", fill = 'grey20') + facet_grid(n ~ pi,  labeller = label_both) + 
+  ylab("f(y)")
+```
+:::
+::: {.column width="50%"}
+$$f(y) = \frac{n!}{y! \cdot (n-y)!} \cdot \pi^y \cdot (1 - \pi)^{n-y}$$
 
-sp | spЛугКон <br/> $x_1$ | spМалин <br/> $x_2$ | spБелТряс <br/> $x_3$ | spЛесКон <br/> $x_4$ | spЛесЗав <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ---- 
-Крапив   |  |  |  |  | 
-ЛугКон   |  |  |  |  | 
-Малин    |  |  |  |  | 
-БелТряс  |  |  |  |  | 
-ЛесКон   |  |  |  |  | 
-ЛесЗав   |  |  |  |  | 
+Параметры:
 
-## Переменные-индикаторы
+- $n$ -- число объектов в испытании;
+- $\pi$ -- вероятность успеха в одном испытании.
 
-Фрагмент модельной матрицы:
+<br/>
 
-sp | spЛугКон <br/> $x_1$ | spМалин <br/> $x_2$ | spБелТряс <br/> $x_3$ | spЛесКон <br/> $x_4$ | spЛесЗав <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ---- 
-Крапив   | 0 | 0 | 0 | 0 | 0
-ЛугКон   | 1 | 0 | 0 | 0 | 0
-Малин    | 0 | 1 | 0 | 0 | 0
-БелТряс  | 0 | 0 | 1 | 0 | 0
-ЛесКон   | 0 | 0 | 0 | 1 | 0
-ЛесЗав   | 0 | 0 | 0 | 0 | 1
+Свойства:
 
-Переменных-индикаторов всегда на одну меньше, чем число уровней фактора.
+- $E(y)  = n \cdot \pi$ -- мат. ожидание;
+- $var(y) = n \cdot \pi \cdot (1-\pi)$ -- дисперсия;
+- $0 \le y \le +\infty$, $y \in \mathbb{N}$ -- значения.
+:::
+:::
 
-Уровень "`r levels(eggs$sp)[1]`" будет базовым: для его кодирования не нужна отдельная переменная.
+## Распределение Пуассона
 
-## Коэффициенты модели в параметризации индикаторов
+::: {.columns}
+::: {.column width="50%"}
+```{r poisson-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
+mu1 <- 1
+mu2 <- 5
+mu3 <- 10
+mu4 <- 20
+y <- seq(0, 35, by = 1)
+
+pi <- data.frame(
+  y = rep(y, 4),  
+  pi = c(dpois(y, mu1), dpois(y, mu2), dpois(y, mu3), dpois(y, mu4)), 
+  mu = rep(c(mu1, mu2, mu3, mu4), each = length(y))
+)
+
+ggplot(pi, aes(x = y, y = pi)) + 
+  geom_bar(stat = "identity", fill = 'grey20') + 
+  facet_wrap(~ mu, nrow = 2, labeller = label_both) + 
+  ylab("f(y)")
+```
+:::
+::: {.column width="50%"}
+$$f(y)= \frac{\mu^y \cdot e^{-\mu}}{y!}$$
+
+Параметр:
+
+- $\mu$ -- задает среднее и дисперсию.
+
+<br/>
+
+Свойства:
+
+- $E(y) = \mu$ --- мат. ожидание;
+- $var(y) = \mu$ --- дисперсия;
+- $0 \le y \le +\infty$, $y \in \mathbb{N}$ --- значения.
+:::
+:::
+
+## Отрицательное биномиальное распределение
+
+::: {.columns}
+::: {.column width="50%"}
+```{r neg-binomial-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
+mu1 <- 1
+mu2 <- 5
+k1 <- 0.1
+k2 <- 100
+y <- 0:30
+
+pi <- data.frame(
+  y = rep(y, 4), 
+  pi = c(dnbinom(y, size = k1, mu = mu1), 
+         dnbinom(y, size = k1, mu = mu2), 
+         dnbinom(y, size = k2, mu = mu1), 
+         dnbinom(y, size = k2, mu = mu2)), 
+  mu = rep(c(mu1, mu2), each = 2*length(y)), 
+  k = rep(c(k1, k2, k1, k2), each = length(y)) )
+
+ggplot(pi, aes(x = y, y = pi)) + 
+  geom_bar(stat = "identity", fill = 'grey20') + 
+  facet_grid(mu~k, labeller = label_both, scales = "free_y") + 
+  ylab("f(y)")
+```
+:::
+::: {.column width="50%"}
+$f(y) = \frac{\Gamma(y + k)}{\Gamma(k) \cdot \Gamma(y+1)} \cdot (\frac{k}{\mu + k})^k \cdot (1 - \frac{k}{\mu + k})^y$
+
+Параметры: 
+
+- $\mu$ -- среднее;  
+- $k$ -- определяет степень избыточности дисперсии.
+
+<br/>
+
+Свойства:
+
+- $E(y)  = \mu$ -- мат. ожидание;
+- $var(y) = \mu + \frac {\mu^2}{k}$ -- дисперсия;
+- $0 \le y \le +\infty$, $y \in \mathbb{N}$ -- значения.
+:::
+:::
+
+## Обобщенные линейные модели (Generalized Linear Models)
 
 ::: {.columns}
 ::: {.column width="60%"}
-Фрагмент модельной матрицы:
-<small>
+Обобщенные линейные модели (Nelder, Weddlerburn, 1972)
 
-sp | spЛугКон <br/> $x_1$ | spМалин <br/> $x_2$ | spБелТряс <br/> $x_3$ | spЛесКон <br/> $x_4$ | spЛесЗав <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ---- 
-Крапив   | 0 | 0 | 0 | 0 | 0
-ЛугКон   | 1 | 0 | 0 | 0 | 0
-Малин    | 0 | 1 | 0 | 0 | 0
-БелТряс  | 0 | 0 | 1 | 0 | 0
-ЛесКон   | 0 | 0 | 0 | 1 | 0
-ЛесЗав   | 0 | 0 | 0 | 0 | 1
-</small>
+- Позволяют моделировать не только величины, подчиняющиеся нормальному распределению, но и другим распределениям из семейства экспоненциальных.
+
+- Подбор коэффициентов делается методом максимального правдоподобия.
 :::
 ::: {.column width="40%"}
-```{r mod-trt, echo=FALSE, purl=FALSE}
-mod_treatment <- lm(len ~ sp, data = eggs)
-```
-
-```{r echo=FALSE, purl=FALSE, opts.label='fig.medium.taller'}
-gg_means <- ggplot(data = eggs, aes(x = sp, y = len, colour = sp)) + 
-  stat_summary(geom = "pointrange", fun.data = mean_cl_normal, size = 1) +
-  labs(x = "Вид хозяев", y = "Длина яиц кукушек, мм") + 
-  scale_colour_brewer(name = "Вид \nхозяев", palette = "Dark2") + 
-  theme(legend.position = "none")
-
-cft <- round(coef(mod_treatment), 2)
-ar <- arrow(angle = 15, length = unit(3, "mm"), ends = "both", type = "closed")
-art <-  arrow(angle = 15, length = unit(3, "mm"), ends = "last", type = "closed")
-gg_means +
-  geom_hline(yintercept = cft[1], linetype = "dashed") +
-  annotate("segment", x = 0.75, y = -Inf, 
-           xend = 0.75, yend = cft[1], arrow = art) +
-  annotate("text", x = 0.75, y = cft[1], label = "b[0]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 1.75, y = cft[1], 
-           xend = 1.75, yend = cft[1] + cft[2], arrow = ar) +
-  annotate("text", x = 1.75, y = cft[1] + cft[2], label = "b[1]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 2.75, y = cft[1], 
-           xend = 2.75, yend = cft[1] + cft[3], arrow = ar) +
-  annotate("text", x = 2.75, y = cft[1]+ cft[3], label = "b[2]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 3.75, y = cft[1], 
-           xend = 3.75, yend = cft[1] + cft[4], arrow = ar) +
-  annotate("text", x = 3.75, y = cft[1]+ cft[4], label = "b[3]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 4.75, y = cft[1], 
-           xend = 4.75, yend = cft[1] + cft[5], arrow = ar)+
-  annotate("text", x = 4.75, y = cft[1]+ cft[5], label = "b[4]", 
-           vjust = 0, parse = T, size = 7) +
-  annotate("segment", x = 5.75, y = cft[1], 
-           xend = 5.75, yend = cft[1] + cft[6], arrow = ar) +
-  annotate("text", x = 5.75, y = cft[1]+ cft[6], label = "b[5]", 
-           vjust = 0, parse = T, size = 7)
-```
+![](images/Nelder_Wedderburn.png) 
 :::
 :::
 
-$$y _{i} = b_0 + b_1 x _{1i} + \ldots + b_5 x_{5i} + e_{i}$$
+## Отличия обобщенной линейной модели от общей
 
-- $b_0$ --- это среднее значение отклика для базового уровня фактора.
-- $b_1, ..., b_5$ --- это отклонения от базового уровня для средних с другими уровнями фактора.
+На примере нормального распределения $\color{purple}{f(y_i|\theta) = N(\mu_i, \sigma)}$
 
-## Подбор модели в параметризации индикаторов
 
-```{r mod-trt, echo=TRUE, purl=TRUE}
+### Общая линейная модель состоит из двух компонентов
+
+$\color{purple}{y_i \sim f(y_i|\theta)}$
+
+$\color{teal}{E(y_i) = \mu_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+
+
+### Обобщенная линейная модель состоит из трех компонентов
+
+$\color{purple}{y_i \sim f(y_i|\theta)}$ 
+
+$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
+
+$\color{red}{g(\mu_i) = \eta_i}$
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+
+- Случайная часть --- $\color{purple}{y_i \sim f(y_i|\theta)}$ --- распределение из семейства экспоненциальных с параметрами $\theta$.  
+- Фиксированная часть: $\color{red}{g()}$ --- **функция связи**, трансформирует **мат. ожидание отклика** в **линейный предиктор** $\color{blue}{\eta_i}$ (обратная функция связи обозначается $\color{green}{g^{-1}()}$).
+
+## Функция связи
+
+::: {.content-box}
+$\color{purple}{y_i \sim f(y_i|\theta)}$ 
+
+$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
+
+$\color{red}{g(\mu_i) = \eta_i}$
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+:::
+
+<br/>
+
+**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
+
+## Функция связи: идентичность
+
+::: {.content-box}
+$\color{purple}{y_i \sim f(y_i|\theta)}$ 
+
+$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
+
+$\color{red}{g(\mu_i) = \eta_i}$
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+:::
+
+<br/>
+
+**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
+
+<br/>
+
+$\color{purple}{y_i \sim N(\mu_i, \sigma)}$ 
+
+$\color{green}{E(y_i) = \mu_i \phantom{\frac{e^{\beta_0}}{1 + e^{\beta_0}}}}$
+
+$\color{red}{\mu_i = \eta_i}$ **— идентичность**
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+
+## Функция связи: логарифм
+
+::: {.content-box}
+$\color{purple}{y_i \sim f(y_i|\theta)}$ 
+
+$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
+
+$\color{red}{g(\mu_i) = \eta_i}$
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+:::
+
+<br/>
+
+**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
+
+<br/>
+
+Например, $\color{purple}{y_i \sim Poisson(\mu_i)}$ 
+
+$\color{green}{E(y_i) = e^{\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}} \phantom{\frac{e^{\beta_0}}{1 + e^{\beta_0}}}}$
+
+$\color{red} {ln(\mu_i) = \eta_i}$ **— логарифм**
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+
+## Функция связи: логит
+
+::: {.content-box-grey}
+$\color{purple}{y_i \sim f(y_i|\theta)}$ 
+
+$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
+
+$\color{red}{g(\mu_i) = \eta_i}$
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+:::
+
+<br/>
+
+**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
+
+<br/>
+
+Например, $\color{purple}{y_i \sim Binomial(n = 1, \pi_i)}$ 
+
+$\color{green}{E(y_i) = \cfrac{e^{\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}}{1 + e^{\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}}}$
+
+$\color{red} {ln\big(\cfrac{\mu_i}{1 - \mu_i}\big) = \eta_i}$ **— логит**
+
+$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
+
+## Параметры обобщенных линейных моделей подбирают методом максимального правдоподобия
+
+```{r echo=FALSE}
+library(boot)
+data(catsM)
+cat <- catsM
+
+X <- cat$Bwt
+Y <- cat$Hwt
+df <- data.frame(X,Y)
+
+ggplot(cat, aes(Bwt, Hwt)) + geom_point() + geom_smooth(method = "lm")
 ```
+
+## Параметры обобщенных линейных моделей подбирают методом максимального правдоподобия
+
+```{r echo=FALSE}
+library(boot)
+data(catsM)
+cat <- catsM
+
+X <- cat$Bwt
+Y <- cat$Hwt
+df <- data.frame(X,Y)
+
+ggplot(cat, aes(Bwt, Hwt)) + geom_point() + geom_smooth(method = "lm") + geom_vline(aes(xintercept = Bwt), size = 0.1)
+```
+
+Для каждого значения предиктора (отложен по оси OX) есть некоторая выборка значений зависимой переменной.
+
+## Параметры обобщенных линейных моделей подбирают методом максимального правдоподобия
+
+Правдоподобие (likelihood) --- измеряет соответствие реально наблюдаемых данных тем, что можно получить из модели при определенных значениях параметров.
+
+::: {.columns}
+::: {.column width="45%"}
+```{r gg-norm-tunnel0, echo=FALSE, purl=FALSE}
+## Based on code by Arthur Charpentier:
+## http://freakonometrics.hypotheses.org/9593
+library(boot)
+data(catsM)
+cat <- catsM
+op <- par(mar = c(0, 0, 0, 0))
+n <- 2
+X <- cat$Bwt
+Y <- cat$Hwt
+df <- data.frame(X,Y)
+
+# regression
+reggig <- glm(Y ~ X, data = df, family = gaussian(link = "identity"))
+
+op <- par(mar = c(0, 0, 0, 0))
+# empty plot
+vX <- seq(min(X) - 0.1, max(X) + 0.1, length = n)
+vY <- seq(min(Y) - 10, max(Y) + 10, length = n)
+mat <- persp(x = vX, y = vY, z = matrix(0, n, n),
+             zlim = c(0, 0.1),
+             theta =  -30, phi = 20, expand = 0.1,
+             ticktype  = "detailed",  box = FALSE, border = "gray60")
+
+x <- seq(min(X), max(X), length = 501)
+
+# expected values
+C <- trans3d(x, predict(reggig, newdata = data.frame(X = x), type = "response"), rep(0, length(x)), mat)
+lines(C, lwd = 2)
+
+sdgig <- sqrt(summary(reggig)$dispersion)
+
+# 1SD
+y1 <- qnorm(.95, predict(reggig, newdata = data.frame(X = x), type = "response"),  sdgig)
+C <- trans3d(x, y1, rep(0, length(x)), mat)
+lines(C, lty = 2, col = "#d95f02")
+y2 <- qnorm(.05, predict(reggig, newdata = data.frame(X = x), type = "response"),  sdgig)
+C <- trans3d(x, y2, rep(0, length(x)), mat)
+lines(C, lty = 2, col = "#d95f02")
+
+# data points
+C <- trans3d(X, Y, rep(0, length(X)), mat)
+points(C, pch = 1, col = "black", cex = 0.4)
+
+# density curves
+n <- 6
+vX <- seq(min(X), max(X), length = n)
+
+mgig <- predict(reggig, newdata = data.frame(X = vX))
+
+sdgig <- sqrt(summary(reggig)$dispersion)
+
+for(j in n:1){
+  stp <- 251
+  x <- rep(vX[j], stp)
+  y <- seq(min(min(Y) - 10,
+               qnorm(.05,
+                     predict(reggig,
+                             newdata = data.frame(X = vX[j]),
+                             type = "response"),
+                     sdgig)),
+           max(Y) + 10,
+           length = stp)
+  z0 <- rep(0, stp)
+  z <- dnorm(y,  mgig[j],  sdgig)
+  C <- trans3d(c(x, x), c(y, rev(y)), c(z, z0), mat)
+  polygon(C, border = NA, col = "light blue", density = 40)
+  C <- trans3d(x, y, z0, mat)
+  lines(C, lty = 2, col = "grey60")
+  C <- trans3d(x, y, z, mat)
+  lines(C, col = "grey20")
+}
+par(op)
+```
+:::
+::: {.column width="55%"}
+Это произведение вероятностей данных:
+
+$$L(\theta| y_i) = \Pi^n _{i = 1}\color{purple}{f(y_i| \theta)}$$
+:::
+:::
+
+Параметры модели должны максимизировать значение логарифма правдоподобия (loglikelihood): 
+
+$$lnL(\theta| y_i) \longrightarrow \text{max}$$
+
+<small>
+Для тех, кому интересно разобраться вот [хорошая визуализация работы ML и тестов, основанных на LR](https://rpsychologist.com/likelihood/)
+</small>
+
+<small>
+Magnusson, K. (2020). Understanding Maximum Likelihood: An interactive visualization (Version 0.1.2) [Web App]. R Psychologist. https://rpsychologist.com/likelihood/
+</small>
+
+## ML-оценки для дисперсий -- смещенные
+
+Например, ML оценка обычной выборочной дисперсии будет смещенной:
+
+Хотелось бы:
+
+$\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n - p - 1}$,
+
+На самом деле при ML:
+
+$\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n}$,
+
+т.к. в знаменателе не $n - p - 1$, а $n$.
+
+Аналогичные проблемы возникают при ML оценках для случайных эффектов в линейных моделях.
+
+Это происходит потому, что в смешанной линейной модели
+
+$\mathbf{Y}  = \mathbf{X}  \pmb{\beta} + \mathbf{Z} \mathbf{b}  + \pmb{\varepsilon}$
+
+$\mathbf{Y} \sim N(\mathbf{X}  \pmb{\beta}, \mathbf{V})$, где $\mathbf{V} = \mathbf{ZDZ'} + \pmb{\Sigma}$
+
+т.е. одновременно приходится оценивать $\pmb{\beta}$ и $\mathbf{V}$.
+
+## Пример -- энергетическая ценность икры {.center .middle .inverse}
+
+## Пример -- энергетическая ценность икры
+
+Один из показателей, связанных с жизнеспособностью икры -- доля сухого вещества. Она пропорциональна количеству запасенной энергии. 
+
+::: {.columns}
+::: {.column width="60%"}
+Отличается ли энергетическая ценность икры большой озерной форели в сентябре и ноябре?
+:::
+::: {.column width="40%"}
+![](images/lake_trout.jpeg)
+:::
+:::
+
+<small>
+Данные: Lantry et al., 2008   
+Источник: пакет Stat2Data
+</small>
+
+## Открываем данные
 
 ```{r}
-round(coef(mod_treatment), 2)
+#| echo: true
+#| 
+FishEggs <- read.table(file = "data/FishEggs.csv", sep = ";")
 ```
 
-$$\widehat{len}_i = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} + 1.44 sp_{\text{Малин}\ i} + 1.77 sp_{\text{БелТряс}\ i} + \\ + 1.96 sp_{\text{ЛесКон}\ i} + 1.99 sp_{\text{ЛесЗав}\ i}$$
+Все ли правильно открылось?
 
-## Уравнение модели в параметризации индикаторов
-
-$$\widehat{len}_i = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} + 1.44 sp_{\text{Малин}\ i} + 1.77 sp_{\text{БелТряс}\ i} + \\ + 1.96 sp_{\text{ЛесКон}\ i} + 1.99 sp_{\text{ЛесЗав}\ i}$$
-
-Первый коэффициент --- средний размер яиц кукушек в гнездах крапивников (на базовом уровне):
-
-- $\widehat{len}_{\text{Крапив}} = `r cft[1]`$
-
-Другие коэффициенты --- разница размеров яиц кукушек в гнездах крапивников и других хозяев (отклонения от базового уровня).
-
-Если их прибавить к базовому уровню, то получим предсказанные значения для других видов:
-
-- $\widehat{len}_{\text{ЛугКон}\ i} = 21.12 + 1.17 sp_{\text{ЛугКон}\ i} = `r sum(cft[1:2])`$
-- $\widehat{len}_{\text{Малин}\ i} = 21.12 + 1.44 sp_{\text{Малин}\ i} = `r sum(cft[c(1, 3)])`$
-- $\widehat{len}_{\text{БелТряс}\ i} = 21.12 + 1.77 sp_{\text{БелТряс}\ i} = `r sum(cft[c(1, 4)])`$
-- $\widehat{len}_{\text{ЛесКон}\ i} = 21.12 + 1.96 sp_{\text{ЛесКон}\ i}= `r sum(cft[c(1, 5)])`$
-- $\widehat{len}_{\text{ЛесЗав}\ i} = 21.12 + 1.99 sp_{\text{ЛесЗав}\ i} = `r sum(cft[c(1, 6)])`$
-
-## Параметризация эффектов {.center .middle .inverse}
-
-## Другая точка отсчета
-
-В качестве референса можно использовать не базовый уровень, а общее среднее значение.
-
-```{r mod-sum1, echo=FALSE, purl=FALSE}
-mod_sum <- lm(len ~ sp, data = eggs, contrasts = list(sp = contr.sum))
+```{r}
+#| echo: true
+#| 
+str(FishEggs)
 ```
 
-```{r echo=FALSE, purl=FALSE, opts.label='fig.wider.taller'}
-cfs <- round(coef(mod_sum), 2)
+Нет ли пропущенных значений?
 
-gg_means +
-  coord_cartesian(xlim = c(0.25, 6)) +
-  geom_hline(yintercept = cfs[1], linetype = "dashed") 
+```{r}
+#| echo: true
+
+colSums(is.na(FishEggs))
 ```
 
-**Эффект фактора** - Это величина, которая складывается из отклонений средних значений в каждой градации фактора от общей средней. Чем больше сумма квадратов отклонений, тем эффект фактора.
+## Меняем порядок уровней факторов
 
-## Переменные-эффекты
+Уровни факторов в исходных данных:
 
-Фрагмент модельной матрицы:
+```{r}
+#| echo: true
+FishEggs$Month <- factor(FishEggs$Month)
 
-sp | sp1 <br/> $x_1$ | sp2 <br/> $x_2$ | sp3 <br/> $x_3$ | sp4 <br/> $x_4$ | sp5 <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ----
-Крапив   |  |   |   |   |  
-ЛугКон   |  |   |   |   |  
-Малин    |  |   |   |   |  
-БелТряс  |  |   |   |   |  
-ЛесКон   |  |   |   |   |  
-ЛесЗав   |  |   |   |   | 
+levels(FishEggs$Month)
+```
 
-Переменных-эффектов всегда на одну меньше, чем число уровней фактора.
+Делаем базовым уровнем сентябрь.
 
-Переменные закодированы при помощи -1, 0 и 1 (сумма кодов для возможных состояний одной переменной должна быть равна нулю).
+```{r}
+#| echo: true
+FishEggs$Month <- relevel(FishEggs$Month, ref = 'Sep')
+```
 
-Для последней группы все переменные-эффекты будут равны $-1$.
+Теперь уровни в хронологическом порядке:
 
-## Переменные-эффекты
+```{r}
+#| echo: true
+levels(FishEggs$Month)
+```
 
-Фрагмент модельной матрицы:
+## Объемы выборок
 
-sp | sp1 <br/> $x_1$ | sp2 <br/> $x_2$ | sp3 <br/> $x_3$ | sp4 <br/> $x_4$ | sp5 <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ----
-Крапив   |  1 |  0  |  0 |  0 |  0
-ЛугКон   |  0 |  1  |  0 |  0 |  0
-Малин    |  0 |  0  |  1 |  0 |  0
-БелТряс  |  0 |  0  |  0 |  1 |  0
-ЛесКон   |  0 |  0  |  0 |  0 |  1
-ЛесЗав   | -1 | -1  | -1 | -1 | -1
+```{r}
+#| echo: true
+table(FishEggs$Month)
+```
 
-Переменных-эффектов всегда на одну меньше, чем число уровней фактора.
+## Ищем выбросы
 
-Переменные закодированы при помощи -1, 0 и 1 (сумма кодов для возможных состояний одной переменной равна нулю).
+```{r dotplots}
+#| echo: true
+library(cowplot)
 
-Для последней группы все переменные-эффекты будут равны $-1$.
+gg_dot <- ggplot(FishEggs, aes(y = 1:nrow(FishEggs))) + geom_point()
+plot_grid(gg_dot + aes(x = Age), 
+          gg_dot + aes(x = PctDM), nrow = 1)
+```
 
-## Коэффициенты модели в параметризации эффектов {.smaller}
+## Модель для описания питательной ценности икры
+
+### GLM с нормальным распределением отклика
+
+$y_i \sim N(\mu_i, \sigma)$  
+$E(y_i) = \mu_i$  
+$\mu_i = \eta_i$ --- функция связи "идентичность" (identity)  
+$\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}$
+
+
+## Модель зависимости в нашем примере
+
+Как зависит питательная ценность икры от месяца вылова рыбы (сентябрь или ноябрь) с учетом ковариаты (возраста рыбы) и их взаимодействия.
+
+$PctDM_i \sim N(\mu_i, \sigma)$  
+$E(PctDM_i) = \mu_i$  
+$\mu_i = \eta_i$  
+$\eta_i = \beta_0 + \beta_1 Age_{i} + \beta_2 Month_{Nov\,i} + \beta_{3} Age_{i} Month_{Nov\,i}$
+
+- $PctDM_i$ --- содержание сухого вещества в икре;
+- $Age_{i}$ --- возраст рыбы;
+- $Month_{Nov\,i}$ -- переменная-индикатор для уровня $Month_{Nov\,i} = 1$.
+
+## Подбираем модель
+
+```{r}
+#| echo: true
+#| 
+mod <- glm(PctDM ~ Age * Month, data = FishEggs)
+mod
+```
+
+
+```{r}
+#| echo: true
+
+# Чтобы записать модель, нужна еще сигма.
+sigma(mod)
+```
+
+
+
+$PctDM_i \sim N(\mu_i, 1.24)$  
+$E(PctDM_i) = \mu_i$  
+$\mu_i = \eta_i$  
+$\eta_i = 38.12 - 0.24 Age_{i} + 1.28 Month_{Nov\,i} + 0.02 Age_{i} Month_{Nov\,i}$
+
+## Диагностика модели {.center .middle .inverse}
+
+## Разновидности остатков в GLM
 
 ::: {.columns}
 ::: {.column width="50%"}
-Фрагмент модельной матрицы:
+### Остатки в масштабе отклика (response residuals)
 
-sp | sp1 <br/> $x_1$ | sp2 <br/> $x_2$ | sp3 <br/> $x_3$ | sp4 <br/> $x_4$ | sp5 <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ----
-Крапив   |  1 |  0  |  0 |  0 |  0
-ЛугКон   |  0 |  1  |  0 |  0 |  0
-Малин    |  0 |  0  |  1 |  0 |  0
-БелТряс  |  0 |  0  |  0 |  1 |  0
-ЛесКон   |  0 |  0  |  0 |  0 |  1
-ЛесЗав   | -1 | -1  | -1 | -1 | -1
+$$e_i = y_i - E(y_i)$$
+
+- Это разница между наблюдаемым и предсказанным значениями.
+- Аналог (и синоним) "сырых" остатков в простой линейной регрессии.
 :::
 ::: {.column width="50%"}
-```{r mod-sum, echo=FALSE, purl=FALSE}
-mod_sum <- lm(len ~ sp, data = eggs, contrasts = list(sp = contr.sum))
-```
+### Пирсоновские остатки (Pearson's residuals)
 
-```{r echo=FALSE, purl=FALSE, opts.label='fig.wider.taller'}
-cfs <- round(coef(mod_sum), 2)
+$$r_{p\,i} = \frac{y_i - E(y_i)}{\sqrt{var(y_i)}}$$
 
-gg_means +
-  coord_cartesian(xlim = c(0.25, 6)) +
-  geom_hline(yintercept = cfs[1], linetype = "dashed") +
-  annotate("text", x = 0.25, y = cfs[1], label = "b[0]", 
-           vjust = - 0.1, hjust = 1.35, parse = T, size = 7) +
-  annotate("segment", x = 0.25, y = -Inf, 
-           xend = 0.25, yend = cfs[1], arrow = art) +
-  annotate("segment", x = 0.75, y = cfs[1], 
-           xend = 0.75, yend = cfs[1] + cfs[2], arrow = ar) +
-  annotate("text", x = 0.75, y = cfs[1], label = "b[1]", 
-           vjust = - 0.1, hjust = 1.35, parse = T, size = 7) +
-  annotate("segment", x = 1.75, y = cfs[1], 
-           xend = 1.75, yend = cfs[1] + cfs[3], arrow = ar) +
-  annotate("text", x = 1.75, y = cfs[1], label = "b[2]", 
-           vjust = - 0.1, hjust = 1.35, parse = T, size = 7) +
-  annotate("segment", x = 2.75, y = cfs[1], 
-           xend = 2.75, yend = cfs[1] + cfs[4], arrow = ar) +
-  annotate("text", x = 2.75, y = cfs[1], label = "b[3]", 
-           vjust = - 0.1, hjust = 1.35, parse = T, size = 7) +
-  annotate("segment", x = 3.75, y = cfs[1], 
-           xend = 3.75, yend = cfs[1] + cfs[5], arrow = ar) +
-  annotate("text", x = 3.75, y = cfs[1], label = "b[4]", 
-           vjust = - 0.1, hjust = 1.35, parse = T, size = 7) +
-  annotate("segment", x = 4.75, y = cfs[1], 
-           xend = 4.75, yend = cfs[1] + cfs[6], arrow = ar)+
-  annotate("text", x = 4.75, y = cfs[1], label = "b[5]", 
-           vjust = - 0.1, hjust = 1.35, parse = T, size = 7) +
-  annotate("segment", x = 5.75, y = cfs[1], 
-           xend = 5.75, yend = cfs[1] - sum(cfs[-1]), arrow = ar) +
-  annotate("text", x = 5.75, y = cfs[1], 
-           label = "-b[2]-b[3]-b[4]-b[5]", 
-           vjust = 1.25, hjust = 0.75, parse = T, size = 7)
-```
+- Это обычные остатки, деленные на стандартную ошибку предсказанного значения. 
+- Аналог стандартизованных остатков в простой линейной регрессии.
 :::
 :::
-
-$$y _{i} = b_0 + b_1 x _{1i} + \ldots + b_5 x_{5i} + e_{i}$$
-
-- $b_0$ --- это общее среднее значение отклика.
-- $b_1, ..., b_5$ --- это отклонения от общего среднего для средних с другими уровнями фактора, кроме последнего.
-- для последнего уровня фактора отклонения от общего среднего --- это коэффициенты $b_1, ..., b_5$, взятые с противоположным знаком.
-
-## Подбор модели в параметризации эффектов
-
-```{r mod-sum, echo=TRUE, purl=TRUE}
-```
-
-```{r purl=TRUE}
-round(coef(mod_sum), 2)
-```
-
-Коэффициенты моделей в разных параметризациях будут разными, но предсказания будут совершенно одинаковыми.
-
-$$\widehat{len}_i = 22.51 -1.39 sp_{1\ i} -0.22 sp_{2\ i} + 0.05 sp_{3\ i} + 0.38 sp_{4\ i} + 0.57 sp_{5\ i}$$
-
-## Уравнение модели в параметризации эффектов
-
-$$\widehat{len}_i = 22.51 -1.39 sp_{1\ i} -0.22 sp_{2\ i} + 0.05 sp_{3\ i} + 0.38 sp_{4\ i} + 0.57 sp_{5\ i}$$
-
-Первый коэффициент --- средний размер яиц кукушек по всем данным:
-
-- $\overline{len} = `r cfs[1]`$
-
-Другие коэффициенты — отличие размеров яиц в гнездах хозяев от общего среднего. Для всех уровней, кроме последнего — без изменения знака:
-
-- $\widehat{len}_{\text{Крапив}\ i} = 22.51 -1.39 sp_{1\ i} = `r sum(cfs[1:2])`$
-- $\widehat{len}_{\text{ЛугКон}\ i} = 22.51 -0.22 sp_{2\ i} = `r sum(cfs[c(1, 3)])`$
-- $\widehat{len}_{\text{Малин}\ i} = 22.51 + 0.05 sp_{3\ i} = `r sum(cfs[c(1, 4)])`$
-- $\widehat{len}_{\text{БелТряс}\ i} = 22.51 + 0.38 sp_{4\ i} = `r sum(cfs[c(1, 5)])`$
-- $\widehat{len}_{\text{ЛесКон}\ i} = 22.51 + 0.57 sp_{5\ i} = `r sum(cfs[c(1, 6)])`$
-
-Для последнего уровня фактора — с противоположным знаком,  
-т.к. для него все переменные-эффекты $sp_1,..., sp_5 = -1$:
-
-- $\widehat{len}_{\text{ЛесЗав}\ i} = 22.51 -1.39 sp_{1\ i} -0.22 sp_{2\ i} + 0.05 sp_{3\ i} + 0.38 sp_{4\ i} + 0.57 sp_{5\ i} = `r cfs[1] + sum(-cfs[2:6])`$
-
-## Данные, связанные с двумя факторами {.center .middle .inverse}
-
-## Пример: Пингвины 
-
-Зависит ли вес пингвина от его видовой принадлежности и пола?
 
 ::: {.columns}
 ::: {.column width="50%"}
-Измерения особей пингвинов из рода *Pygoscelis* лежат в датасете `penguins` в пакете `palmerpenguins`. Исходные данные были опубликованы в работе Gorman et al., 2014. Помимо веса и пола животных, датасет содержит информацию об острове, на котором пингвины проживали, и измерения клюва. В анализ мы возьмём только следующие переменные:
+```{r}
+#| echo: true
 
-Зависимая переменная:
-
-- `body_mass_g` --- вес в граммах.
-
-Факторы:
-
-- `species` --- вид пингвина;
-- `sex` --- пол пингвина.
+resid(mod, type = 'response')[1:4]
+```
 :::
 ::: {.column width="50%"}
-![](images/penguin.jpg)
+```{r}
+#| echo: true
 
-<small>On [Pinterest](https://www.pinterest.com/pin/explore-the-natural-world--153544668520878653/)</small>
+resid(mod, type = 'pearson')[1:4]
+```
 :::
 :::
 
-## Знакомимся с данными
+Для GLM с нормальным распределением отклика оба типа остатков одинаковы.
+
+## Условия применимости GLM с нормальным распределением отклика
+
+- Случайность и независимость наблюдений внутри групп.
+- Нормальное распределение остатков.
+- Гомогенность дисперсий остатков.
+- Отсутствие коллинеарности предикторов.
+
+## Проверка на коллинеарность
+
+Мы и так знаем, что в параметризации индикаторных переменных взаимодействие будет коллинеарно со своими составляющими (и это нормально, см. прошлую лекцию).
+
+Важно проверить, будут ли коллинеарны другие предикторы.
 
 ```{r}
-# Открываем данные
-library(palmerpenguins)
-peng <- as.data.frame(penguins[, c(1, 6, 7)]) 
-str(peng)
-# Переименовываем столбцы
-colnames(peng) <- c('sp', 'mass', 'sex')
+#| echo: true
+
+library(car)
+vif(update(mod, . ~ . - Age:Month))
 ```
 
-## Пропущенные значения
+Коллинеарности нет.
+
+## Данные для анализа остатков
 
 ```{r}
-colSums(is.na(peng))
-```
+#| echo: true
 
-Удаляем пропущенные значения (каких-то пингвинов не измерили :()
-
-```{r}
-pengs <- peng[complete.cases(peng), ]
-colSums(is.na(pengs))
-```
-
-## Объемы выборок в группах
-
-```{r}
-table(pengs$sp, pengs$sex)
-```
-
-- Группы разного размера
-
-## Посмотрим на график
-
-```{r gg-mean-ci}
-library(ggplot2)
-theme_set(theme_bw(base_size = 14))
-gg_mass <- ggplot(data = pengs, aes(x = sp, y = mass, colour = sex)) + 
-  stat_summary(geom = 'pointrange', fun.data = mean_cl_normal)
-gg_mass
-```
-
-## Многофакторный дисперсионный анализ {.center .middle .inverse}
-
-## Многофакторный дисперсионный анализ
-
-Дисперсионный анализ становится многофакторным, если в модели используется несколько дискретных факторов.
-
-Дизайн такого рода анализа может быть разным. 
-
-::: {.columns}
-::: {.column width="50%"}
-### Вложенные (иерархичные) модели
-
-В модели внутри какого-то фактора расположены дополнительные предикторы. Особенность таких моделей в том, что категории вложенных факторов в пределах уровней основного фактора различны. 
-
-**Пример:** измерения обилия беспозвоночных животных на литорали в разные годы и месяцы.
-:::
-::: {.column width="50%"}
-### Факторные модели
-
-Дизайн эксперимента предполагает, что разные факторы пересекаются друг с другом. Таким образом возможны любые комбинации между разными уровнями разных факторов. 
-
-Наш случай! Факторов может быть несколько, мы будем разбираться на примере двухфакторного дисперсионного анализа.
-:::
-:::
-
-## Какие бывают факторы
-
-Свойства | Фиксированные факторы | Случайные факторы
----- | ---- | ----
-Уровни фактора | фиксированные, заранее определенные и потенциально воспроизводимые уровни | случайная выборка из всех возможных уровней
-Используются для тестирования гипотез | о средних значениях отклика между уровнями фактора <br/> $H _{0}: \mu _1 = \mu _2 = \ldots = \mu _i = \mu$ | о дисперсии отклика между уровнями фактора <br/> $H _{0}: \sigma_{rand.fact.}^2 = 0$
-Выводы можно экстраполировать | только на уровни из анализа | на все возможные уровни
-
-Мы сейчас работает с фиксированными факторами. В случае, когда в модели присутстуют и фиксированные, и случайные факторы --- используют смешанные линейные модели, о которых мы поговорим позже.
-
-## Взаимодействие факторов
-
-При добавлении новых факторов в модель появляется **взаимодействие** факторов.
-
-Взаимодействие факторов возникает, когда у одного фактора эффект разный в зависимости от уровней другого.
-
-Такое взаимодействие необходимо учитывать, в т.ч. при интепретации результатов.
-
-## Что такое взаимодействие дискретных предикторов
-
-Взаимодействие факторов --- когда эффект фактора B разный в зависимости от уровней фактора A и наоборот.
-
-На каких рисунках есть взаимодействие факторов? (<small>Logan, 2010, fig.12.2</small>)
-
-::: {.columns}
-::: {.column width="50%"}
-![interaction](images/interaction.png)
-:::
-::: {.column width="50%"}
-- b, c - нет взаимодействия (эффект фактора B одинаковый для групп по фактору A, линии для разных групп по фактору B на графиках расположены параллельно)
-- a, d - есть взаимодействие (эффект фактора B разный для групп по фактору A, на графиках линии для разных групп по фактору B расположены под наклоном).
-:::
-:::
-
-## Влияют ли главные эффекты и взаимодействие?
-
-![interaction_a](images/interaction1a.png)
-
-<small>Quinn, Keough, 2002, fig.9.3</small>
-
-- взаимодействие не значимо, и не мешает интерпретировать эффекты факторов.
-  - фактор А влияет
-  - фактор В влияет
-
-## Влияют ли главные эффекты и взаимодействие?
-
-![interaction_b](images/interaction1b.png)
-
-<small>Quinn, Keough, 2002, fig.9.3</small>
-
-- взаимодействие значимо и мешает интерпретировать влияние факторов отдельно:
-    - для В2 зависимая переменная возрастает с изменением уровня А
-    - для В1 зависимая переменная возрастает только на А2, но не различается на А1 и А3
-- __если смотреть на главные эффекты, можно сделать неправильные выводы (о факторе А)__:
-    - фактор А влияет, группы А2 и А3 не отличаются
-    - фактор В влияет, в группе В2 зависимая переменная больше, чем в В1
-
-## Влияют ли главные эффекты и взаимодействие?
-
-![interaction_c](images/interaction1c.png)
-
-<small>Quinn, Keough, 2002, fig.9.3</small>
-
-- взаимодействие значимо и мешает интерпретировать влияние факторов отдельно:
-    - на уровне A2 меняется порядок различий уровней фактора B
-- __если смотреть на главные эффекты, можно сделать неправильные выводы__:
-    - факторы А и В не влияют
-
-## Взаимодействие факторов может маскировать главные эффекты
-
-::: {.columns}
-::: {.column width="50%"}
-![interaction](images/interaction1.png)
-
-<small>Quinn, Keough, 2002, fig.9.3</small>
-:::
-::: {.column width="50%"}
-Если есть значимое взаимодействие, то 
-- главные эффекты обсуждать  не имеет смысла  
-- пост хок тесты проводятся только для взаимодействия
-:::
-:::
-
-## Двухфакторный дисперсионный анализ в параметризации индикаторов {.center .middle .inverse}
-
-## Переменные-индикаторы
-
-В нашем примере отклик --- вес пингвина, и два дискретных фактора: 
-
-- `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
-
-```{r}
-contr.treatment(levels(pengs$sex))
-```
-
--  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
-
-```{r}
-contr.treatment(levels(pengs$sp))
-```
-
-## Переменные-индикаторы
-
-Дополнительные переменные понадобятся, чтобы учесть взаимодействие факторов.
-
-Фрагмент модельной матрицы:
-
-sex <br/>  | sp <br/>  | sexsp <br/>  $x_1$  | spChinstrap <br/> $x_2$ | spGentoo <br/> $x_3$| sexmale:Chinstrap <br/> $x_4$ | sexmale:Gentoo <br/> $x_5$
----- | ---- | ---- | ---- | ---- | ---- | ---- 
-female   |  Adelie   | 0 | 0 | 0 | 0 | 0          
-male  |  Adelie   | 1 | 0 | 0 | 0 | 0
-female   |  Chinstrap   | 0 | 1 | 0 | 0 | 0          
-male  |  Chinstrap   | 1 | 1 | 0 | 1 | 0
-female   |  Gentoo   | 0 | 0 | 1 | 0 | 0          
-male  |  Gentoo   | 1 | 0 | 1 | 0 | 1
-
-## Уравнение линейной модели в параметризации индикаторов
-
-$$y _{i} = b _0 + b _1 x _{1i} + b _2 x _{2i} + b _3 x _{3i} + b _4 x _{4i} + b _5 x _{5i}+ e _{i}$$
-
-- $b_0$ --- значение отклика для самок вида Adelie (на базовом уровне обоих факторов).
-
-Отклонения относительно базового уровня обоих факторов:
-
-- $b_1$ --- для самцов Adelie;
-- $b_2$ и $b_3$ --- для самок Chinstrap и Gentoo, соответственно;
-- $b_4$ и $b_5$ --- для самцов Chinstrap и Gentoo, соответственно.
-
-## Подбираем линейную модель в параметризации индикаторов (contr.treatment)
-
-```{r purl=FALSE}
-mod_treat_pengs <- lm(mass ~ sex * sp, data = pengs) 
-mod_treat_pengs
-```
-
-Общее уравнение модели
-
-$$\begin{aligned}\widehat{mass} _{i} = 3369 + 675 sex_{male,i} + 158 sp_{Chinstrap\,i} + 1311 sp_{Gentoo\,i} + \\ - 263 sex_{male}\ sp_{Chinstrap\,i} + 130 sex_{male}\ sp_{Gentoo\,i} \end{aligned}$$
-
-## Двухфакторный дисперсионный анализ в параметризации эффектов {.center .middle .inverse}
-
-## Переменные-эффекты
-
-В нашем примере отклик --- вес пингвина, и два дискретных фактора: 
-
-- `sex` --- 2 уровня (базовый `female`), для кодирования нужна одна переменная.
-
-```{r}
-contr.sum(levels(pengs$sex))
-```
-
--  `sp` --- 3 уровня (базовый `Adelie`), для кодирования нужно две переменных.
-
-```{r}
-contr.sum(levels(pengs$sp))
-```
-
-## Переменные-эффекты
-
-Дополнительные переменные понадобятся, чтобы учесть взаимодействие факторов.
-
-Фрагмент модельной матрицы:
-
-sex <br/>  | sp <br/>  | sex1 <br/> $x_1$ | sp1 <br/> $x_2$ | sp2 <br/> $x_3$ | sex1:sp1 <br/> $x_4$ | sex1:sp2 <br/> $x_5$
-:---- | :----: | :----: | :----: | :----: | :----: | :----:
-female   |  Adelie   |  1 |  1 |  0 |  1 |  0           
-male  |  Adelie   | -1 |  1 |  0 | -1 |  0 
-female   |  Chinstrap   |  1 |  0 |  1 |  0 |  1           
-male  |  Chinstrap   | -1 |  0 |  1 |  0 | -1 
-female   |  Gentoo   |  1 | -1 | -1 | 1 | 1           
-male  |  Gentoo   | -1 | -1 | -1 |  -1 |  -1 
-
-## Уравнение линейной модели в параметризации эффектов
-
-$$y _{i} = b _0 + b _1 x _{1i} + b _2 x _{2i} + b _3 x _{3i} + b _4 x _{4i} + b _5 x _{5i}+ e _{i}$$
-
-- $b_0$ --- среднее значение отклика по всем данным.
-
-Отклонения от общего среднего значений отклика:
-
-- $b_1$ --- в зависимости от пола (фактор `sex`);
-- $b_2$ и $b_3$ --- в зависимости от вида (фактор `sp`);
-- $b_4$ и $b_5$ --- для пола в зависимости от вида  (взаимодействие).
-
-## Подбираем линейную модель в параметризации эффектов (contr.sum)
-
-```{r purl=FALSE}
-mod_sum_pengs <- lm(mass ~ sex * sp, data = pengs, 
-                    contrasts = list(sp = 'contr.sum', sex = 'contr.sum')) 
-coef(mod_sum_pengs)
-```
-
-Общее уравнение модели
-
-$$\begin{aligned}\widehat{mass}_i = 417.85 - 315.25 sex_{female\,i} - 467.68 sp_{Adelie\,i} - 440.76 sp_{Chinstrap\,i} - \\ - 22.08 sex_{female\,i}sp_{Adelie\,i} + 109.37 sex_{female\,i}sp_{Chinstrap\,i} \end{aligned}$$
-
-## Диагностика линейной модели {.center .middle .inverse}
-
-## Диагностика линейной модели 
-
-Нужно проверить, выполняются ли условия применимости <br/> для модели в нужной параметризации
-
-Данные для анализа остатков
-
-```{r R.options=list(width = 60)}
-mod_treat_peng_diag <- fortify(mod_treat_pengs) # функция из пакета ggplot2
-head(mod_treat_peng_diag, 2)
+mod_diag <- fortify(mod) # функция из пакета ggplot2
+head(mod_diag)
 ```
 
 ## График расстояния Кука
 
 ```{r cooksd}
-ggplot(mod_treat_peng_diag, aes(x = 1:nrow(mod_treat_peng_diag), y = .cooksd)) +
-  geom_bar(stat = 'identity')
+#| echo: true
+
+ggplot(mod_diag, aes(x = 1:nrow(mod_diag), y = .cooksd)) +
+  geom_bar(stat = 'identity') +
+  geom_hline(yintercept = 1, linetype = 2)
 ```
 
-- Влиятельных наблюдений нет.
+Влиятельных наблюдений нет.
 
 ## График остатков от предсказанных значений
 
 ```{r resid-fitted}
-gg_resid <- ggplot(data = mod_treat_peng_diag, aes(x = .fitted, y = .stdresid)) +
+#| echo: true
+
+gg_resid <- ggplot(data = mod_diag, aes(x = .fitted, y = .stdresid)) +
   geom_point() + geom_hline(yintercept = 0)
 gg_resid
 ```
 
-- Влиятельных наблюдений нет (все в пределах 3 SD). 
-
-- Несколько наблюдений не совсем обычны (2SD < .stdresid < 3SD), но поскольку расстояние Кука для них небольшое, это нестрашно.
+Влиятельных наблюдений нет.  
+Мало данных в области с небольшими предсказанными значениями.
 
 ## График зависимости остатков от предикторов в модели
 
-```{r resid-predictors}
-ggplot(data = mod_treat_peng_diag, aes(x = sex, y = .stdresid, colour = sp)) +
+```{r eval=FALSE, purl=TRUE}
+#| echo: true
+
+ggplot(data = mod_diag, aes(x = Age, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0)
+ggplot(data = mod_diag, aes(x = Month, y = .stdresid)) +
   geom_boxplot() + geom_hline(yintercept = 0)
 ```
 
-Удобнее смотреть на боксплот. Нет гетерогенности дисперсии, всё хорошо!
-
-## Квантильный график остатков
-
-```{r qq-plot, echo=TRUE, purl=TRUE, eval=FALSE}
-library(car)
-qqPlot(mod_treat_pengs, id = FALSE) # функция из пакета car
+```{r resid-predictors, echo=FALSE, purl=FALSE}
+library(cowplot)
+plot_grid(
+ggplot(data = mod_diag, aes(x = Age, y = .stdresid)) +
+  geom_point() + geom_hline(yintercept = 0),
+ggplot(data = mod_diag, aes(x = Month, y = .stdresid)) +
+  geom_boxplot() + geom_hline(yintercept = 0),
+nrow = 1, align = 'h')
 ```
 
-```{r qq-plot1, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=3.5}
-library(car)
-op <- par(mar = c(3, 3, 0.5, 0.5))
-qqPlot(mod_treat_pengs, id = FALSE)
-par(op)
-```
+Нет выраженной гетероскедастичности.
 
-- Отклонений от нормального распределения нет.
+## Тестирование значимости коэффициентов {.center .middle .inverse}
 
-## Несбалансированные данные, типы сумм квадратов {.center .middle .inverse}
+## Тест Вальда для коэффициентов GLM
 
-## Несбалансированные данные - когда численности в группах по факторам различаются
+$H_0: \beta_k = 0$  
+$H_A: \beta_k \ne 0$
 
-::: {.columns}
-::: {.column width="50%"}
-Например так,
+$$\frac{b_k - \beta_k} {SE_{b_k}} = \frac{b_k} {SE_{b_k}} \sim N(0, 1)$$
 
-|    | A1 | A2 | A3 |
-|----|----|----|----|
-| B1 |  5 | 5  |  5 |
-| B2 |  5 | 4  |  5 |
-:::
-::: {.column width="50%"}
-или так,
-
-|    | A1 | A2 | A3 |
-|----|----|----|----|
-| B1 |  3 | 8  |  4 |
-| B2 |  4 | 7  |  4 |
-:::
-:::
-
-## Проблемы из-за несбалансированности данных
-
-- Оценки средних в разных группах с разным уровнем точности (Underwood 1997)
-
-- ANOVA менее устойчив к отклонениям от условий применимости (особенно от __гомогенности__ дисперсий) при разных размерах групп (Quinn Keough 2002, section 8.3)
-
-- Проблемы с расчетом мощности. Если $\sigma _{\epsilon}^2 > 0$ и размеры выборок разные, то $MS _{x} \over MS _{e}$ не следует F-распределению (Searle et al. 1992).  
+- $b_k$ --- оценка коэффициента GLM.
 
 <br/>
 
-Старайтесь _планировать_ группы равной численности!
-Но если не получилось --- не страшно:
-- Для фиксированных эффектов неравные размеры --- проблема при нарушении условий применимости только, если значения доверительной вероятности _p_ близки к выбранному критическому уровню значимости $\alpha$.
+Хорошо работает только на больших выборках (Agresty, 2007).
 
-## Суммы квадратов в многофакторном дисперсионном анализе со взаимодействием
+Если приходится оценивать $\sigma$, то
+$\frac{b_k} {SE_{b_k}} \sim t_{(df = n - p)}$
 
-### Если данные сбалансированы, то ...
+- $n$ --- объем выборки.
+- $p$ --- число параметров модели.
 
-- взаимодействие и эффекты факторов независимы (в любой параметризации),
-- все суммы квадратов и соответствующие тесты можно посчитать в одном анализе,
-- результат не зависит от порядка включения факторов в модель.
+## В `summary()` записаны результаты теста Вальда
 
-### Если данные несбалансированы, то ...
-
-- суммы квадратов для факторов не равны общей сумме квадратов,
-- для вычислений используется регрессионный подход (несколько сравнений вложенных моделей),
-- результат анализа может зависеть от порядка включения факторов в модель. 
-
-## Порядок тестирования значимости предикторов в дисперсионном анализе
-
-"Типы сумм квадратов" | I тип | II тип | III тип
----- | ---- | ---- | ---- 
-Название | Последовательный | Без учета взаимодействий высоких порядков | Иерархический
-
-## Порядок тестирования значимости предикторов в дисперсионном анализе
+С увеличением возраста рыбы на год процент сухого вещества в икре снижается на 0.24% (тест Вальда, $t_{df = 31} = -2.62$, p = 0.013). Это происходит одинаково в сентябре и ноябре. Энергетическая ценность икры в сентябре и ноябре не различается.
 
 <small>
 
-"Типы сумм квадратов" | I тип | II тип | III тип
----- | ---- | ---- | ---- 
-Название | Последовательный | Без учета взаимодействий высоких порядков | Иерархический
-Порядок расчета SS | SS(A) <br/> SS(B&#124;A)  <br/> SS(AB&#124;B, A) | SS(A&#124;B) <br/> SS(B&#124;A) <br/> SS(AB&#124;B, A) | SS(A&#124;B, AB) <br/> SS(B&#124;A, AB) <br/> SS(AB&#124;B, A)
-Величина эффекта зависит от выборки в группе | Да | Да | Нет
-Результат зависит от порядка включения факторов в модель | Да | Нет | Нет
-Параметризация | Любая | Любая | Только параметризация эффектов
-Команда R | aov(), anova() | Anova() (пакет car) |  Anova() (пакет car)
-
-__Осторожно!__ Тестируя предикторы в разном порядке, вы тестируете разные гипотезы!
+```{r}
+summary(mod)
+```
 
 </small>
 
-<!-- ## Если несбалансированные данные, выберите подходящий порядок тестирования гипотез -->
+## Анализ девиансы {.center .middle .inverse}
 
-<!-- - SSe и SSab всегда рассчитываются одинаково, вне зависимости от порядка тестирования гипотез и от сбалансированности данных -->
-<!-- - SSa, SSb --- есть три способа расчета (суммы квадратов I, II и III типа, терминология пришла из SAS) в зависимости от порядка тестирования значимости факторов -->
+## Шкала для сравнения моделей
 
-### Если данные сбалансированы, то ...
+**Насыщенная модель** --- каждое уникальное наблюдение (сочетание значений предикторов) описывается одним из $n$ параметров.
 
-- При использовании любого типа сумм квадратов результаты расчетов будут одинаковы.
+$lnL_{saturated} = 0$  
+$df_{saturated} = n - p_{saturated} = n - n = 0$
 
-### Если данные несбалансированы, то ...
+**Предложенная модель** --- модель, подобранная в данном анализе $\hat y_i = \beta_0 + \beta_1x_{1i} + \ldots + \beta_{p - 1} x_{p - 1\,i}$.
 
-- Результаты зависят от выбранного типа сумм квадратов (т.к. он определяет, какие гипотезы при этом тестируются).
+$lnL_{model} \ne 0$   
+$df_{model} = n - p_{model}$
 
-<br/>
+**Нулевая модель** -- все наблюдения описываются одним параметром (средним) $\hat y_i = \beta_0$.
 
-Для несбалансированных данных рекомендуют __суммы квадратов III типа__ если есть взаимодействие факторов (Maxwell & Delaney 1990, Milliken, Johnson 1984, Searle 1993, Yandell 1997, Glantz, Slinker 2000). 
+$lnL_{null} \ne 0$   
+$df_{null} = n - p_{null} = n - 1$
 
-<!-- Но при этом __нарушается принцип маргинальности__, поэтому некоторые статистики не любят тех, кто так делает... -->
+## Девианса
 
-## Многофакторный дисперсионный анализ в R {.center .middle .inverse}
+Это мера различия правдоподобий двух моделей (оценка разницы логарифмов правдоподобий).
 
-## Дисперсионный анализ со II типом сумм квадратов
+**Остаточная девианса**
 
-При таком способе, сначала тестируется взаимодействие, затем отдельные факторы в модели без взаимодействия.
+$d_{residual} = 2(lnL_{saturated} - lnL_{model}) = -2 lnL_{model}$
+
+**Нулевая девианса**
+
+$d_{null} = 2(lnL_{saturated} - lnL_{null}) = -2 lnL_{null}$
+
+Сравнение нулевой и остаточной девианс позволяет судить о статистической значимости модели в целом (при помощи теста отношения правдоподобий).
+
+$d_{null} - d_{residual} = - 2(lnL_{null} - lnL_{model}) = 2(lnL_{model} - lnL_{null})$
+
+## Тест отношения правдоподобий (Likelihood Ratio Test) 
+
+Тест отношения правдоподобий (Wilks, 1938) используется для сравнения правдоподобий
+
+$$LRT = 2ln\Big(\frac{L_{M_1}}{L_{M_2}}\Big) = 2(lnL_{M_1} - lnL_{M_2})$$
+
+- $M_1$ и $M_2$ --- вложенные модели ( $M_1$ --- более полная, $M_2$ --- уменьшенная),
+- $L_{M_1}$, $L_{M_2}$ --- правдоподобия,
+- $lnL_{M_1}$, $lnL_{M_2}$ --- логарифмы правдоподобий.
+
+Сравниваются __вложенные модели, подобранные методом максимального правдоподобия__.
+
+Разница логарифмов правдоподобий $LRT$ имеет распределение, которое можно аппроксимировать распределением $\chi^2$ с числом степеней свободы $df = df_{M_2} - df_{M_1}$.
+
+## LRT используется для сравнения моделей
+
+Для тестирования значимости модели целиком:
+
+$$LRT = 2ln\Big(\frac{L_{model}}{L_{null}}\Big) = 2(lnL_{model} - lnL_{null}) = d_{null} - d_{residual}$$
+
+$df = df_{null} - df_{model} = (n - 1) - (n - p_{model}) = p_{model} - 1$
+
+Для тестирования значимости предикторов:
+
+$$LRT = 2ln\Big(\frac{L_{model}}{L_{reduced}}\Big) = 2(lnL_{model} - lnL_{reduced})$$
+
+$df = df_{reduced} - df_{model} = (n - p_{reduced}) - (n - p_{model}) = p_{model} - p_{reduced}$
+
+## Тестируем значимость модели целиком при помощи LRT
+
+```{r eval=FALSE}
+#| echo: true
+?anova.glm
+```
 
 ```{r}
-mod_treat_pengs <- lm(mass ~ sp * sex, data = pengs) 
-library(car)
-Anova(mod_treat_pengs, type = "II")
+#| echo: true
+null_model <- glm(PctDM ~ 1, data = FishEggs)
+anova(null_model, mod, test = 'Chi')
 ```
 
-## Дисперсионный анализ c III типом сумм квадратов
+## Тестируем значимость предикторов при помощи LRT
 
-Опишем процедуру на тот случай, если вдруг вам понадобится воспроизвести в R дисперсионный анализ с III типом сумм квадратов.
+Используем II тип тестов ("II тип сумм квадратов"):
 
-При этом способе вначале тестируют взаимодействие, когда все другие факторы есть в модели. Затем тестируют факторы, когда все другие факторы и взаимодействие есть в модели.
-
-__Внимание: при использовании III типа сумм квадратов, нужно обязательно указывать тип контрастов для факторов__  
-(`contrasts=list(фактор_1 = contr.sum, фактор_2=contr.sum)`).
-
-```{r tidy.opts=list(width.cutoff=40)}
-mod_sum_pengs <- lm(mass ~ sp * sex, data = pengs, 
-                    contrasts = list(sp = 'contr.sum', sex = 'contr.sum')) 
-Anova(mod_sum_pengs, type = "III")
-```
-
-## Почему для расчета III типа сумм квадратов обязательно использовать параметризацию эффектов ?
-
-Для расчета III типа сумм квадратов нужно иметь возможность удалить из модели влияние предиктора, и одновременно оставить в ней взаимодействие (т.е. предикторы и взаимодействие были независимы друг от друга).
-
-__В параметризации индикаторных переменных предикторы и взаимодействие коллинеарны__, т.е. суммы квадратов III типа будут рассчитаны неправильно.
+**1. Тестируем значимость взаимодействия**
 
 ```{r}
-vif(mod_treat_pengs)
+#| echo: true
+drop1(mod, test = 'Chi')
 ```
 
-__В параметризации эффектов переменных предикторы и взаимодействие независимы__, значит получатся верные суммы квадратов III типа.
+## 2. Тестируем значимость предикторов, когда взаимодействие удалено
 
 ```{r}
-vif(mod_sum_pengs)
+#| echo: true
+mod_no_int <- update(mod, . ~ . -Age:Month)
+drop1(mod_no_int, test = 'Chi')
 ```
 
-## Пост хок тест для взаимодействия факторов {.center .middle .inverse}
+## Запись результатов LRT-тестов значимости предикторов
 
-## Пост хок тесты в многофакторном дисперсионном анализе
+Содержание сухого вещества в икре зависит от возраста рыбы и месяца (p < 0.01, тест отношения правдоподобий, табл. 1). Характер зависимости энергетической ценности икры от возраста одинаков в сентябре и ноябре.
 
-- Поскольку взаимодействие достоверно, факторы отдельно можно не тестировать. Проведем пост хок тест по взаимодействию, чтобы выяснить, какие именно группы различаются
+```{r echo=FALSE}
+tmp <- drop1(mod, test = 'Chi')
+tmp1 <- drop1(mod_no_int, test = 'Chi')
 
-- Если бы взаимодействие было недостоверно, мы бы провели пост хок тест по тем факторам, влияние которых было бы достоверно. Как? См. предыдущую презентацию.
+dfr <- data.frame(
+  `Предиктор` = c('-', 'Возраст:Месяц', 'Возраст', 'Месяц'),
+  df = c(tmp$Df, tmp1$Df[2:3]),
+  D = round(c(tmp$Deviance, tmp1$Deviance[2:3]), 3),
+  p = c(tmp$`Pr(>Chi)`, tmp1$`Pr(>Chi)`[2:3]))
 
-## Пост хок тест для взаимодействия факторов
+dfr$p <- format.pval(dfr$p, digits = 2, eps = 0.01)
+dfr$p[1] <- NA
+kable(dfr, format = 'html', caption = 'Анализ девиансы для модели зависимости энергетической ценности икры от возраста рыбы, месяца и их взаимодействия. Тесты II типа.' )
+```
 
-Пост хок тест для взаимодействия факторов делается легче всего "обходным путём":
+## Описание качества подгонки GLM {.center .middle .inverse}
 
-1. Создаем переменную-взаимодействие; 
-2. Подбираем модель без свободного члена;
-3. Делаем пост хок тест для этой модели.
+## Доля объясненной девиансы
+
+**Остаточная девианса**
+
+$d_{residual} = 2(lnL_{saturated} - lnL_{model}) = -2 lnL_{model}$
+
+**Нулевая девианса**
+
+$d_{null} = 2(lnL_{saturated} - lnL_{null}) = -2 lnL_{null}$
+
+**Доля объясненной девиансы**
+
+$\cfrac{d_{null} - d_{residual}}{d_{null}}$
+
+
+Доля объясненной девиансы — аналог $R^2$, одна из характеристик качества подгонки модели.
+
+
+
+Долю объясненной девиансы легко вычислить
+
+```{r}
+#| echo: true
+(mod$null.deviance - mod$deviance) / mod$null.deviance
+```
+
+Модель объясняет `r round((mod$null.deviance - mod$deviance) / mod$null.deviance *100, 1)`% девиансы.
+
+## График предсказаний модели {.center .middle .inverse}
 
 ## Задание 1
 
-Дополните этот код, чтобы посчитать пост хок тест Тьюки по взаимодействию факторов
+Постройте график предсказаний модели.
 
-```{r eval=FALSE, purl=TRUE}
-# Создаем переменную-взаимодействие
-pengs$sp_sex <- interaction(pengs$sex, pengs$sp)
-# Подбираем линейную модель без свободного члена
-fit_inter <- lm()
-# Делаем пост хок тест для этой модели
-library()
-dat_tukey <- glht(, linfct = mcp( = ))
-summary(dat_tukey)
-```
-
-## Решение
-
-```{r phoc, eval=FALSE, purl=FALSE}
-# Создаем переменную-взаимодействие
-pengs$sex_sp <- interaction(pengs$sex, pengs$sp)
-# Подбираем линейную модель без свободного члена
-fit_inter <- lm(mass ~ sex_sp - 1, data = pengs)
-# Делаем пост хок тест для этой модели
-library(multcomp)
-dat_tukey <- glht(fit_inter, linfct = mcp(sex_sp = 'Tukey'))
-summary(dat_tukey)
-```
-
-## Результаты пост хок теста в виде таблицы почти нечитабельны
-
-```{r phoc, echo=FALSE, purl=FALSE}
-```
-
-## Данные для графика при помощи `predict()`
-
-У нас два дискретных фактора, поэтому вначале используем `expand.grid()`
+## Данные для графика предсказаний
 
 ```{r}
-MyData_pengs <- expand.grid(sex = levels(pengs$sex),
-                            sp = levels(pengs$sp))
-MyData_pengs <- data.frame(
-  MyData_pengs,
-  predict(mod_treat_pengs, newdata = MyData_pengs, interval = 'confidence')
-)
-
-MyData_pengs
+#| echo: true
+library(dplyr)
+New_Data <- FishEggs %>% 
+  group_by(Month) %>%
+  do(data.frame(Age = seq(min(.$Age), max(.$Age), length.out = 100)))
+head(New_Data)
 ```
 
-## Задание 2
+## Предсказания при помощи `predict()`
 
-Создайте MyData вручную для модели в обычной параметризации:
+```{r}
+#| echo: true
+Predictions <- predict(mod, newdata = New_Data, se.fit = TRUE)
+New_Data$fit <- Predictions$fit  # Предсказанные значения
+New_Data$se <- Predictions$se.fit # Стандартные ошибки
+t_crit <- qt(0.975, df = nrow(FishEggs) - length(coef(mod)) - 1) # t для дов. инт.
+New_Data$lwr <- New_Data$fit - t_crit * New_Data$se
+New_Data$upr <- New_Data$fit + t_crit * New_Data$se
 
-- предсказанные значения 
-- стандартные ошибки
-- верхнюю и нижнюю границы доверительных интервалов
-
-```{r eval=FALSE}
-MyData_pengs <- expand.grid(sex = levels(pengs$sex),
-                            sp = levels(pengs$sp))
-X_pengs <- model.matrix(~ , data = )
-betas_pengs <- coef()
-MyData_pengs$fit <- 
-MyData_pengs$se <- (( %*% vcov() %*% t()))
-MyData_pengs$lwr <- MyData_pengs$ - 2 * MyData_pengs$
-MyData_pengs$upr <- MyData_pengs$ + 2 * MyData_pengs$
-MyData_pengs
+head(New_Data)
 ```
 
-```{r task-mydata, purl=FALSE, echo=FALSE}
-MyData_pengs <- expand.grid(sex = levels(pengs$sex),
-                            sp = levels(pengs$sp))
-X_pengs <- model.matrix(~ sp * sex, data = MyData_pengs)
-betas_pengs <- coef(mod_treat_pengs)
-MyData_pengs$fit <- X_pengs %*% betas_pengs
-MyData_pengs$se <- sqrt(diag(X_pengs %*% vcov(mod_treat_pengs) %*% t(X_pengs)))
-MyData_pengs$lwr <- MyData_pengs$fit - 2 * MyData_pengs$se
-MyData_pengs$upr <- MyData_pengs$fit + 2 * MyData_pengs$se
-MyData_pengs
+## Данные для графика вручную
+
+```{r}
+#| echo: true
+X <- model.matrix(~ Age * Month, data = New_Data) # Модельная матрица
+betas <- coef(mod) # Коэффициенты
+New_Data$fit <- X %*% betas  # Предсказанные значения
+New_Data$se <- sqrt(diag(X %*% vcov(mod) %*% t(X))) # Стандартные ошибки
+t_crit <- qt(0.975, df = nrow(FishEggs) - length(coef(mod)) - 1) # t для дов. инт.
+New_Data$lwr <- New_Data$fit - t_crit * New_Data$se
+New_Data$upr <- New_Data$fit + t_crit * New_Data$se
+
+head(New_Data)
 ```
 
-## Решение:
+## График предсказаний модели
 
-```{r task-mydata, purl=FALSE, echo=TRUE}
+```{r predictions}
+#| echo: true
+Plot_egg <- ggplot(New_Data, aes(x = Age, y = fit)) +
+  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr, group = Month)) +
+  geom_line(aes(colour = Month), size = 1) +
+  geom_point(data = FishEggs, aes(x = Age, y = PctDM, colour = Month))
+Plot_egg
 ```
 
-## Задание 3
+## Отбор моделей для GLM (model selection) {.center .middle .inverse}
 
-Постройте график результатов, на котором будут изображены предсказанные средние значения в зависимости от вида и пола.
+## Подбор "оптимальной" модели
 
-```{r tidy.opts=list(width.cutoff=60), eval=FALSE, purl=TRUE}
-pos <- position_dodge(width = 0.2)
-gg_linep <- ggplot(data = , aes()) + 
-  geom_  (position = pos) +
-  geom_  (aes(group = ), position = pos) +
-  geom_  (position = pos, width = 0.1) 
-gg_linep
+В подобранной модели можно протестировать значимость влияния предикторов и их взаимодействия и на этом остановиться.
+
+Или можно упростить модель, аналогично тому, как мы это делали со множественной линейной регрессией, но использовав LRT вместо F-теста.
+
+## Пытаемся сократить модель
+
+```{r}
+#| echo: true
+
+mod_no_int <- update(mod, . ~ . -Age:Month)
+drop1(mod_no_int, test = 'Chi')
 ```
 
-```{r gg-lineplot, tidy.opts=list(width.cutoff=60), eval=TRUE, purl=FALSE, echo=FALSE}
-pos <- position_dodge(width = 0.2)
-gg_linep <- ggplot(data = MyData_pengs, aes(x = sp, y = fit, 
-                                      ymin = lwr,  ymax = upr, colour = sex)) + 
-  geom_point(position = pos) +
-  geom_line(aes(group = sex), position = pos) +
-  geom_errorbar(position = pos, width = 0.1) 
-gg_linep
+Если мы решили "сократить" модель, то теперь придется описать модель `mod_no_int`.
+
+## Уравнение сокращенной модели
+
+Как зависит питательная ценность икры от месяца вылова рыбы (сентябрь или ноябрь) с учетом ковариаты (возраста рыбы) и их взаимодействия.
+
+```{r}
+#| echo: true
+
+mod_no_int
 ```
 
-## График результатов: Линии с точками
+::: {.columns}
+::: {.column width="50%"}
+```{r}
+#| echo: true
 
-```{r gg-lineplot, tidy.opts=list(width.cutoff=60), eval=TRUE, purl=FALSE, echo=TRUE}
+#Чтобы записать модель,нужна сигма
+
+sigma(mod_no_int)
+```
+:::
+::: {.column width="50%"}
+$PctDM_i \sim N(\mu_i, 1.22)$  
+$E(PctDM_i) = \mu_i$  
+$\mu_i = \eta_i$  
+$\eta_i = 38.0 - 0.23 Age_{i} + 1.52 Month_{Nov\,i}$
+
+- $PctDM_i$ --- содержание сухого вещества в икре;
+- $Age_{i}$ --- возраст рыбы.
+:::
+:::
+
+## Информационные критерии --- еще один способ сравнения или упрощения моделей {.center .middle .inverse}
+
+## Информационный критерий Акаике (Akaike Information Criterion, AIC)
+
+::: {.columns}
+::: {.column width="66%"}
+$$AIC = -2 logLik + 2p$$
+
+- $logLik$ --- логарифм правдоподобия для модели;
+- $2p$ --- штраф за введение в модель $p$ параметров, т.е. за "сложность" модели
+
+AIC --- это мера потери информации, которая происходит, если реальность описывать этой моделью (Akaike 1974)
+
+AIC --- относительная мера качества модели. Т.е. не бывает какого-то "хорошего" AIC. Значения AIC можно интерпретировать только в сравнении с AIC для других моделей: чем меньше AIC --- тем лучше модель.
+
+__Важно!__   Информационные критерии можно использовать для сравнения __даже для невложенных моделей__. Но модели должны быть __подобраны с помощью ML__ и __на одинаковых данных__!
+:::
+::: {.column width="33%"}
+
+
+![](images/Akaike.png){width=80%}
+:::
+:::
+
+## Некоторые другие информационные критерии
+
+|Критерий | Название  | Формула|
+|------ | ------ | ------|
+|AIC | Информационный критерий Акаике | $AIC = -2 logLik + 2p$|
+|BIC | Байесовский информационный критерий | $BIC = -2 logLik + p \cdot ln(n)$|
+|AICc | Информационный критерий Акаике с коррекцией для малых выборок (малых относительно числа параметров: $n/p < 40$, Burnham, Anderson, 2004) | $AIC_c = -2 logLik + 2p + \frac{2p(p + 1)}{n - p - 1}$|
+
+- $logLik$ --- логарифм правдоподобия для модели;
+- $p$ --- число параметров;
+- $n$ --- число наблюдений.
+
+## Как рассчитать AIC в GLM?
+
+$$AIC = -2 logLik + 2p$$
+__В GLM с нормальным распределением отклика число параметров --- это число коэффициентов + 1__, т.к. появился дополнительный параметр $\sigma$
+
+$PctDM_i \sim N(\mu_i, 1.22)$  
+$E(PctDM_i) = \mu_i$  
+$\mu_i = \eta_i$  
+$\eta_i = 38.0 - 0.23 Age_{i} + 1.52 Month_{Nov\,i}$
+
+```{r}
+#| echo: true
+
+(p <- length(coef(mod_no_int)) + 1) # число параметров
+logLik(mod_no_int)         # Логарифм правдоподобия
+
+as.numeric(-2 * logLik(mod_no_int) + 2 * p)
+
+AIC(mod_no_int) # Есть готовая функция
 ```
 
-## Приводим график в приличный вид
+## AIC удобно использовать для сравнения моделей, даже невложенных
 
-```{r tidy.opts=list(width.cutoff=60)}
-gg_final <- gg_linep + labs(x = 'Вид', y = 'Масса тела, г') + 
-  scale_colour_manual(name = '', labels = c('Самки', 'Самцы'),
-                      values = c('#FF0091', '#0077FF'))
-gg_final
+Пусть у нас есть несколько моделей:
+
+```{r}
+#| echo: true
+
+mod <-        glm(formula = PctDM ~ Age * Month, data = FishEggs)
+mod_no_int <- glm(formula = PctDM ~ Age + Month, data = FishEggs)
+mod_age <-    glm(formula = PctDM ~ Age,         data = FishEggs)
+mod_month <-  glm(formula = PctDM ~ Month,       data = FishEggs)
 ```
 
-## Take home messages
+```{r}
+#| echo: true
 
-- Многофакторный дисперсионный анализ позволяет оценить взаимодействие факторов. Если оно значимо, то лучше воздержаться от интерпретации их индивидуальных эффектов
+AIC(mod, mod_no_int, mod_age, mod_month)
+```
 
-- Если численности групп равны, получаются одинаковые результаты вне зависимости от порядка тестирования значимости факторов
+Судя по AIC, лучшая модель `mod_no_int`. 
 
-- В случае, если численности групп неравны (несбалансированные данные), есть несколько способов тестирования значимости факторов (I, II, III типы сумм квадратов)
+Если значения AIC различаются всего на 1-2 единицу --- такими различиями можно пренебречь и выбрать более простую модель (`mod_no_int`).
 
-## Дополнительные ресурсы
+## Проверка валидности финальной модели
 
-- Quinn, Keough, 2002, pp. 221-250
-- Logan, 2010, pp. 313-359
-- Sokal, Rohlf, 1995, pp. 321-362
-- Zar, 2010, pp. 246-266
+```{r}
+#| echo: true
+#| 
+library(DHARMa)
+simulateResiduals(mod_no_int, plot = T)
+```
+
+## `summary` финальной модели
+
+```{r}
+#| echo: true
+summary(mod_no_int)
+```
+
+
+## Take-home messages
+
+- Обобщенные линейные модели (Generalized Linear Models, GLM) позволяют моделировать зависимости для откликов с распределением из семейства экспоненциальных
+
+- Для тестирования предикторов в GLM используются:
+    - Тесты Вальда для коэффициентов (плохо на малых выборках).
+    - Тесты отношения правдоподобий вложенных моделей (более точно).
+- Доля объясненной девиансы оценивает качество подгонки GLM
+
+- Сравнивая модели можно отбраковать переменные, включение которых в модель не улучшает ее
+- __Метод сравнения моделей нужно выбрать заранее, еще до анализа__
+
+## Что почитать
+
++ **Zuur, A.F. and Ieno, E.N., 2016. A protocol for conducting and presenting results of regression-type analyses. Methods in Ecology and Evolution, 7(6), pp.636-645.**
++ Кабаков Р.И. R в действии. Анализ и визуализация данных на языке R. М.: ДМК Пресс, 2014
++ **Zuur, A., Ieno, E.N. and Smith, G.M., 2007. Analyzing ecological data. Springer Science & Business Media.**
++ Quinn G.P., Keough M.J. 2002. Experimental design and data analysis for biologists
++ Logan M. 2010. Biostatistical Design and Analysis Using R. A Practical Guide

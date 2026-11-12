@@ -199,7 +199,7 @@ install.packages("emmeans")
 
 ```
 
-- Презентация: [11_two-way_anova_and_interactions_2026.html](11_two-way_anova_and_interactions_2026.html)
+- Презентация: [11_ML_two_anova_2026.html](11_ML_two_anova_2026.html)
 
 - Код:
     + [11_two-way_anova_and_interactions_code.R](11_two-way_anova_and_interactions_code.R)

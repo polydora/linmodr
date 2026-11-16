@@ -22,7 +22,7 @@ format:
     css:
       - assets/my_styles_2026.css
 execute:
-  cache: true
+  cache: false
 ---
 
 ```{r setup}
@@ -1685,6 +1685,24 @@ overdisp_fun(M_nb)
 
 :::
 
+
+## То же самое в DHARMa
+
+```{r dharma-code_2}
+#| eval: false
+library(DHARMa)
+sim_res <- simulateResiduals(fittedModel = M_nb, plot = TRUE)
+
+# Тест на дисперсию
+testDispersion(sim_res)
+```
+
+```{r}
+#| ref.label: dharma-code_2
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+```
 
 ## Графики остатков от переменных, которые есть в модели
 

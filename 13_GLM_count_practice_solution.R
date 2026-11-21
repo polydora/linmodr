@@ -45,7 +45,7 @@ overdisp_fun <- function(model) {
   c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)        # Вывод результатов
 }
 
-
+library(AER)
 # Открываем данные ##################################
 data(Affairs, package = "AER")
 
@@ -167,6 +167,10 @@ mean(Affairs$affairs == 0)
 mod_nb <- glm.nb(frml, data = Affairs)
 
 # Проверка условий применимости
+
+library(DHARMa)
+
+simulateResiduals(mod_nb, plot = T)
 
 overdisp_fun(mod_nb)
 # Недодисперсия! Это не так страшно.
@@ -495,8 +499,9 @@ gg_m6_3
 # - Можно построить графики скорректированных средних. М.б. они будут информативнее для изображения каких-то аспектов.
 # - Можно сделать пост хок тест, чтобы сравнить скорректированные средние.
 
+library(mgcv)
 
+mod_mgcv <- gam(affairs ~ gender + children + s(yearsmarried, k = 3) + s(religiousness, k = 3) + s(education, k = 5), data = Affairs, family = "nb")
 
-
-
-
+library(DHARMa)
+simulateResiduals(mod_mgcv, plot = T)

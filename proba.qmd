@@ -22,7 +22,7 @@ format:
     css:
       - assets/my_styles_2026.css
 execute:
-  cache: true
+  cache: false
   echo: true
 ---
 

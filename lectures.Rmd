@@ -256,15 +256,15 @@ install.packages(c("ISwR", "cowplot"))
 install.packages("catdata")
 ```
 
-<!-- - Презентация: [14_GLM_binary.pdf](14_GLM_binary.pdf) -->
+<!-- - Презентация: [14_GLM_binary_2026.html](14_GLM_binary_2026.html) -->
 
-<!-- - Код: [14_GLM_binary_code.R](14_GLM_binary_code.R)
-- Задание: [14_GLM_binary_training.R](14_GLM_binary_training.R)
+- Код: [14_GLM_binary_code_2026.R](14_GLM_binary_code_2026.R)
+- Задание: [14_GLM_binary_training_2026.R](14_GLM_binary_training_2026.R)
 
 - Данные:
     + [aster_mussel.csv](data/aster_mussel.csv)
     + [polis.csv](data/polis.csv)
-    + [ICU.csv](data/ICU.csv) -->
+    + [ICU.csv](data/ICU.csv) 
 
 
 ## Смешанные модели (GLMM)

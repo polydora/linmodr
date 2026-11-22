@@ -1,5 +1,5 @@
 ---
-title: "Обобщенные линейные модели с нормальным распределением остатков"
+title: "Обобщенные линейные модели с бинарным откликом"
 subtitle: "Линейные модели..."
 author: Вадим\ Хайтов, Валентина\ Домашкина,  Анастасия\ Лянгузова, Наталья\ Арбузова, Юта\ Тамберг, Марина\ Варфоломеева
 institute: "Кафедра Зоологии беспозвоночных, СПбГУ"
@@ -23,1219 +23,1012 @@ format:
       - assets/my_styles_2026.css
 execute:
   cache: true
+  echo: true
 ---
 
 
 ```{r setup, include = FALSE, cache = FALSE, purl = FALSE, fig.showtext = TRUE}
+#| echo: false
 library(knitr)
 options(knitr.kable.NA = '')
-
-
 ```
 
 ```{r libs, include=FALSE, warning=FALSE}
+#| echo: false
+library(ggplot2)
 library(tidyverse)
 library(cowplot)
-theme_set(theme_bw(base_size = 20))
-library(ggplot2)
+library(knitr)
+library(scales)
+library(knitr)
+library(gridExtra)
+
+options(width = 70, scipen = 6, digits = 3)
+
 ```
 
-## Общая линейная модель --- удобный инструмент описания связей
 
-$y_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i} + \varepsilon_i$,
+# Бинарные переменные вокруг нас
 
-где $\varepsilon_i \sim N(0, \sigma)$.
+## Числа и События
 
-Предикторы в такой модели могут быть дискретными и непрерывными.
+До сих пор в качестве переменной отклика мы рассматривали числовые данные.
 
-```{r glm, echo=FALSE, purl=FALSE}
-library(ggplot2)
-theme_set(theme_bw(base_size = 14))
-N <- 100
-set.seed(3829)
-x <- rnorm(N, 5, 3)
-dat <- data.frame(x = x, y = 5 + 0.8 * x + rnorm(N, 0, 1.7))
-ggplot(data = dat, aes(x = x, y = y)) + geom_point(colour = 'grey20', position = position_jitter(width = 0.05)) + geom_smooth(method = 'lm')
-```
+- Содержание сухого вещества в икре
+- Вес младенцев
+- Объем легких
+- Число посещений цветков опылителями.
 
-## Применимость общих линейных моделей ограничена
+А как быть, если мы хотим проанализировать связь появления того или иного **события** (произошло или не произошло) с некоторыми предикторами?
 
-$y_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i} + \varepsilon_i$,
+## События и предикторы
 
-где $\varepsilon_i \sim N(0, \sigma)$.
+В зависимости от предикторов события могут происходить чаще или реже — логика, совпадающая с логикой связи количественной переменной отклика с набором предикторов.
 
+Например, по мере роста температуры воздуха летом чаще будут встречаться люди в шортах: событие "встретился человек в шортах" положительно связано с температурой воздуха.
 
-Т.е. на самом деле мы имеем ввиду, что переменная-отклик подчиняется нормальному распределению:
+Событие "покупка автомобиля" явно связана с предиктором "количество денег на счете", однако эта связь может быть совсем непростой.
 
-$y_i \sim N(\mu_i, \sigma)$
+## Бинарные данные вокруг нас
 
-$E(y_i) = \mu_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}$
+Бинарные данные — очень распространенный тип зависимых переменных
 
+- Кто-то в результате лечебных процедур выжил или умер
+- Обследованное животное заражено паразитами или здорово
+- Футбольная команда выиграла или проиграла
+- Блюдо вкусное или невкусное
 
+Все эти события могут быть связаны с самыми разными предикторами и эту связь можно описать с помощью регрессионных моделей.
 
-Но если отклик подчиняется другому распределению, такие модели не годятся.
+Обобщенные линейные модели позволяют моделировать в том числе и бинарные данные.
 
-Далее мы будем использовать именно этот способ записи модели (распределение отклика и линейный предиктор) мы будем использовать дальше.
+# Пример -- морские звезды и мидии {.t}
 
-## Обобщенные линейные модели
+## Различают ли морские звезды два вида мидий?
 
-Обобщенные линейные модели (Generalized Linear Models, GLM, GLZ, GLIM) позволяют моделировать зависимости не только для нормально-распределенных величин, но и для других распределений.
-
-Не путайте обобщенные линейные модели с общими (General Linear Models, тоже сокращаются как GLM).
-
-# Зоопарк статистических распределений
-
-## Важнейшие распределения из семейства экспоненциальных
+Атлантические мидии (*Mytilus edulis*) коренной для Белого моря вид, но недавно туда вселились мидии другого вида — тихоокеанские мидии (*M. trossulus*).
 
 ::: {.columns}
-::: {.column width="50%"}
-Для непрерывных величин
+::: {.column width="48%"}
 
-- Нормальное распределение
-- Гамма распределение
-- Бета распределение (не будем рассматривать)
-:::
-::: {.column width="50%"}
-Для дискретных величин
+![](images/Sea_star.png){width="100%" height="80%"}
 
-- Биномиальное распределение
-- Распределение Пуассона
-- Отрицательное биномиальное распределение
-:::
 :::
 
-## Нормальное распределение
+::: {.column width="48%"}
+Вселенец имеет меньшую промысловую значимость и потенциально может влиять на структуру экосистемы. Важно понять, что регулирует их численность. Наиболее значимый фактор — это морские звезды, питающиеся мидиями.
+
+- Различают ли морские звезды два вида мидий?
+- Различают ли хищники мидий разных размеров?
+
+::: {.tiny}
+Данные: Khaitov et al, 2018
+:::
+:::
+:::
+
+## Тонкости дизайна эксперимента
+
+Морских звезд вместе с мидиями двух видов сажали в контейнеры. Через четыре дня совместного существования с хищником регистрировали состояние мидий.
 
 ::: {.columns}
-::: {.column width="50%"}
-```{r norm-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
-library(ggplot2)
-mu1 <- 0
-mu2 <- 10
-sigma1 <- 3
-sigma2 <- 7
-y <- seq(-20, 40, length.out = 100)
-pi <- data.frame(y = rep(y, 4), pi = c(dnorm(y, mu1, sigma1), dnorm(y, mu1, sigma2), dnorm(y, mu2, sigma1), dnorm(y, mu2, sigma2)), mu = rep(c(mu1, mu2), each = 2*length(y)), sigma = rep(c(sigma1, sigma2, sigma1, sigma2), each = length(y)) )
-
-ggplot(pi, aes(x = y, y = pi)) + geom_line(stat = "identity", colour = 'grey20', size = 1) + facet_grid(mu~sigma, labeller = label_both) + 
-  ylab("f(y)")
-```
+::: {.column width="48%"}
+![](images/Containers.jpg){width="100%" height="80%"}
 :::
-::: {.column width="50%"}
-$$f(y)= \frac {1}{\sqrt{2 \pi \sigma^2}} \cdot e^{-\frac{1}{2 \sigma^2} (y - \mu)^2}$$
-Параметры:
 
-- $\mu$ -- среднее;  
-- $\sigma$ -- стандартное отклонение.
+::: {.column width="48%"}
+Зависимая переменная:
+- `Outcome` — состояние мидий ("eaten" — съедена, "not_eaten" — живая)
 
-<br/>
+Предикторы в фокусе исследования:
+- `Sp` — вид мидий ("Ed" — коренной вид, "Tr" — вселенец),
+- `L` — размер мидий (мм).
 
-Свойства:
-
-- $E(y)  = \mu$ -- мат. ожидание;
-- $var(y) = \sigma^2$ -- дисперсия;
-- $-\infty \le y \le +\infty$,  $y \in \mathbb R$ -- значения.
+Чего не хватает?
 :::
 :::
 
-## Гамма-распределение
+## Как быть с контейнерами?
 
-::: {.columns}
-::: {.column width="50%"}
-```{r gamma-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
-mu1 <- 3
-mu2 <- 1
-nu1 <- 0.1
-nu2 <- 2
-y <- seq(0, 10, length.out = 100)
+В этом эксперименте, помимо интересующих нас дискретного фактора `Sp` (вид мидии) и непрерывного предиктора `L` (размер), есть еще один фактор `Box`.
 
-pi <- data.frame(
-  y = rep(y, 4), 
-  mu = rep(c(mu1, mu2), each = 2*length(y)), 
-  nu = rep(c(nu1, nu2, nu1, nu2), each = length(y)) )
-pi$pi = dgamma(pi$y, pi$nu, pi$mu)
+Этот фактор нас не интересует, но его нельзя не учитывать.
 
-ggplot(pi, aes(x = y, y = pi)) + 
-  geom_line(stat = "identity", colour = 'grey20', size = 1) + 
-  facet_grid(mu ~ nu, labeller = label_both) + 
-  ylab("f(y)")
-```
-:::
-::: {.column width="50%"}
-$f(y) = \frac{1}{\Gamma(\nu)}\cdot (\frac{\nu}{\mu})^{\nu} \cdot y^{\nu-1} \cdot e^{\cfrac{y \cdot \nu}{\mu}}$
-Параметры:
+Мы должны включить в модель переменную `Box` в качестве дискретного фактора с 4 уровнями.
 
-- $\mu$ -- среднее;
-- $\nu$ -- определяет степень избыточности дисперсии.
+В лекциях, посвященных **смешанным линейным моделям**, мы научим вас, как включать в модель подобные факторы более правильным способом.
 
-<br/>
-
-Свойства:
-
-- $E(y) = \mu$ -- мат. ожидание;
-- $var(y) = \frac {\mu^2}{\nu}$ -- дисперсия;
-- $0 < y \le +\infty$, $y \in \mathbb R$ -- значения.
-:::
-:::
-
-## Биномиальное распределение
-
-::: {.columns}
-::: {.column width="50%"}
-```{r binomial-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
-mu1 <- 0.1
-mu2 <- 0.5
-N1 <- 10
-N2 <- 50
-y <-seq(0, 35, by = 1)
-dfr <- data.frame(y = rep(y, 4), p = c(dbinom(y, size = N1, prob = mu1), dbinom(y,  size = N2, prob = mu1), dbinom(y,  size = N1, prob = mu2), dbinom(y,  size = N2, prob = mu2)),  pi = rep(c(mu1, mu2), each = 2*length(y)), n = rep(c(N1, N2, N1, N2), each = length(y)))
-
-ggplot(dfr, aes(x = y, y = p)) + geom_bar(stat = "identity", fill = 'grey20') + facet_grid(n ~ pi,  labeller = label_both) + 
-  ylab("f(y)")
-```
-:::
-::: {.column width="50%"}
-$$f(y) = \frac{n!}{y! \cdot (n-y)!} \cdot \pi^y \cdot (1 - \pi)^{n-y}$$
-
-Параметры:
-
-- $n$ -- число объектов в испытании;
-- $\pi$ -- вероятность успеха в одном испытании.
-
-<br/>
-
-Свойства:
-
-- $E(y)  = n \cdot \pi$ -- мат. ожидание;
-- $var(y) = n \cdot \pi \cdot (1-\pi)$ -- дисперсия;
-- $0 \le y \le +\infty$, $y \in \mathbb{N}$ -- значения.
-:::
-:::
-
-## Распределение Пуассона
-
-::: {.columns}
-::: {.column width="50%"}
-```{r poisson-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
-mu1 <- 1
-mu2 <- 5
-mu3 <- 10
-mu4 <- 20
-y <- seq(0, 35, by = 1)
-
-pi <- data.frame(
-  y = rep(y, 4),  
-  pi = c(dpois(y, mu1), dpois(y, mu2), dpois(y, mu3), dpois(y, mu4)), 
-  mu = rep(c(mu1, mu2, mu3, mu4), each = length(y))
-)
-
-ggplot(pi, aes(x = y, y = pi)) + 
-  geom_bar(stat = "identity", fill = 'grey20') + 
-  facet_wrap(~ mu, nrow = 2, labeller = label_both) + 
-  ylab("f(y)")
-```
-:::
-::: {.column width="50%"}
-$$f(y)= \frac{\mu^y \cdot e^{-\mu}}{y!}$$
-
-Параметр:
-
-- $\mu$ -- задает среднее и дисперсию.
-
-<br/>
-
-Свойства:
-
-- $E(y) = \mu$ --- мат. ожидание;
-- $var(y) = \mu$ --- дисперсия;
-- $0 \le y \le +\infty$, $y \in \mathbb{N}$ --- значения.
-:::
-:::
-
-## Отрицательное биномиальное распределение
-
-::: {.columns}
-::: {.column width="50%"}
-```{r neg-binomial-distr, echo=FALSE, purl=FALSE, fig.width=5.5, fig.height=6}
-mu1 <- 1
-mu2 <- 5
-k1 <- 0.1
-k2 <- 100
-y <- 0:30
-
-pi <- data.frame(
-  y = rep(y, 4), 
-  pi = c(dnbinom(y, size = k1, mu = mu1), 
-         dnbinom(y, size = k1, mu = mu2), 
-         dnbinom(y, size = k2, mu = mu1), 
-         dnbinom(y, size = k2, mu = mu2)), 
-  mu = rep(c(mu1, mu2), each = 2*length(y)), 
-  k = rep(c(k1, k2, k1, k2), each = length(y)) )
-
-ggplot(pi, aes(x = y, y = pi)) + 
-  geom_bar(stat = "identity", fill = 'grey20') + 
-  facet_grid(mu~k, labeller = label_both, scales = "free_y") + 
-  ylab("f(y)")
-```
-:::
-::: {.column width="50%"}
-$f(y) = \frac{\Gamma(y + k)}{\Gamma(k) \cdot \Gamma(y+1)} \cdot (\frac{k}{\mu + k})^k \cdot (1 - \frac{k}{\mu + k})^y$
-
-Параметры: 
-
-- $\mu$ -- среднее;  
-- $k$ -- определяет степень избыточности дисперсии.
-
-<br/>
-
-Свойства:
-
-- $E(y)  = \mu$ -- мат. ожидание;
-- $var(y) = \mu + \frac {\mu^2}{k}$ -- дисперсия;
-- $0 \le y \le +\infty$, $y \in \mathbb{N}$ -- значения.
-:::
-:::
-
-## Обобщенные линейные модели (Generalized Linear Models)
-
-::: {.columns}
-::: {.column width="60%"}
-Обобщенные линейные модели (Nelder, Weddlerburn, 1972)
-
-- Позволяют моделировать не только величины, подчиняющиеся нормальному распределению, но и другим распределениям из семейства экспоненциальных.
-
-- Подбор коэффициентов делается методом максимального правдоподобия.
-:::
-::: {.column width="40%"}
-![](images/Nelder_Wedderburn.png) 
-:::
-:::
-
-## Отличия обобщенной линейной модели от общей
-
-На примере нормального распределения $\color{purple}{f(y_i|\theta) = N(\mu_i, \sigma)}$
-
-
-### Общая линейная модель состоит из двух компонентов
-
-$\color{purple}{y_i \sim f(y_i|\theta)}$
-
-$\color{teal}{E(y_i) = \mu_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-
-
-### Обобщенная линейная модель состоит из трех компонентов
-
-$\color{purple}{y_i \sim f(y_i|\theta)}$ 
-
-$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
-
-$\color{red}{g(\mu_i) = \eta_i}$
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-
-- Случайная часть --- $\color{purple}{y_i \sim f(y_i|\theta)}$ --- распределение из семейства экспоненциальных с параметрами $\theta$.  
-- Фиксированная часть: $\color{red}{g()}$ --- **функция связи**, трансформирует **мат. ожидание отклика** в **линейный предиктор** $\color{blue}{\eta_i}$ (обратная функция связи обозначается $\color{green}{g^{-1}()}$).
-
-## Функция связи
-
-::: {.content-box}
-$\color{purple}{y_i \sim f(y_i|\theta)}$ 
-
-$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
-
-$\color{red}{g(\mu_i) = \eta_i}$
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-:::
-
-<br/>
-
-**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
-
-## Функция связи: идентичность
-
-::: {.content-box}
-$\color{purple}{y_i \sim f(y_i|\theta)}$ 
-
-$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
-
-$\color{red}{g(\mu_i) = \eta_i}$
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-:::
-
-<br/>
-
-**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
-
-<br/>
-
-$\color{purple}{y_i \sim N(\mu_i, \sigma)}$ 
-
-$\color{green}{E(y_i) = \mu_i \phantom{\frac{e^{\beta_0}}{1 + e^{\beta_0}}}}$
-
-$\color{red}{\mu_i = \eta_i}$ **— идентичность**
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-
-## Функция связи: логарифм
-
-::: {.content-box}
-$\color{purple}{y_i \sim f(y_i|\theta)}$ 
-
-$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
-
-$\color{red}{g(\mu_i) = \eta_i}$
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-:::
-
-<br/>
-
-**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
-
-<br/>
-
-Например, $\color{purple}{y_i \sim Poisson(\mu_i)}$ 
-
-$\color{green}{E(y_i) = e^{\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}} \phantom{\frac{e^{\beta_0}}{1 + e^{\beta_0}}}}$
-
-$\color{red} {ln(\mu_i) = \eta_i}$ **— логарифм**
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-
-## Функция связи: логит
-
-::: {.content-box-grey}
-$\color{purple}{y_i \sim f(y_i|\theta)}$ 
-
-$\color{green}{E(y_i) = \mu_i = g^{-1}(\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i})}$
-
-$\color{red}{g(\mu_i) = \eta_i}$
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-:::
-
-<br/>
-
-**Функция связи** $\color{red}{g(\mu)}$ разная в зависимости **от распределения отклика** $\color{purple}{f(y_i|\theta)}$
-
-<br/>
-
-Например, $\color{purple}{y_i \sim Binomial(n = 1, \pi_i)}$ 
-
-$\color{green}{E(y_i) = \cfrac{e^{\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}}{1 + e^{\beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}}}$
-
-$\color{red} {ln\big(\cfrac{\mu_i}{1 - \mu_i}\big) = \eta_i}$ **— логит**
-
-$\color{blue}{\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}}$
-
-## Параметры обобщенных линейных моделей подбирают методом максимального правдоподобия
-
-```{r echo=FALSE}
-library(boot)
-data(catsM)
-cat <- catsM
-
-X <- cat$Bwt
-Y <- cat$Hwt
-df <- data.frame(X,Y)
-
-ggplot(cat, aes(Bwt, Hwt)) + geom_point() + geom_smooth(method = "lm")
-```
-
-## Параметры обобщенных линейных моделей подбирают методом максимального правдоподобия
-
-```{r echo=FALSE}
-library(boot)
-data(catsM)
-cat <- catsM
-
-X <- cat$Bwt
-Y <- cat$Hwt
-df <- data.frame(X,Y)
-
-ggplot(cat, aes(Bwt, Hwt)) + geom_point() + geom_smooth(method = "lm") + geom_vline(aes(xintercept = Bwt), size = 0.1)
-```
-
-Для каждого значения предиктора (отложен по оси OX) есть некоторая выборка значений зависимой переменной.
-
-## Параметры обобщенных линейных моделей подбирают методом максимального правдоподобия
-
-Правдоподобие (likelihood) --- измеряет соответствие реально наблюдаемых данных тем, что можно получить из модели при определенных значениях параметров.
-
-::: {.columns}
-::: {.column width="45%"}
-```{r gg-norm-tunnel0, echo=FALSE, purl=FALSE}
-## Based on code by Arthur Charpentier:
-## http://freakonometrics.hypotheses.org/9593
-library(boot)
-data(catsM)
-cat <- catsM
-op <- par(mar = c(0, 0, 0, 0))
-n <- 2
-X <- cat$Bwt
-Y <- cat$Hwt
-df <- data.frame(X,Y)
-
-# regression
-reggig <- glm(Y ~ X, data = df, family = gaussian(link = "identity"))
-
-op <- par(mar = c(0, 0, 0, 0))
-# empty plot
-vX <- seq(min(X) - 0.1, max(X) + 0.1, length = n)
-vY <- seq(min(Y) - 10, max(Y) + 10, length = n)
-mat <- persp(x = vX, y = vY, z = matrix(0, n, n),
-             zlim = c(0, 0.1),
-             theta =  -30, phi = 20, expand = 0.1,
-             ticktype  = "detailed",  box = FALSE, border = "gray60")
-
-x <- seq(min(X), max(X), length = 501)
-
-# expected values
-C <- trans3d(x, predict(reggig, newdata = data.frame(X = x), type = "response"), rep(0, length(x)), mat)
-lines(C, lwd = 2)
-
-sdgig <- sqrt(summary(reggig)$dispersion)
-
-# 1SD
-y1 <- qnorm(.95, predict(reggig, newdata = data.frame(X = x), type = "response"),  sdgig)
-C <- trans3d(x, y1, rep(0, length(x)), mat)
-lines(C, lty = 2, col = "#d95f02")
-y2 <- qnorm(.05, predict(reggig, newdata = data.frame(X = x), type = "response"),  sdgig)
-C <- trans3d(x, y2, rep(0, length(x)), mat)
-lines(C, lty = 2, col = "#d95f02")
-
-# data points
-C <- trans3d(X, Y, rep(0, length(X)), mat)
-points(C, pch = 1, col = "black", cex = 0.4)
-
-# density curves
-n <- 6
-vX <- seq(min(X), max(X), length = n)
-
-mgig <- predict(reggig, newdata = data.frame(X = vX))
-
-sdgig <- sqrt(summary(reggig)$dispersion)
-
-for(j in n:1){
-  stp <- 251
-  x <- rep(vX[j], stp)
-  y <- seq(min(min(Y) - 10,
-               qnorm(.05,
-                     predict(reggig,
-                             newdata = data.frame(X = vX[j]),
-                             type = "response"),
-                     sdgig)),
-           max(Y) + 10,
-           length = stp)
-  z0 <- rep(0, stp)
-  z <- dnorm(y,  mgig[j],  sdgig)
-  C <- trans3d(c(x, x), c(y, rev(y)), c(z, z0), mat)
-  polygon(C, border = NA, col = "light blue", density = 40)
-  C <- trans3d(x, y, z0, mat)
-  lines(C, lty = 2, col = "grey60")
-  C <- trans3d(x, y, z, mat)
-  lines(C, col = "grey20")
-}
-par(op)
-```
-:::
-::: {.column width="55%"}
-Это произведение вероятностей данных:
-
-$$L(\theta| y_i) = \Pi^n _{i = 1}\color{purple}{f(y_i| \theta)}$$
-:::
-:::
-
-Параметры модели должны максимизировать значение логарифма правдоподобия (loglikelihood): 
-
-$$lnL(\theta| y_i) \longrightarrow \text{max}$$
-
-<small>
-Для тех, кому интересно разобраться вот [хорошая визуализация работы ML и тестов, основанных на LR](https://rpsychologist.com/likelihood/)
-</small>
-
-<small>
-Magnusson, K. (2020). Understanding Maximum Likelihood: An interactive visualization (Version 0.1.2) [Web App]. R Psychologist. https://rpsychologist.com/likelihood/
-</small>
-
-## ML-оценки для дисперсий -- смещенные
-
-Например, ML оценка обычной выборочной дисперсии будет смещенной:
-
-Хотелось бы:
-
-$\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n - p - 1}$,
-
-На самом деле при ML:
-
-$\hat\sigma^2 = \cfrac{\sum(y_i - \hat y_i)^2}{n}$,
-
-т.к. в знаменателе не $n - p - 1$, а $n$.
-
-Аналогичные проблемы возникают при ML оценках для случайных эффектов в линейных моделях.
-
-Это происходит потому, что в смешанной линейной модели
-
-$\mathbf{Y}  = \mathbf{X}  \pmb{\beta} + \mathbf{Z} \mathbf{b}  + \pmb{\varepsilon}$
-
-$\mathbf{Y} \sim N(\mathbf{X}  \pmb{\beta}, \mathbf{V})$, где $\mathbf{V} = \mathbf{ZDZ'} + \pmb{\Sigma}$
-
-т.е. одновременно приходится оценивать $\pmb{\beta}$ и $\mathbf{V}$.
-
-## Пример -- энергетическая ценность икры {.center .middle .inverse}
-
-## Пример -- энергетическая ценность икры
-
-Один из показателей, связанных с жизнеспособностью икры -- доля сухого вещества. Она пропорциональна количеству запасенной энергии. 
-
-::: {.columns}
-::: {.column width="60%"}
-Отличается ли энергетическая ценность икры большой озерной форели в сентябре и ноябре?
-:::
-::: {.column width="40%"}
-![](images/lake_trout.jpeg)
-:::
-:::
-
-<small>
-Данные: Lantry et al., 2008   
-Источник: пакет Stat2Data
-</small>
-
-## Открываем данные
+## Читаем данные
 
 ```{r}
-#| echo: true
-#| 
-FishEggs <- read.table(file = "data/FishEggs.csv", sep = ";")
+astr <- read.csv('data/aster_mussel.csv', header = TRUE)
+head(astr)
 ```
 
-Все ли правильно открылось?
+Номер экспериментального контейнера закодирован числами, поэтому превращаем его в фактор.
 
 ```{r}
-#| echo: true
-#| 
-str(FishEggs)
+astr$Box <- factor(astr$Box)
 ```
+
+## Знакомимся с данными
 
 Нет ли пропущенных значений?
 
 ```{r}
-#| echo: true
-
-colSums(is.na(FishEggs))
+colSums(is.na(astr))
 ```
 
-## Меняем порядок уровней факторов
-
-Уровни факторов в исходных данных:
+Каковы объемы выборок?
 
 ```{r}
-#| echo: true
-FishEggs$Month <- factor(FishEggs$Month)
-
-levels(FishEggs$Month)
+table(astr$Box)
 ```
 
-Делаем базовым уровнем сентябрь.
+## Нет ли коллинеарности
 
+::: {.columns}
+::: {.column width="60%"}
 ```{r}
-#| echo: true
-FishEggs$Month <- relevel(FishEggs$Month, ref = 'Sep')
-```
-
-Теперь уровни в хронологическом порядке:
-
-```{r}
-#| echo: true
-levels(FishEggs$Month)
-```
-
-## Объемы выборок
-
-```{r}
-#| echo: true
-table(FishEggs$Month)
-```
-
-## Ищем выбросы
-
-```{r dotplots}
-#| echo: true
+library(ggplot2) 
 library(cowplot)
+theme_set(theme_bw() + theme(axis.title = element_text(size=20)))
 
-gg_dot <- ggplot(FishEggs, aes(y = 1:nrow(FishEggs))) + geom_point()
-plot_grid(gg_dot + aes(x = Age), 
-          gg_dot + aes(x = PctDM), nrow = 1)
+
+Pl_Sp <- ggplot(astr, aes(x = Sp, y = L)) + 
+  geom_boxplot()
+Pl_Box <- ggplot(astr, aes(x = Box, y = L)) + 
+  geom_boxplot()
+plot_grid(Pl_Sp, Pl_Box, ncol = 2)
 ```
+:::
 
-## Модель для описания питательной ценности икры
+::: {.column width="35%"}
+\vspace{7\baselineskip}
 
-### GLM с нормальным распределением отклика
+Размер распределен более-менее равномерно. Коллинеарности нет.
+:::
+:::
 
-$y_i \sim N(\mu_i, \sigma)$  
-$E(y_i) = \mu_i$  
-$\mu_i = \eta_i$ --- функция связи "идентичность" (identity)  
-$\eta_i = \beta_0 + \beta_1 x_{1i} + ... + \beta_{p-1}x_{p-1\,i}$
-
-
-## Модель зависимости в нашем примере
-
-Как зависит питательная ценность икры от месяца вылова рыбы (сентябрь или ноябрь) с учетом ковариаты (возраста рыбы) и их взаимодействия.
-
-$PctDM_i \sim N(\mu_i, \sigma)$  
-$E(PctDM_i) = \mu_i$  
-$\mu_i = \eta_i$  
-$\eta_i = \beta_0 + \beta_1 Age_{i} + \beta_2 Month_{Nov\,i} + \beta_{3} Age_{i} Month_{Nov\,i}$
-
-- $PctDM_i$ --- содержание сухого вещества в икре;
-- $Age_{i}$ --- возраст рыбы;
-- $Month_{Nov\,i}$ -- переменная-индикатор для уровня $Month_{Nov\,i} = 1$.
-
-## Подбираем модель
-
-```{r}
-#| echo: true
-#| 
-mod <- glm(PctDM ~ Age * Month, data = FishEggs)
-mod
-```
-
-
-```{r}
-#| echo: true
-
-# Чтобы записать модель, нужна еще сигма.
-sigma(mod)
-```
-
-
-
-$PctDM_i \sim N(\mu_i, 1.24)$  
-$E(PctDM_i) = \mu_i$  
-$\mu_i = \eta_i$  
-$\eta_i = 38.12 - 0.24 Age_{i} + 1.28 Month_{Nov\,i} + 0.02 Age_{i} Month_{Nov\,i}$
-
-## Диагностика модели {.center .middle .inverse}
-
-## Разновидности остатков в GLM
+## Есть ли выбросы?
 
 ::: {.columns}
-::: {.column width="50%"}
-### Остатки в масштабе отклика (response residuals)
+::: {.column width="60%"}
+```{r}
 
-$$e_i = y_i - E(y_i)$$
+ggplot(astr, aes(y = 1:nrow(astr))) + 
+  geom_point(aes(x = L))
 
-- Это разница между наблюдаемым и предсказанным значениями.
-- Аналог (и синоним) "сырых" остатков в простой линейной регрессии.
+```
 :::
-::: {.column width="50%"}
-### Пирсоновские остатки (Pearson's residuals)
 
-$$r_{p\,i} = \frac{y_i - E(y_i)}{\sqrt{var(y_i)}}$$
+::: {.column width="35%"}
+\vspace{3\baselineskip}
 
-- Это обычные остатки, деленные на стандартную ошибку предсказанного значения. 
-- Аналог стандартизованных остатков в простой линейной регрессии.
+Выбросов нет.
 :::
 :::
+
+## Кодирование бинарной переменной
+
+До сих пор зависимая переменная была числом, а в данном случае `Outcome` — это текстовая переменная.
+
+Бинарную переменную надо перекодировать в виде нулей и единиц:
+
+- 1 — мидию съели,
+- 0 — мидию не съели.
+
+```{r}
+astr$Out <- ifelse(test = astr$Outcome == 'eaten', yes = 1, no = 0)
+```
+
+# Простой линейной регрессией не обойтись 
+
+## Что мы хотим построить?
+
+Наша задача — построить модель, описывающую связь между переменной-откликом (съедена мидия или нет) и тремя предикторами: `Sp`, `L` и `Box`
+
+Если бы мы строили GLM с нормальным распределением отклика, то она имела бы следующий вид:
+
+$$Out_i \sim N(\mu_i, \sigma)$$
+
+$$E(Out_i) = \mu_i$$
+
+$$\mu_i = \eta_i$$ — функция связи "идентичность"
+
+$$\eta_i = b_0 + b_1Sp_{Tr\,i} + b_2L_i + b_3Box_{2\,i} + b_3Box_{3\,i} + Interactions$$
+
+где $Interactions$ — это все взаимодействия.
+
+## Лобовая атака?
+
+Строим модель по накатанной дороге.
+
+Мы не знаем, взаимодействуют ли дискретные факторы `Box`, `Sp` и непрерывный предиктор `L`.
+
+В полной модели мы должны учесть как влияние самих предикторов, так и влияние их взаимодействия.
+
+```{r}
+mod_norm <- glm(Out ~ Sp * L * Box, data = astr)
+```
+
+Все посчиталось...
+
+## Посмотрим что получилось
 
 ::: {.columns}
-::: {.column width="50%"}
-```{r}
-#| echo: true
+::: {.column width="60%"}
+::: {.small}
+```{r }
+library(dplyr)
+new_data <- 
+  astr %>% 
+  group_by(Sp, Box) %>%
+  do(data.frame(L = seq(min(.$L), max(.$L), length.out = 100)))
 
-resid(mod, type = 'response')[1:4]
+new_data$fit <- predict(mod_norm, newdata = new_data) # Предсказанные значения
+
+ggplot(new_data, aes(x = L, y = fit)) +
+  geom_line(aes(group = Box)) + 
+  facet_wrap(~ Sp, ncol = 2) +
+  geom_point(data = astr, aes(x = L, y = Out), size = 0.5, color = 'blue')
 ```
 :::
-::: {.column width="50%"}
-```{r}
-#| echo: true
+:::
 
-resid(mod, type = 'pearson')[1:4]
+::: {.column width="35%"}
+\vspace{7\baselineskip}
+
+Во-первых, непонятно, что за величина отложена по оси OY.
+:::
+:::
+
+## Диагностика модели
+
+::: {.columns}
+::: {.column width="60%"}
+```{r}
+mod_norm_diag <- fortify(mod_norm)
+ggplot(mod_norm_diag, aes(x = .fitted, y = .stdresid)) +
+  geom_point() + geom_vline(xintercept = 0)
 ```
 :::
+
+::: {.column width="35%"}
+\vspace{5.5\baselineskip}
+
+Во-вторых, модель предсказывает отрицательные значения.
+
+Простая линейная модель **категорически не годится**!
+:::
 :::
 
-Для GLM с нормальным распределением отклика оба типа остатков одинаковы.
+# Логистическая кривая
 
-## Условия применимости GLM с нормальным распределением отклика
+## Бинарные данные можно представлять и иначе
 
-- Случайность и независимость наблюдений внутри групп.
-- Нормальное распределение остатков.
-- Гомогенность дисперсий остатков.
-- Отсутствие коллинеарности предикторов.
+Бинарные данные очень неудобны для работы. Вместо того, чтобы моделировать наличие нулей и единиц, мы будем моделировать вероятности получения единиц.
 
-## Проверка на коллинеарность
+Появляется новое обозначение:
 
-Мы и так знаем, что в параметризации индикаторных переменных взаимодействие будет коллинеарно со своими составляющими (и это нормально, см. прошлую лекцию).
+- $\pi_i$ — вероятность события $y_i = 1$ при данных условиях,
+- $1 - \pi_i$ — вероятность альтернативного события $y_i = 0$.
 
-Важно проверить, будут ли коллинеарны другие предикторы.
+\vspace{\baselineskip}
+
+$\pi_i$ — непрерывная величина, варьирующая от 0 до 1.
+
+## Симулированный пример: От дискретных значений к оценкам вероятностей
+
+От 1 и 0 (слева) можно перейти к $\pi_i$ — оценкам вероятности положительных исходов (справа).
+
+Мы можем проиллюстрировать этот переход, изобразив доли в общем количестве исходов **при данном значении предиктора** $p_{y = 1 | x_i}$ (красные точки). И $\pi$, и $p_{y = 1 | x_i}$ варьируют от 0 до 1.
+
+```{r, echo=FALSE}
+set.seed(123456)
+x <- 0:20
+
+dat <- data.frame(X = rep(x, each = 10))
+
+d <- exp(-5 + 0.5 * dat$X)
+pi <- d / (1 + d)
+
+dat$Out <- rbinom(nrow(dat), 1, pi)
+
+P1_discr <- ggplot(dat, aes(x = X, y = Out)) +
+  geom_point(position = position_jitter(width = 0.11, height = 0.011), alpha = 0.2) +
+  labs(x = 'Предиктор', y = 'Зависимая переменная \n(1 или 0)') +
+  theme_bw() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_hline(yintercept = 1, linetype = 2) +
+  scale_y_continuous(breaks = seq(-0.25, 1.25, by = 0.25))
+
+library(doBy)
+library(cowplot)
+Probs <- summaryBy(Out ~ X, data = dat, FUN = mean)
+
+Pl_prob <- ggplot(data = Probs, aes(x = X, y = Out.mean)) +
+  geom_point(size = 2, color = 'orangered') +
+  labs(x = 'Предиктор', y = 'Вероятность получения 1') +
+  theme_bw() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_hline(yintercept = 1, linetype = 2) +
+  scale_y_continuous(breaks = seq(-0.25, 1.25, by = 0.25))
+
+plot_grid(P1_discr, Pl_prob, ncol = 2)
+```
+
+## Симулированный пример: Можно ли подобрать простую линейную регрессию?
+
+::: {.columns}
+::: {.column width="48%"}
+```{r, echo=FALSE}
+mod_norm <- lm(Out.mean ~ X, data = Probs)
+coef_mod_norm <- round(as.numeric(coef(mod_norm)), 2)
+Pl_prob + geom_abline(slope = coef_mod_norm[2], intercept = coef_mod_norm[1]) +
+  coord_cartesian(ylim = c(-0.25, 1.25), xlim = c(-2, 22))
+```
+:::
+
+::: {.column width="48%"}
+Связь зависимой переменной с предиктором можно было бы описать прямой:
+
+$$\pi_i = \beta_0 + \beta_1x_i$$
+
+Но! Вероятность события может принимать значения только от 0 до 1. А прямая линия ничем не ограничена и может выходить за пределы интервала [0, 1].
+:::
+:::
+
+## Симулированный пример: Логистическая кривая
+
+::: {.columns}
+::: {.column width="48%"}
+```{r, echo=FALSE}
+Pl_logistic <- Pl_prob +
+  geom_smooth(method = 'glm', method.args = list(family = 'binomial'), se = FALSE)
+Pl_logistic
+```
+:::
+
+::: {.column width="48%"}
+Связь вероятности положительного исхода и значений предиктора можно описать логистической кривой:
+
+$$\pi_i = \frac{e^{\beta_0 + \beta_1x_i}}{1 + e^{\beta_0 + \beta_1x_i}}$$
+
+Логистическая кривая удобна для описания вероятностей, т.к. ее значения лежат в пределах от 0 до 1.
+:::
+:::
+
+## Симулированный пример: Логистическая кривая
+
+::: {.columns}
+::: {.column width="48%"}
+```{r, echo=FALSE}
+P1_discr + geom_smooth(method = 'glm', method.args = list(family = 'binomial'), se = FALSE)
+```
+:::
+
+::: {.column width="48%"}
+В реальной жизни нам не потребуется даже рассчитывать доли положительных исходов от общего количества.
+
+Благодаря GLM мы сможем оценить вероятности непосредственно по исходным данным.
+:::
+:::
+
+# Шансы и логиты {.t}
+
+## Шансы -- еще один способ выразить бинарную переменную отклика
+
+В обыденной речи мы часто используем фразы подобные такой:
+
+"Шансы на победу 1 к 3": в одном случае выигрыш в трех проигрыш
+
+Шансы — это тоже оценка вероятности события. Шансы показывают сколько в данной системе положительных исходов и сколько отрицательных.
+
+## Отношение шансов
+
+Шансы (odds) часто представляют в виде отношения шансов (odds ratio): $odds = \frac{n_{+}}{n_{-}}$
+
+Если отношение шансов > 1, то вероятность наступления события выше, чем вероятность того, что оно не произойдет. Если отношение шансов < 1, то наоборот.
+
+Если можно оценить вероятность положительного события, то отношение шансов выглядит так: $odds = \frac{\pi}{1-\pi}$
+
+Отношение шансов варьирует от 0 до $+\infty$.
+
+## Отношение шансов
+
+Если отношение шансов = 1, то вероятность того, что событие произойдет равно вероятности того, что событие не произойдет.
+
+Асимметрия: отношение шансов от 1 до $+\infty$ говорит о том, что вероятность того, что событие произойдет, выше, чем вероятность того, что оно не произойдет, но если наоборот, то отношение шансов "зажато" между 0 и 1.
+
+## Логиты
+
+Отношение шансов можно преобразовать в _Логиты_ (logit):
+
+$$
+\ln(odds) = \ln\left(\frac{\pi}{1-\pi}\right)
+$$
+
+Значения логитов — это трансформированные оценки вероятности события.
+
+Логиты варьируют от $-\infty$ до $+\infty$.
+
+Логиты симметричны относительно 0, т.е. $\ln(1)$.
+
+Для построения моделей в качестве зависимой переменной удобнее брать логиты.
+
+# Немного алгебры: Логиты в качестве зависимой переменной {.t}
+
+## Докажем, что логит преобразование линеаризует логистическую кривую
+
+Когда предиктор один, логистическая модель принимает такую форму:
+
+$$\pi = \cfrac{e^{\beta_0 + \beta_1 x}}{1 + e^{\beta_0 + \beta_1 x}}$$
+
+Обозначим для краткости $\beta_0 + \beta_1 x \equiv z$
+
+Давайте докажем, что логит преобразование
+$logit(\pi) = \ln\left(\cfrac{\pi}{1 - \pi}\right)$
+сделает логистическую функцию линейной, т.е. что
+
+$$\ln\left(\cfrac{\pi}{1 - \pi}\right) = z$$
+
+## Подставим выражение для $\pi$ в формулу логита
+
+$$\ln\left(\frac{\pi}{1-\pi}\right) = \ln\left(\frac{\frac{e^z}{1+e^z}}{1-\frac{e^z}{1+e^z}}\right)$$
+
+Логарифм отношения равен разности логарифмов, тогда:
+
+$$\ln\left(\frac{e^z}{1+e^z}\right) - \ln\left(1-\frac{e^z}{1+e^z}\right)$$
+
+Вторую дробь можно упростить:
+
+. . .
+
+$$\ln\left(\frac{e^z}{1+e^z}\right) - \ln\left(\frac{1+e^z - e^z}{1+e^z}\right) = \ln\left(\frac{e^z}{1+e^z}\right) - \ln\left(\frac{1}{1+e^z}\right)$$
+
+## Продолжаем преобразования
+
+$$\ln\left(\frac{e^z}{1+e^z}\right) - \ln\left(\frac{1}{1+e^z}\right) = \ln(e^z) - \ln(1+e^z) - (\ln(1) - \ln(1+e^z))$$
+
+. . .
+
+$$\ln(e^z) - \ln(1+e^z) - 0 + \ln(1+e^z) = \ln(e^z) = z$$
+
+$$\ln\left(\frac{\pi(x)}{1-\pi(x)}\right) = z = \beta_0 + \beta_1 x$$
+
+Т.е. после логит-преобразования логистическая кривая становится прямой.
+
+## Связывающая функция (link function)
+
+**Мы уже знаем**: Для линеаризации связи между предикторами и зависимой переменной применяется связывающая функция.
+
+Функция логит-преобразования $g(E(y)) = \ln\left(\frac{\pi}{1-\pi}\right)$ это одна из возможных связывающих функций, применяемых для анализа бинарных переменных отклика.
+
+Другие связывающие функции: probit, cloglog.
+
+## Логика математических преобразований
+
+1. От дискретной оценки событий (1 или 0) переходим к оценке вероятностей.
+2. Связь вероятностей с предиктором описывается логистической кривой.
+3. Если при помощи функции связи перейти от вероятностей к логитам, то связь с предиктором будет описываться прямой линией.
+4. Параметры линейной модели для такой прямой можно оценить при помощи линейной модели.
+
+\vspace{\baselineskip}
+
+Теперь мы готовы сформулировать модель в математическом виде.
+
+## GLM с биномиальным распределением отклика
+
+$$y_i \sim Binomial(n = 1, \pi_i)$$
+
+$$E(y_i) = \pi_i = \cfrac{e^{\beta_0 + \beta_1 x_{1} + ... + \beta_{p-1}~x_{p-1}}}{1 + e^{\beta_0 + \beta_1 x_{1} + ... + \beta_{p-1}~x_{p-1}}}$$
+
+$$\ln\left(\cfrac{\pi_i}{1 - \pi_i}\right) = \eta_i$$ — функция связи логит, переводит вероятности в логиты.
+
+$$\eta_i = \beta_0 + \beta_1 x_{1\,i} + ... + \beta_{p-1\,i}~x_{p-1\,i}$$
+
+\vspace{1\baselineskip}
+
+Чтобы перейти обратно от логитов к вероятностям, применяется логистическое преобразование (это функция, обратная функции связи):
+
+$$\pi_i = \cfrac{e^{\eta_i}}{1 + e^{\eta_i}}$$
+
+# Вернемся к морским звездам и мидиям
+
+## GLM с биномиальным распределением отклика
+
+$$Out_i \sim Binomial(n = 1, \pi_i)$$
+
+$$E(Out_i) = \pi_i$$
+
+$$\ln\left(\frac{\pi_i}{1 - \pi_i}\right) = \eta_i$$
+
+$$\pmb{\eta} = \mathbf{X}\pmb{\beta}$$
+
+Полная модель в изучаемой системе включает много членов:
+
+- Главные предикторы: $Sp$, $L$, $Box$
+- Взаимодействия первого порядка: $Sp$:$L$, $Sp$:$Box$, $L$:$Box$
+- Взаимодействия второго порядка: $Sp$:$L$:$Box$
 
 ```{r}
-#| echo: true
+mod <- glm(Out ~ Sp*L*Box, family = binomial(link = 'logit'), data = astr)
+```
 
+## Анализ девиансы для полной модели
+
+```{r}
 library(car)
-vif(update(mod, . ~ . - Age:Month))
+Anova(mod)
 ```
 
-Коллинеарности нет.
+Эту модель можно упростить!
 
-## Данные для анализа остатков
+## Упрощение модели: Шаг 1
 
 ```{r}
-#| echo: true
-
-mod_diag <- fortify(mod) # функция из пакета ggplot2
-head(mod_diag)
-```
-
-## График расстояния Кука
-
-```{r cooksd}
-#| echo: true
-
-ggplot(mod_diag, aes(x = 1:nrow(mod_diag), y = .cooksd)) +
-  geom_bar(stat = 'identity') +
-  geom_hline(yintercept = 1, linetype = 2)
-```
-
-Влиятельных наблюдений нет.
-
-## График остатков от предсказанных значений
-
-```{r resid-fitted}
-#| echo: true
-
-gg_resid <- ggplot(data = mod_diag, aes(x = .fitted, y = .stdresid)) +
-  geom_point() + geom_hline(yintercept = 0)
-gg_resid
-```
-
-Влиятельных наблюдений нет.  
-Мало данных в области с небольшими предсказанными значениями.
-
-## График зависимости остатков от предикторов в модели
-
-```{r eval=FALSE, purl=TRUE}
-#| echo: true
-
-ggplot(data = mod_diag, aes(x = Age, y = .stdresid)) +
-  geom_point() + geom_hline(yintercept = 0)
-ggplot(data = mod_diag, aes(x = Month, y = .stdresid)) +
-  geom_boxplot() + geom_hline(yintercept = 0)
-```
-
-```{r resid-predictors, echo=FALSE, purl=FALSE}
-library(cowplot)
-plot_grid(
-ggplot(data = mod_diag, aes(x = Age, y = .stdresid)) +
-  geom_point() + geom_hline(yintercept = 0),
-ggplot(data = mod_diag, aes(x = Month, y = .stdresid)) +
-  geom_boxplot() + geom_hline(yintercept = 0),
-nrow = 1, align = 'h')
-```
-
-Нет выраженной гетероскедастичности.
-
-## Тестирование значимости коэффициентов {.center .middle .inverse}
-
-## Тест Вальда для коэффициентов GLM
-
-$H_0: \beta_k = 0$  
-$H_A: \beta_k \ne 0$
-
-$$\frac{b_k - \beta_k} {SE_{b_k}} = \frac{b_k} {SE_{b_k}} \sim N(0, 1)$$
-
-- $b_k$ --- оценка коэффициента GLM.
-
-<br/>
-
-Хорошо работает только на больших выборках (Agresty, 2007).
-
-Если приходится оценивать $\sigma$, то
-$\frac{b_k} {SE_{b_k}} \sim t_{(df = n - p)}$
-
-- $n$ --- объем выборки.
-- $p$ --- число параметров модели.
-
-## В `summary()` записаны результаты теста Вальда
-
-С увеличением возраста рыбы на год процент сухого вещества в икре снижается на 0.24% (тест Вальда, $t_{df = 31} = -2.62$, p = 0.013). Это происходит одинаково в сентябре и ноябре. Энергетическая ценность икры в сентябре и ноябре не различается.
-
-<small>
-
-```{r}
-summary(mod)
-```
-
-</small>
-
-## Анализ девиансы {.center .middle .inverse}
-
-## Шкала для сравнения моделей
-
-**Насыщенная модель** --- каждое уникальное наблюдение (сочетание значений предикторов) описывается одним из $n$ параметров.
-
-$lnL_{saturated} = 0$  
-$df_{saturated} = n - p_{saturated} = n - n = 0$
-
-**Предложенная модель** --- модель, подобранная в данном анализе $\hat y_i = \beta_0 + \beta_1x_{1i} + \ldots + \beta_{p - 1} x_{p - 1\,i}$.
-
-$lnL_{model} \ne 0$   
-$df_{model} = n - p_{model}$
-
-**Нулевая модель** -- все наблюдения описываются одним параметром (средним) $\hat y_i = \beta_0$.
-
-$lnL_{null} \ne 0$   
-$df_{null} = n - p_{null} = n - 1$
-
-## Девианса
-
-Это мера различия правдоподобий двух моделей (оценка разницы логарифмов правдоподобий).
-
-**Остаточная девианса**
-
-$d_{residual} = 2(lnL_{saturated} - lnL_{model}) = -2 lnL_{model}$
-
-**Нулевая девианса**
-
-$d_{null} = 2(lnL_{saturated} - lnL_{null}) = -2 lnL_{null}$
-
-Сравнение нулевой и остаточной девианс позволяет судить о статистической значимости модели в целом (при помощи теста отношения правдоподобий).
-
-$d_{null} - d_{residual} = - 2(lnL_{null} - lnL_{model}) = 2(lnL_{model} - lnL_{null})$
-
-## Тест отношения правдоподобий (Likelihood Ratio Test) 
-
-Тест отношения правдоподобий (Wilks, 1938) используется для сравнения правдоподобий
-
-$$LRT = 2ln\Big(\frac{L_{M_1}}{L_{M_2}}\Big) = 2(lnL_{M_1} - lnL_{M_2})$$
-
-- $M_1$ и $M_2$ --- вложенные модели ( $M_1$ --- более полная, $M_2$ --- уменьшенная),
-- $L_{M_1}$, $L_{M_2}$ --- правдоподобия,
-- $lnL_{M_1}$, $lnL_{M_2}$ --- логарифмы правдоподобий.
-
-Сравниваются __вложенные модели, подобранные методом максимального правдоподобия__.
-
-Разница логарифмов правдоподобий $LRT$ имеет распределение, которое можно аппроксимировать распределением $\chi^2$ с числом степеней свободы $df = df_{M_2} - df_{M_1}$.
-
-## LRT используется для сравнения моделей
-
-Для тестирования значимости модели целиком:
-
-$$LRT = 2ln\Big(\frac{L_{model}}{L_{null}}\Big) = 2(lnL_{model} - lnL_{null}) = d_{null} - d_{residual}$$
-
-$df = df_{null} - df_{model} = (n - 1) - (n - p_{model}) = p_{model} - 1$
-
-Для тестирования значимости предикторов:
-
-$$LRT = 2ln\Big(\frac{L_{model}}{L_{reduced}}\Big) = 2(lnL_{model} - lnL_{reduced})$$
-
-$df = df_{reduced} - df_{model} = (n - p_{reduced}) - (n - p_{model}) = p_{model} - p_{reduced}$
-
-## Тестируем значимость модели целиком при помощи LRT
-
-```{r eval=FALSE}
-#| echo: true
-?anova.glm
-```
-
-```{r}
-#| echo: true
-null_model <- glm(PctDM ~ 1, data = FishEggs)
-anova(null_model, mod, test = 'Chi')
-```
-
-## Тестируем значимость предикторов при помощи LRT
-
-Используем II тип тестов ("II тип сумм квадратов"):
-
-**1. Тестируем значимость взаимодействия**
-
-```{r}
-#| echo: true
 drop1(mod, test = 'Chi')
 ```
 
-## 2. Тестируем значимость предикторов, когда взаимодействие удалено
-
 ```{r}
-#| echo: true
-mod_no_int <- update(mod, . ~ . -Age:Month)
-drop1(mod_no_int, test = 'Chi')
+mod2 <- update(mod, . ~ . - Sp:L:Box)
 ```
 
-## Запись результатов LRT-тестов значимости предикторов
+## Упрощение модели: Шаг 2
 
-Содержание сухого вещества в икре зависит от возраста рыбы и месяца (p < 0.01, тест отношения правдоподобий, табл. 1). Характер зависимости энергетической ценности икры от возраста одинаков в сентябре и ноябре.
+```{r}
+drop1(mod2, test = 'Chi')
+```
+
+```{r}
+mod3 <- update(mod2, . ~ . - Sp:L)
+```
+
+## Упрощение модели: Шаг 3
+
+```{r}
+drop1(mod3, test = 'Chi')
+```
+
+```{r}
+mod4 <- update(mod3, . ~ . - L:Box)
+```
+
+## Упрощение модели: Шаг 4
+
+```{r}
+drop1(mod4, test = 'Chi')
+```
+
+```{r}
+mod5 <- update(mod4, . ~ . - Sp:Box)
+```
+
+## Упрощение модели: Шаг 5
+
+```{r}
+drop1(mod5, test = 'Chi')
+```
+
+```{r}
+mod6 <- update(mod5, . ~ . - Box)
+```
+
+## Упрощение модели: Шаг 6
+
+```{r}
+drop1(mod6, test = 'Chi')
+```
+
+Больше никаких предикторов исключать нельзя: `mod6` — финальная модель.
+
+## AIC для финальной модели
+
+```{r}
+AIC(mod, mod2, mod3, mod4, mod5, mod6)
+```
+
+Информационный критерий Акайке показывает, что по мере удаления предикторов модель становится лучше.
+
+Финальная модель (`mod6`) лучше, чем полная модель, с которой мы начинали.
+
+# Смысл коэффициентов в моделях с бинарной переменной отклика
+
+## Что за модель мы построили?
+
+::: {.columns}
+::: {.column width="60%"}
+::: {.footnotesize}
+```{r}
+summary(mod6)
+```
+:::
+:::
+
+::: {.column width="35%"}
+$$Out_i \sim Binomial(n = 1, \pi)$$
+
+$$E(Out_i) = \pi_i$$
+
+$$\ln\left(\frac{\pi_i}{1 - \pi_i}\right) = \eta_i$$
+
+$$\eta_i = 0.399 + 1.07 Sp_{\,Tr\,i} - 0.113 L_i$$
+:::
+:::
+
+## Что означают коэффициенты модели?
+
+$$Out_i \sim Binomial(n = 1, \pi)$$
+
+$$E(Out_i) = \pi_i$$
+
+$$\ln\left(\frac{\pi_i}{1 - \pi_i}\right) = \eta_i$$
+
+$$\eta_i = 0.399 + 1.07 Sp_{\,Tr\,i} - 0.113 L_i$$
+
+\vspace{\baselineskip}
+
+- $b_0$ — интерсепт, логарифм отношения шансов для базового уровня дискретного фактора.
+- $b_1$ — __на сколько единиц изменяется логарифм отношения шансов__ (logit) для данного уровня (`Tr`) дискретного фактора `Sp` по сравнению с базовым уровнем (`Ed`).
+- $b_2$ — __на сколько единиц изменяется логарифм отношения шансов__ (logit), если значение предиктора (`L`) изменяется на единицу.
+
+## Немного алгебры для понимания сути коэффициентов
+
+Предположим, что у нас в модели есть только один непрерывный предиктор $x$.
+
+Посмотрим, как изменится предсказанные моделью значения, если значение непрерывного предиктора изменится на 1.
+
+Мы знаем, что в терминах логитов модель выглядит вот так:
+
+$$\eta = \ln\left(\frac{\pi}{1 - \pi}\right) = \ln(odds)$$
+
+Тогда разница между значениями $\eta$ для $x+1$ и $x$ — это логарифм соотношения шансов при этих значениях предиктора:
+
+$$\eta_{x+1} - \eta_{x} = \ln(odds_{x+1}) - \ln(odds_x) = \ln\left(\frac{odds_{x+1}}{odds_x}\right)$$
+
+## Продолжим преобразования
+
+$$\ln\left(\frac{odds_{x+1}}{odds_x}\right) = b_0 + b_1(x+1) - b_0 - b_1x = b_1$$
+
+$$\ln\left(\frac{odds_{x+1}}{odds_x}\right) = b_1$$
+
+$$\frac{odds_{x+1}}{odds_x} = e^{b_1}$$
+
+Полученная величина $e^{b_1}$ показывает, __во сколько раз изменится отношение шансов__ при увеличении предиктора на единицу.
+
+Для дискретных факторов $e^{b_1}$ покажет, во сколько раз различается отношение шансов для данного уровня по сравнению с базовым.
+
+## Геометрическая интерпретация коэффициентов
 
 ```{r echo=FALSE}
-tmp <- drop1(mod, test = 'Chi')
-tmp1 <- drop1(mod_no_int, test = 'Chi')
+X <- data.frame(x = seq(-10, 10))
+logit <- function(x, b0, b1) {
+  exp(b0 + b1 * x) / (1 + exp(b0 + b1 * x))
+}
+lin <- function(x, b0, b1) {
+  b0 + b1 * x
+}
 
-dfr <- data.frame(
-  `Предиктор` = c('-', 'Возраст:Месяц', 'Возраст', 'Месяц'),
-  df = c(tmp$Df, tmp1$Df[2:3]),
-  D = round(c(tmp$Deviance, tmp1$Deviance[2:3]), 3),
-  p = c(tmp$`Pr(>Chi)`, tmp1$`Pr(>Chi)`[2:3]))
+gg_shift_intercept <- ggplot(X, aes(x = x)) +
+  stat_function(fun = lin, args = list(b0 = 3, b1 = 0.5), aes(colour = '#d73027'), size = 1.1) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = 0.5), aes(colour = 'grey60'), size = 1) +
+  stat_function(fun = lin, args = list(b0 = -3, b1 = 0.5), aes(colour = '#4575b4'), size = 0.9) +
+  scale_color_identity(name = 'Интерсепт', breaks = c('#d73027', 'grey60', '#4575b4'),
+                       labels = c('b0 = 3', 'b0 = 0', 'b0 = -3'), guide = 'legend') +
+  geom_vline(xintercept = 0, size = 0.3) +
+  geom_hline(yintercept = 0, linetype = 1, size = 0.3) +
+  coord_cartesian(xlim = c(-10, 10)) + theme_bw() + theme(legend.position = 'none') +
+  labs(y = 'Логиты')
 
-dfr$p <- format.pval(dfr$p, digits = 2, eps = 0.01)
-dfr$p[1] <- NA
-kable(dfr, format = 'html', caption = 'Анализ девиансы для модели зависимости энергетической ценности икры от возраста рыбы, месяца и их взаимодействия. Тесты II типа.' )
+gg_negative_slope <- ggplot(X, aes(x = x)) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = -2), aes(colour = '#4575b4'), size = 1) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = -1), aes(colour = '#74add1'), size = 1) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = -0.5), aes(colour = '#abd9e9'), size = 1) +
+  scale_color_identity(name = 'Отрицательный угловой коэффициент',
+                       breaks = c('#abd9e9', '#74add1', '#4575b4'),
+                       labels = c('b1 = -0.5', 'b1 = -1', 'b1 = -2'), guide = 'legend') +
+  geom_vline(xintercept = 0, size = 0.3) +
+  geom_hline(yintercept = 0, linetype = 1, size = 0.3) +
+  coord_cartesian(xlim = c(-6, 6)) + theme_bw() + theme(legend.position = 'none') +
+  labs(y = 'Логиты')
+
+gg_positive_slope <- ggplot(X, aes(x = x)) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = 0.5), aes(colour = '#fdae61'), size = 1) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = 1), aes(colour = '#f46d43'), size = 1) +
+  stat_function(fun = lin, args = list(b0 = 0, b1 = 2), aes(colour = '#d73027'), size = 1) +
+  scale_color_identity(name = 'Положительный угловой коэффициент',
+                       breaks = c('#fdae61', '#f46d43', '#d73027'),
+                       labels = c('b1 = 0.5', 'b1 = 1', 'b1 = 2'), guide = 'legend') +
+  geom_vline(xintercept = 0, size = 0.3) +
+  geom_hline(yintercept = 0, linetype = 1, size = 0.3) +
+  coord_cartesian(xlim = c(-6, 6)) + theme_bw() + theme(legend.position = 'none') +
+  labs(y = 'Логиты')
+
+gg_shift_intercept_pi <- ggplot(X, aes(x = x)) +
+  stat_function(fun = logit, args = list(b0 = 3, b1 = 0.5), aes(colour = '#d73027'), size = 1.1) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = 0.5), aes(colour = 'grey60'), size = 1) +
+  stat_function(fun = logit, args = list(b0 = -3, b1 = 0.5), aes(colour = '#4575b4'), size = 0.9) +
+  scale_color_identity(name = 'Интерсепт', breaks = c('#d73027', 'grey60', '#4575b4'),
+                       labels = c('b0 = 3', 'b0 = 0', 'b0 = -3'), guide = 'legend') +
+  geom_vline(xintercept = 0, size = 0.3) +
+  geom_hline(yintercept = c(0, 0.5, 1), linetype = c(2, 1, 2), size = rep(0.3, 3)) +
+  coord_cartesian(xlim = c(-10, 10)) + theme_bw() + theme(legend.position = 'bottom') +
+  guides(colour = guide_legend(ncol = 1)) +
+  labs(y = 'Вероятности')
+
+gg_negative_slope_pi <- ggplot(X, aes(x = x)) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = -2), aes(colour = '#4575b4'), size = 1) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = -1), aes(colour = '#74add1'), size = 1) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = -0.5), aes(colour = '#abd9e9'), size = 1) +
+  scale_color_identity(name = 'Отрицательный \nугловой \nкоэффициент',
+                       breaks = c('#abd9e9', '#74add1', '#4575b4'),
+                       labels = c('b1 = -0.5', 'b1 = -1', 'b1 = -2'), guide = 'legend') +
+  geom_vline(xintercept = 0, size = 0.3) +
+  geom_hline(yintercept = c(0, 0.5, 1), linetype = c(2, 1, 2), size = rep(0.3, 3)) +
+  coord_cartesian(xlim = c(-6, 6)) + theme_bw() + theme(legend.position = 'bottom') +
+  guides(colour = guide_legend(ncol = 1)) +
+  labs(y = 'Вероятности')
+
+gg_positive_slope_pi <- ggplot(X, aes(x = x)) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = 0.5), aes(colour = '#fdae61'), size = 1) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = 1), aes(colour = '#f46d43'), size = 1) +
+  stat_function(fun = logit, args = list(b0 = 0, b1 = 2), aes(colour = '#d73027'), size = 1) +
+  scale_color_identity(name = 'Положительный \nугловой \nкоэффициент',
+                       breaks = c('#fdae61', '#f46d43', '#d73027'),
+                       labels = c('b1 = 0.5', 'b1 = 1', 'b1 = 2'), guide = 'legend') +
+  geom_vline(xintercept = 0, size = 0.3) +
+  geom_hline(yintercept = c(0, 0.5, 1), linetype = c(2, 1, 2), size = rep(0.3, 3)) +
+  coord_cartesian(xlim = c(-6, 6)) + theme_bw() + theme(legend.position = 'bottom') +
+  guides(colour = guide_legend(ncol = 1)) +
+  labs(y = 'Вероятности')
+
+plot_grid(
+  gg_negative_slope, gg_positive_slope, gg_shift_intercept,
+  gg_negative_slope_pi, gg_positive_slope_pi, gg_shift_intercept_pi,
+  nrow = 2, rel_heights = c(0.37, 0.63), align = 'v'
+)
 ```
 
-## Описание качества подгонки GLM {.center .middle .inverse}
+## Смысл интерсепта $b_0$
 
-## Доля объясненной девиансы
+Величина $e^{b_0}$ показывает отношение шансов для события, когда все предикторы равны нулю.
 
-**Остаточная девианса**
+Когда предикторы физически не могут принимать нулевые значения, у этой величины нет смысла.
 
-$d_{residual} = 2(lnL_{saturated} - lnL_{model}) = -2 lnL_{model}$
+Но если произведена стандартизация предикторов, то смысл появится. У стандартизованных величин среднее значение равно нулю. Поэтому $e^{b_0}$ покажет соотношение шансов для события при средних значениях предикторов.
 
-**Нулевая девианса**
+## Трактуем коэффициенты модели
 
-$d_{null} = 2(lnL_{saturated} - lnL_{null}) = -2 lnL_{null}$
+$$\eta_i = 0.399 + 1.07I_{Tr,i} - 0.113L_i$$
 
-**Доля объясненной девиансы**
+\vspace{\baselineskip}
 
-$\cfrac{d_{null} - d_{residual}}{d_{null}}$
+- При увеличении длины тела мидии на 1 мм отношения шансов быть съеденной увеличатся в $e^{-0.113}$ = `r exp(coef(mod6)[3])` раза. То есть мидия, имеющая больший размер, имеет меньше шансов быть съеденной (больше шансов на выживание)
 
+- Отношение шансов быть съеденной у мидии, относящиеся к группе `Tr` дискретного фактора `Sp`, в $e^{1.07}$ = `r exp(coef(mod6)[2])` раза выше, чем у мидии относящейся к базовому уровню (`Ed`). То есть вероятность выжить у мидии из группы `Tr` меньше, чем у мидии из группы `Ed`.
 
-Доля объясненной девиансы — аналог $R^2$, одна из характеристик качества подгонки модели.
+# Диагностика модели с бинарным откликом
 
+## Условия применимости GLM с бинарной переменной-откликом
 
+- Случайность и независимость наблюдений.
+- Линейность связи переменной отклика с предиктором (с учетом связывающей функции).
+- Отсутствие сверхдисперсии (форма связи среднего с дисперсией должна быть как у величины с биномиальным распределением).
+- Отсутствие коллинеарности предикторов.
 
-Долю объясненной девиансы легко вычислить
+## Линейность связи
 
+::: {.small}
+Мы должны выяснить, нет ли криволинейного паттерна в остатках. Самый простой способ — это построить график остатков от предсказанных значений и наложить на него сглаживающую функцию, подобранную методом loess.
+:::
+
+\vspace{-\baselineskip}
+
+::: {.columns}
+::: {.column width="60%"}
 ```{r}
-#| echo: true
-(mod$null.deviance - mod$deviance) / mod$null.deviance
+mod6_diag <- data.frame(
+  .fitted = predict(mod6, type = 'response'),
+  .resid_p = resid(mod6, type = 'pearson')
+)
+ggplot(mod6_diag, aes(y = .resid_p, x = .fitted)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(method = 'loess')
+```
+:::
+
+::: {.column width="35%"}
+\vspace{5\baselineskip}
+
+Явного криволинейного паттерна нет.
+:::
+:::
+
+## Проверка на сверхдисперсию
+
+Важное свойство биномиального распределения — это зависимость между матожиданием и дисперсией.
+
+Мат. ожидание — $E(y_i) = \pi_i$  
+Дисперсия — $var(y_i) = \pi_i (1-\pi_i)$
+
+То есть в распределении остатков не должно наблюдаться сверхдисперсии (overdispersion).
+
+## Еще раз смотрим на результаты
+
+::: {.footnotesize}
+```{r, eval = FALSE}
+summary(mod6)
 ```
 
-Модель объясняет `r round((mod$null.deviance - mod$deviance) / mod$null.deviance *100, 1)`% девиансы.
+```
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)   
+(Intercept)    0.399      0.875    0.46   0.6483   
+SpTr           1.070      0.379    2.82   0.0047 **
+L             -0.113      0.035   -3.24   0.0012 **
+--
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-## График предсказаний модели {.center .middle .inverse}
+(Dispersion parameter for binomial family taken to be 1)
 
-## Задание 1
+    Null deviance: 212.58  on 285  degrees of freedom
+Residual deviance: 191.24  on 283  degrees of freedom
+AIC: 197.2
 
-Постройте график предсказаний модели.
+Number of Fisher Scoring iterations: 5
+```
+:::
 
-## Данные для графика предсказаний
+Важная строчка
+
+```
+(Dispersion parameter for binomial family taken to be 1)
+```
+
+## Проверка на сверхдисперсию
+
+::: {.small}
+Используем предложенную Беном Болкером функцию проверки на сверхдисперсию,
+:::
+
+\vspace{-\baselineskip}
 
 ```{r}
-#| echo: true
+# Функция для проверки наличия сверхдисперсии в модели (автор Ben Bolker)
+# http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html
+# Код модифицирован, чтобы учесть дополнительный параметр в NegBin GLMM,
+# подобранных MASS::glm.nb()
+overdisp_fun <- function(model) {
+  rdf <- df.residual(model)  # Число степеней свободы N - p
+  if (any(class(model) == 'negbin')) rdf <- rdf - 1  # учитываем k в NegBin GLMM
+  rp <- residuals(model, type = 'pearson')  # Пирсоновские остатки
+  Pearson.chisq <- sum(rp^2)  # Сумма квадратов остатков, подчиняется Хи-квадрат распределению
+  prat <- Pearson.chisq / rdf  # Отношение суммы квадратов остатков к числу степеней свободы
+  pval <- pchisq(Pearson.chisq, df = rdf, lower.tail = FALSE)  # Уровень значимости
+  c(chisq = Pearson.chisq, ratio = prat, rdf = rdf, p = pval)  # Вывод результатов
+}
+
+overdisp_fun(mod6)
+```
+
+Избыточной дисперсии не выявлено.
+
+::: {.tiny}
+Ben Bolker's glmmFAQ  
+<http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html>
+:::
+
+# Визуализация модели
+
+## Данные для предсказаний
+
+```{r}
 library(dplyr)
-New_Data <- FishEggs %>% 
-  group_by(Month) %>%
-  do(data.frame(Age = seq(min(.$Age), max(.$Age), length.out = 100)))
-head(New_Data)
+new_data <- astr %>% group_by(Sp) %>%
+  do(data.frame(L = seq(min(.$L), max(.$L), length.out = 100)))
 ```
 
-## Предсказания при помощи `predict()`
+Давайте получим предсказания при помощи операций с матрицами, чтобы своими глазами увидеть работу функции связи.
 
+## Предсказания модели при помощи операций с матрицами
+
+::: {.small}
 ```{r}
-#| echo: true
-Predictions <- predict(mod, newdata = New_Data, se.fit = TRUE)
-New_Data$fit <- Predictions$fit  # Предсказанные значения
-New_Data$se <- Predictions$se.fit # Стандартные ошибки
-t_crit <- qt(0.975, df = nrow(FishEggs) - length(coef(mod)) - 1) # t для дов. инт.
-New_Data$lwr <- New_Data$fit - t_crit * New_Data$se
-New_Data$upr <- New_Data$fit + t_crit * New_Data$se
+# Модельная матрица и коэффициенты
+X <- model.matrix(~ Sp + L, data = new_data)
+b <- coef(mod6)
 
-head(New_Data)
+# Предсказанные значения и стандартные ошибки...
+# ...в масштабе функции связи (логит)
+new_data$fit_eta <- X %*% b
+new_data$se_eta <- sqrt(diag(X %*% vcov(mod6) %*% t(X)))
+
+# ...в масштабе отклика (применяем функцию, обратную функции связи)
+logit_back <- function(x) exp(x) / (1 + exp(x))  # обратная логит-трансформация
+
+new_data$fit_pi <- logit_back(new_data$fit_eta)
+new_data$lwr_pi <- logit_back(new_data$fit_eta - 2 * new_data$se_eta)
+new_data$upr_pi <- logit_back(new_data$fit_eta + 2 * new_data$se_eta)
+
+head(new_data, 2)
 ```
+:::
 
-## Данные для графика вручную
-
-```{r}
-#| echo: true
-X <- model.matrix(~ Age * Month, data = New_Data) # Модельная матрица
-betas <- coef(mod) # Коэффициенты
-New_Data$fit <- X %*% betas  # Предсказанные значения
-New_Data$se <- sqrt(diag(X %*% vcov(mod) %*% t(X))) # Стандартные ошибки
-t_crit <- qt(0.975, df = nrow(FishEggs) - length(coef(mod)) - 1) # t для дов. инт.
-New_Data$lwr <- New_Data$fit - t_crit * New_Data$se
-New_Data$upr <- New_Data$fit + t_crit * New_Data$se
-
-head(New_Data)
-```
-
-## График предсказаний модели
-
-```{r predictions}
-#| echo: true
-Plot_egg <- ggplot(New_Data, aes(x = Age, y = fit)) +
-  geom_ribbon(alpha = 0.2, aes(ymin = lwr, ymax = upr, group = Month)) +
-  geom_line(aes(colour = Month), size = 1) +
-  geom_point(data = FishEggs, aes(x = Age, y = PctDM, colour = Month))
-Plot_egg
-```
-
-## Отбор моделей для GLM (model selection) {.center .middle .inverse}
-
-## Подбор "оптимальной" модели
-
-В подобранной модели можно протестировать значимость влияния предикторов и их взаимодействия и на этом остановиться.
-
-Или можно упростить модель, аналогично тому, как мы это делали со множественной линейной регрессией, но использовав LRT вместо F-теста.
-
-## Пытаемся сократить модель
-
-```{r}
-#| echo: true
-
-mod_no_int <- update(mod, . ~ . -Age:Month)
-drop1(mod_no_int, test = 'Chi')
-```
-
-Если мы решили "сократить" модель, то теперь придется описать модель `mod_no_int`.
-
-## Уравнение сокращенной модели
-
-Как зависит питательная ценность икры от месяца вылова рыбы (сентябрь или ноябрь) с учетом ковариаты (возраста рыбы) и их взаимодействия.
-
-```{r}
-#| echo: true
-
-mod_no_int
-```
+## Визуализация в шкале логитов
 
 ::: {.columns}
-::: {.column width="50%"}
+::: {.column width="48%"}
 ```{r}
-#| echo: true
-
-#Чтобы записать модель,нужна сигма
-
-sigma(mod_no_int)
+ggplot(new_data, aes(x = L, y = fit_eta, fill = Sp)) +
+  geom_ribbon(aes(ymin = fit_eta - 2 * se_eta, ymax = fit_eta + 2 * se_eta), alpha = 0.5) +
+  geom_line(aes(color = Sp))
 ```
 :::
-::: {.column width="50%"}
-$PctDM_i \sim N(\mu_i, 1.22)$  
-$E(PctDM_i) = \mu_i$  
-$\mu_i = \eta_i$  
-$\eta_i = 38.0 - 0.23 Age_{i} + 1.52 Month_{Nov\,i}$
 
-- $PctDM_i$ --- содержание сухого вещества в икре;
-- $Age_{i}$ --- возраст рыбы.
+::: {.column width="40%"}
+\vspace{6\baselineskip}
+
+Визуализация проведена для логитов, поэтому зависимость линейная, но по оси `OY` отложены значения от $-\infty$ до $+\infty$.
 :::
 :::
 
-## Информационные критерии --- еще один способ сравнения или упрощения моделей {.center .middle .inverse}
-
-## Информационный критерий Акаике (Akaike Information Criterion, AIC)
+## Визуализация в шкале вероятностей интуитивно понятнее
 
 ::: {.columns}
-::: {.column width="66%"}
-$$AIC = -2 logLik + 2p$$
-
-- $logLik$ --- логарифм правдоподобия для модели;
-- $2p$ --- штраф за введение в модель $p$ параметров, т.е. за "сложность" модели
-
-AIC --- это мера потери информации, которая происходит, если реальность описывать этой моделью (Akaike 1974)
-
-AIC --- относительная мера качества модели. Т.е. не бывает какого-то "хорошего" AIC. Значения AIC можно интерпретировать только в сравнении с AIC для других моделей: чем меньше AIC --- тем лучше модель.
-
-__Важно!__   Информационные критерии можно использовать для сравнения __даже для невложенных моделей__. Но модели должны быть __подобраны с помощью ML__ и __на одинаковых данных__!
-:::
-::: {.column width="33%"}
-
-
-![](images/Akaike.png){width=80%}
+::: {.column width="48%"}
+::: {.small}
+```{r }
+ggplot(new_data, aes(x = L, y = fit_pi, fill = Sp)) +
+  geom_ribbon(aes(ymin = lwr_pi, ymax = upr_pi), alpha = 0.5) +
+  geom_line(aes(color = Sp)) +
+  labs(y = 'Вероятность', title = 'Вероятность быть съеденной')
+```
 :::
 :::
 
-## Некоторые другие информационные критерии
+::: {.column width="48%"}
+:::
+:::
 
-|Критерий | Название  | Формула|
-|------ | ------ | ------|
-|AIC | Информационный критерий Акаике | $AIC = -2 logLik + 2p$|
-|BIC | Байесовский информационный критерий | $BIC = -2 logLik + p \cdot ln(n)$|
-|AICc | Информационный критерий Акаике с коррекцией для малых выборок (малых относительно числа параметров: $n/p < 40$, Burnham, Anderson, 2004) | $AIC_c = -2 logLik + 2p + \frac{2p(p + 1)}{n - p - 1}$|
+## О чем говорит модель
 
-- $logLik$ --- логарифм правдоподобия для модели;
-- $p$ --- число параметров;
-- $n$ --- число наблюдений.
+Чем больше размер мидии, тем меньше вероятность быть съеденной.
 
-## Как рассчитать AIC в GLM?
+Линия, соответствующая `Tr`, лежит выше линии `Ed`. Вероятность быть атакованной у `Tr` выше.
 
-$$AIC = -2 logLik + 2p$$
-__В GLM с нормальным распределением отклика число параметров --- это число коэффициентов + 1__, т.к. появился дополнительный параметр $\sigma$
+Значит звезды различают два вида мидий и размер жертвы для них имеет значение.
 
-$PctDM_i \sim N(\mu_i, 1.22)$  
-$E(PctDM_i) = \mu_i$  
-$\mu_i = \eta_i$  
-$\eta_i = 38.0 - 0.23 Age_{i} + 1.52 Month_{Nov\,i}$
-
-```{r}
-#| echo: true
-
-(p <- length(coef(mod_no_int)) + 1) # число параметров
-logLik(mod_no_int)         # Логарифм правдоподобия
-
-as.numeric(-2 * logLik(mod_no_int) + 2 * p)
-
-AIC(mod_no_int) # Есть готовая функция
+```{r echo=FALSE}
+ggplot(new_data, aes(x = L, y = fit_pi, fill = Sp)) +
+  geom_ribbon(aes(ymin = lwr_pi, ymax = upr_pi), alpha = 0.5) +
+  geom_line(aes(color = Sp)) +
+  labs(y = 'Вероятность', title = 'Вероятность быть съеденной')
 ```
-
-## AIC удобно использовать для сравнения моделей, даже невложенных
-
-Пусть у нас есть несколько моделей:
-
-```{r}
-#| echo: true
-
-mod <-        glm(formula = PctDM ~ Age * Month, data = FishEggs)
-mod_no_int <- glm(formula = PctDM ~ Age + Month, data = FishEggs)
-mod_age <-    glm(formula = PctDM ~ Age,         data = FishEggs)
-mod_month <-  glm(formula = PctDM ~ Month,       data = FishEggs)
-```
-
-```{r}
-#| echo: true
-
-AIC(mod, mod_no_int, mod_age, mod_month)
-```
-
-Судя по AIC, лучшая модель `mod_no_int`. 
-
-Если значения AIC различаются всего на 1-2 единицу --- такими различиями можно пренебречь и выбрать более простую модель (`mod_no_int`).
-
-## Проверка валидности финальной модели
-
-```{r}
-#| echo: true
-#| 
-library(DHARMa)
-simulateResiduals(mod_no_int, plot = T)
-```
-
-## `summary` финальной модели
-
-```{r}
-#| echo: true
-summary(mod_no_int)
-```
-
 
 ## Take-home messages
 
-- Обобщенные линейные модели (Generalized Linear Models, GLM) позволяют моделировать зависимости для откликов с распределением из семейства экспоненциальных
+### Что мы знаем о бинарных переменных
 
-- Для тестирования предикторов в GLM используются:
-    - Тесты Вальда для коэффициентов (плохо на малых выборках).
-    - Тесты отношения правдоподобий вложенных моделей (более точно).
-- Доля объясненной девиансы оценивает качество подгонки GLM
+- Бинарные переменные-отклики могут обозначаться как угодно (+ или -; Да или Нет).
+- Удобно кодировать бинарные переменные числами: 1 (событие произошло) или 0 (событие не произошло).
+- Вместо бинарных обозначений в анализе используются непрерывные оценки вероятности.
+- Вероятности можно перевести в отношения шансов.
+- Отношения шансов заменяются логитами.
 
-- Сравнивая модели можно отбраковать переменные, включение которых в модель не улучшает ее
-- __Метод сравнения моделей нужно выбрать заранее, еще до анализа__
+## Take-home messages
+
+### Что мы знаем о GLM с бинарной переменной-откликом
+
+- GLM с бинарной переменной-откликом называют логистической регрессией.
+- Параметры логистической регрессии подбираются методом максимального правдоподобия.
+- Угловые коэффициенты логистической регрессии говорят о том, во сколько раз изменяется соотношение шансов для события при увеличении предиктора на единицу (или при переходе от базового уровня фактора к данному уровню).
+- Оценить статистическую значимость модели можно с помощью анализа девиансы.
+- Для визуализации результатов лучше проводить обратное логит-преобразование и изображать логистические кривые.
 
 ## Что почитать
 
-+ **Zuur, A.F. and Ieno, E.N., 2016. A protocol for conducting and presenting results of regression-type analyses. Methods in Ecology and Evolution, 7(6), pp.636-645.**
-+ Кабаков Р.И. R в действии. Анализ и визуализация данных на языке R. М.: ДМК Пресс, 2014
-+ **Zuur, A., Ieno, E.N. and Smith, G.M., 2007. Analyzing ecological data. Springer Science & Business Media.**
-+ Quinn G.P., Keough M.J. 2002. Experimental design and data analysis for biologists
-+ Logan M. 2010. Biostatistical Design and Analysis Using R. A Practical Guide
++ Кабаков Р.И. R в действии. Анализ и визуализация данных на языке R. М.: ДМК Пресс, 2014.
++ Quinn G.P., Keough M.J. (2002) Experimental design and data analysis for biologists, pp. 92-98, 111-130
++ Zuur, A.F. et al. 2009. Mixed effects models and extensions in ecology with R. — Statistics for biology and health. Springer, New York, NY.

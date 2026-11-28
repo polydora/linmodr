@@ -92,3 +92,27 @@ $code-color: #222222 !default;
   max-height: 200px;
   overflow-y: auto;
 }
+
+.reveal .slides section.white-text,
+.reveal .slides section.white-text h1,
+.reveal .slides section.white-text h2,
+.reveal .slides section.white-text h3,
+.reveal .slides section.white-text p,
+.reveal .slides section.white-text li,
+.reveal .slides section.white-text span {
+  color: #ffffff !important;
+}
+
+/* Скролл для текстового вывода R-чанков в Reveal.js */
+.reveal .cell-output-stdout pre code,
+.reveal .cell-output pre code {
+  max-height: 400px;      /* подберите под ваш слайд 1600×1080 */
+  overflow-y: auto;       /* вертикальный скролл */
+  display: block;
+}
+
+.scroll-output {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
